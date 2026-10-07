@@ -26,14 +26,14 @@ export default function App() {
   }, [theme]);
 
   return (
-    <main className="min-h-screen bg-(--bg) text-(--text) transition-colors duration-200">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col gap-6 px-4 py-6">
-        <header className="flex items-center justify-between rounded-2xl border border-(--border) bg-(--surface) p-4 shadow-sm backdrop-blur-sm">
+    <main className="min-h-screen bg-bg text-fg transition-colors duration-200">
+      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col gap-6 px-4 py-6">
+        <header className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-(--muted)">
-              AskMe
-            </p>
-            <h1 className="mt-1 text-2xl font-bold">Revision Quiz</h1>
+            <p className="text-[13px] leading-[18px] text-muted">AskMe</p>
+            <h1 className="mt-1 text-[22px] font-medium leading-[28px]">
+              Revision quiz
+            </h1>
           </div>
 
           <button
@@ -43,7 +43,7 @@ export default function App() {
                 currentTheme === "light" ? "dark" : "light",
               )
             }
-            className="rounded-full border border-(--border) bg-(--surface-strong) px-3 py-2 text-sm font-medium text-(--text) shadow-sm transition hover:opacity-90"
+            className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out active:scale-[0.98]"
             aria-label="Toggle color theme"
             aria-pressed={theme === "dark"}
           >
@@ -51,26 +51,26 @@ export default function App() {
           </button>
         </header>
 
-        <section className="rounded-2xl border border-(--border) bg-(--surface) p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-(--muted)">
-            Study session
-          </p>
-          <h2 className="mt-3 text-xl font-semibold">Biology Ch. 3</h2>
-          <p className="mt-2 text-sm leading-6 text-(--muted)">
+        <section className="rounded-2xl bg-card p-4">
+          <p className="text-[13px] leading-[18px] text-muted">Study session</p>
+          <h2 className="mt-3 text-[16px] font-medium leading-6">
+            Biology Ch. 3
+          </h2>
+          <p className="mt-2 text-[16px] leading-6 text-muted">
             Make a short revision session, flip between MCQ and essay questions,
             and keep your progress intact even when you reload the page.
           </p>
 
-          <div className="mt-5 flex gap-3">
+          <div className="mt-6 flex gap-3">
             <button
               type="button"
-              className="flex-1 rounded-xl bg-(--accent) px-4 py-3 text-sm font-semibold text-white shadow-sm"
+              className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out active:scale-[0.98]"
             >
               Start quiz
             </button>
             <button
               type="button"
-              className="flex-1 rounded-xl border border-(--border) bg-(--surface-strong) px-4 py-3 text-sm font-semibold text-(--text)"
+              className="min-h-12 flex-1 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out active:scale-[0.98]"
             >
               View sets
             </button>
@@ -78,17 +78,19 @@ export default function App() {
         </section>
 
         <section className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-2xl border border-(--border) bg-(--surface) p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-(--muted)">
-              MCQ
+          <div className="rounded-2xl bg-card p-4">
+            <p className="text-[13px] leading-[18px] text-muted">
+              Multiple choice
             </p>
-            <p className="mt-2 text-2xl font-bold">12</p>
+            <p className="mt-2 text-[22px] font-medium leading-7 tabular-nums">
+              12
+            </p>
           </div>
-          <div className="rounded-2xl border border-(--border) bg-(--surface) p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-(--muted)">
-              Essay
+          <div className="rounded-2xl bg-card p-4">
+            <p className="text-[13px] leading-[18px] text-muted">Essay</p>
+            <p className="mt-2 text-[22px] font-medium leading-7 tabular-nums">
+              4
             </p>
-            <p className="mt-2 text-2xl font-bold">4</p>
           </div>
         </section>
       </div>
