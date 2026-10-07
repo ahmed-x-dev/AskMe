@@ -6,7 +6,7 @@
 
 ```yaml
 current_phase: P1
-current_task: P1-04
+current_task: P1-05
 last_updated: 2026-10-07
 phases:
   P1: { name: "Local app (web)", status: in_progress }
@@ -156,7 +156,7 @@ src/
   - Done when: both themes render correctly and the choice survives a reload.
 - [x] **P1-03** Define TypeScript types (`QuizSet`, `Question`, `McqQuestion`, `EssayQuestion`) and the Dexie schema.
   - Done when: types compile and the DB opens in the browser.
-- [ ] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
+- [x] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
   - Done when: tests cover create, update, soft delete, and listing excludes deleted rows.
 - [ ] **P1-05** Install React Router and define the routes in `src/routes.tsx` (see DESIGN.md section 6); Sets screen: list, create, rename, delete sets.
   - Done when: routing works with placeholder screens, and all four set actions work and persist after reload.
@@ -275,6 +275,7 @@ src/
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
 - 2026-10-07: Updated AGENTS.md (up-to-date code rules, routing, React 19 and tooling conventions) and PLAN.md (React Router decision, Tailwind v4, routing folded into P1-05). Next: P1-03 (types + Dexie schema).
+- 2026-10-07: P1-04 complete. Added the repository layer for set and question CRUD plus soft deletes, with tests covering creation, updates, deletion, and hidden deleted rows. Next: P1-05 (routes and sets screen).
 - 2026-10-07: P1-03 complete. Added the strict `QuizSet`/`Question` model types and a Dexie database schema; the DB opens successfully in the test environment. Next: P1-04 (repository layer and unit tests).
 - 2026-10-07: P1-01 and P1-02 complete. The project is scaffolded with Vite + React + TS, Tailwind is configured, and the theme toggle persists correctly; `dev`, `build`, `lint`, `typecheck`, and `test` all pass. Next: P1-03 (types + Dexie schema).
 - 2026-10-06: Plan created. Next: P1-01 (scaffold project).
