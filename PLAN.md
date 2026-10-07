@@ -261,6 +261,9 @@ src/
 | 2026-10-07 | Start with browser routing                         | Fine for PWA; revisit hash routing in P4-01 if Capacitor deep links break    |
 | 2026-10-07 | Check docs for installed major versions            | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                   | React Compiler is enabled                                                    |
+| 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`   | Keeps production modules uncluttered and tests easy to locate                 |
+| 2026-10-07 | Keep shared domain types under `src/types/`        | Groups reusable models by domain, separate from persistence implementation   |
+| 2026-10-07 | Document API contracts with concise JSDoc          | Clarifies non-obvious behavior without duplicating self-explanatory code     |
 
 ## 9. Open Questions
 
@@ -274,6 +277,9 @@ src/
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-07: Added concise JSDoc for exported data APIs and domain types, plus a comment policy in AGENTS.md. No runtime behavior changed. Next: P1-05 (routes and sets screen).
+- 2026-10-07: Moved tests into a root `tests/` tree mirroring `src/`, centralized IndexedDB setup, and added tests to TypeScript checking. `npm outdated` reports newer majors for Babel (8), `@types/node` (26), and TypeScript (7); left installed versions unchanged. Next: P1-05 (routes and sets screen).
+- 2026-10-07: Moved quiz domain models from `src/data/types.ts` into `src/types/quiz.ts` and documented the shared-types convention. Next: P1-05 (routes and sets screen).
 - 2026-10-07: Updated AGENTS.md (up-to-date code rules, routing, React 19 and tooling conventions) and PLAN.md (React Router decision, Tailwind v4, routing folded into P1-05). Next: P1-03 (types + Dexie schema).
 - 2026-10-07: P1-04 complete. Added the repository layer for set and question CRUD plus soft deletes, with tests covering creation, updates, deletion, and hidden deleted rows. Next: P1-05 (routes and sets screen).
 - 2026-10-07: P1-03 complete. Added the strict `QuizSet`/`Question` model types and a Dexie database schema; the DB opens successfully in the test environment. Next: P1-04 (repository layer and unit tests).

@@ -1,7 +1,6 @@
-import 'fake-indexeddb/auto'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { db } from './db'
+import { db } from '../../src/data/db'
 
 afterEach(async () => {
   if (db.isOpen()) {

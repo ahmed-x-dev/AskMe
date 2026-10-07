@@ -1,7 +1,6 @@
-import 'fake-indexeddb/auto'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { db } from './db'
+import { db } from '../../src/data/db'
 import {
   addQuestion,
   createSet,
@@ -10,8 +9,8 @@ import {
   softDeleteSet,
   updateQuestion,
   updateSetTitle,
-} from './repository'
-import type { EssayQuestion, McqQuestion } from './types'
+} from '../../src/data/repository'
+import type { EssayQuestion, McqQuestion } from '../../src/types/quiz'
 
 beforeEach(async () => {
   if (!db.isOpen()) {
@@ -19,6 +18,10 @@ beforeEach(async () => {
   }
 
   await db.sets.clear()
+})
+
+afterEach(() => {
+  db.close()
 })
 
 describe('repository', () => {

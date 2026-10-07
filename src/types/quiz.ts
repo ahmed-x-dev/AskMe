@@ -1,7 +1,10 @@
+/** Discriminator for the supported question variants. */
 export type QuestionType = 'mcq' | 'essay'
 
+/** Union of all question records stored in a quiz set. */
 export type Question = McqQuestion | EssayQuestion
 
+/** Fields shared by question records; timestamps are ISO 8601 UTC strings. */
 export interface BaseQuestion {
   id: string
   type: QuestionType
@@ -10,17 +13,20 @@ export interface BaseQuestion {
   deleted: boolean
 }
 
+/** A four-option multiple-choice question; `answerIndex` is zero-based. */
 export interface McqQuestion extends BaseQuestion {
   type: 'mcq'
   options: [string, string, string, string]
   answerIndex: number
 }
 
+/** An essay question with an optional reference answer for later grading. */
 export interface EssayQuestion extends BaseQuestion {
   type: 'essay'
   referenceAnswer?: string
 }
 
+/** A set's portable data record; `schemaVersion` versions this JSON format. */
 export interface QuizSet {
   schemaVersion: number
   id: string

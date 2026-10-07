@@ -4,6 +4,7 @@ type Theme = "light" | "dark";
 
 const THEME_STORAGE_KEY = "askme-theme";
 
+/** Uses the saved theme when valid, otherwise follows the system preference. */
 function getPreferredTheme(): Theme {
   const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
 

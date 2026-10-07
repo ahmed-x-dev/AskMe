@@ -40,6 +40,7 @@ A mobile-first revision quiz app (MCQ and essay questions) built with Vite + Rea
 
 - **Language:** TypeScript with `strict: true`. No `any` unless commented with a reason.
 - **Data access:** only through `src/data/repository.ts`. UI code never imports Dexie directly.
+- **Domain types:** shared domain models live under `src/types/`, grouped by domain.
 - **Platform APIs** (secure storage, share, notifications, OAuth): only through `src/platform/`.
 - **IDs:** UUIDs (`crypto.randomUUID()`). Never auto-increment.
 - **Deletes:** soft delete only (`deleted: true` and a new `updatedAt`). Never remove rows during normal use.
@@ -50,6 +51,8 @@ A mobile-first revision quiz app (MCQ and essay questions) built with Vite + Rea
 - **Routing:** React Router v7 in library mode. Install `react-router` only (not `react-router-dom`) and import everything from `"react-router"` (`createBrowserRouter`, `RouterProvider`, `Link`, `useParams`, `useNavigate`). Do not use framework mode (no `react-router.config.ts`, no SSR, no file-based routes). Define all routes in `src/routes.tsx`.
 - **React:** function components only. No `React.FC`, no `forwardRef` (`ref` is a normal prop in React 19). The React Compiler is enabled, so do not add `useMemo`, `useCallback` or `React.memo` unless you have measured a problem.
 - **Tooling:** ESLint uses flat config (`eslint.config.js`). Tailwind v4 has no `tailwind.config.js` and no PostCSS config; theme tokens live in CSS (`@theme`) as described in `DESIGN.md`. Do not swap or "fix" the Vite/Babel React setup (`@vitejs/plugin-react` with the React Compiler preset).
+- **Tests:** keep tests under `tests/`, mirroring the relevant `src/` area (for example, `tests/data/repository.test.ts` for `src/data/repository.ts`). Put shared test setup in `tests/setup.ts`.
+- **Comments and docs:** add concise JSDoc to exported functions, classes, and public types when it clarifies purpose, behavior, or contracts (especially null/error behavior, units, indexing, and persistence rules). Add inline comments only for non-obvious reasoning. Do not write comments that merely repeat the code.
 
 ## Keeping code up to date
 

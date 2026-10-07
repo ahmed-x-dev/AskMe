@@ -1,5 +1,5 @@
 import { db } from './db'
-import type { Question, QuizSet } from './types'
+import type { Question, QuizSet } from '../types/quiz'
 
 const SCHEMA_VERSION = 1
 
@@ -11,6 +11,7 @@ function sanitizeTitle(input: string): string {
   return input.trim() || 'Untitled set'
 }
 
+/** Lists non-deleted sets, most recently updated first. */
 export async function listSets(): Promise<QuizSet[]> {
   return db.sets
     .orderBy('updatedAt')
@@ -19,13 +20,16 @@ export async function listSets(): Promise<QuizSet[]> {
     .toArray()
 }
 
+/** Alias for `listSets`, retained as a convenient repository API name. */
 export const getSets = listSets
 
+/** Returns an active set, or `null` when it does not exist or is soft-deleted. */
 export async function getSet(id: string): Promise<QuizSet | null> {
   const set = await db.sets.get(id)
   return set && !set.deleted ? set : null
 }
 
+/** Creates an empty set with a generated UUID and the current schema version. */
 export async function createSet(title: string): Promise<QuizSet> {
   const now = nowIso()
   const set: QuizSet = {
@@ -41,6 +45,7 @@ export async function createSet(title: string): Promise<QuizSet> {
   return set
 }
 
+/** Renames an active set; returns `null` if the set is missing or deleted. */
 export async function updateSetTitle(id: string, title: string): Promise<QuizSet | null> {
   const set = await getSet(id)
 
@@ -58,6 +63,7 @@ export async function updateSetTitle(id: string, title: string): Promise<QuizSet
   return updated
 }
 
+/** Marks an active set deleted without removing it from storage. */
 export async function softDeleteSet(id: string): Promise<QuizSet | null> {
   const set = await getSet(id)
 
@@ -75,6 +81,7 @@ export async function softDeleteSet(id: string): Promise<QuizSet | null> {
   return updated
 }
 
+/** Adds a question to an active set and refreshes its record timestamps. */
 export async function addQuestion(setId: string, question: Question): Promise<QuizSet | null> {
   const set = await getSet(setId)
 
@@ -99,6 +106,7 @@ export async function addQuestion(setId: string, question: Question): Promise<Qu
   return updated
 }
 
+/** Replaces a question while preserving its ID; returns `null` if either record is missing. */
 export async function updateQuestion(
   setId: string,
   questionId: string,
@@ -135,6 +143,7 @@ export async function updateQuestion(
   return updated
 }
 
+/** Marks a question deleted without removing it; returns `null` if it cannot be found. */
 export async function softDeleteQuestion(setId: string, questionId: string): Promise<QuizSet | null> {
   const set = await getSet(setId)
 
