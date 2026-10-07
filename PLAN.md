@@ -57,8 +57,9 @@ A simple, fast revision app for short study sessions on any device. The user bui
 | Concern        | Choice                                                 |
 | -------------- | ------------------------------------------------------ |
 | Language       | TypeScript (strict)                                    |
-| UI             | React + Vite                                           |
-| Styling        | Tailwind CSS, light/dark via CSS variables             |
+| UI             | React 19 + Vite (React Compiler enabled)               |
+| Routing        | React Router v7 (library mode, import from `react-router`) |
+| Styling        | Tailwind CSS v4, light/dark via CSS variables          |
 | State          | Zustand                                                |
 | Local database | Dexie (IndexedDB) behind a repository layer            |
 | Mobile wrapper | Capacitor (Android, iOS)                               |
@@ -127,6 +128,7 @@ interface SyncProvider {
 
 ```
 src/
+  routes.tsx       all route definitions (React Router)
   ui/              components, pages, themes
   features/
     quiz/          modes, shuffling, scoring
@@ -156,8 +158,8 @@ src/
   - Done when: types compile and the DB opens in the browser.
 - [ ] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
   - Done when: tests cover create, update, soft delete, and listing excludes deleted rows.
-- [ ] **P1-05** Sets screen: list, create, rename, delete sets.
-  - Done when: all four actions work and persist after reload.
+- [ ] **P1-05** Install React Router and define the routes in `src/routes.tsx` (see DESIGN.md section 6); Sets screen: list, create, rename, delete sets.
+  - Done when: routing works with placeholder screens, and all four set actions work and persist after reload.
 - [ ] **P1-06** Question editor: add, edit, delete MCQ and essay questions in a set.
   - Done when: both types can be created and edited, and invalid input is rejected.
 - [ ] **P1-07** Quiz engine: build a question list for random, MCQ-only and essay-only modes; Fisher-Yates shuffle; unit tests.
@@ -255,6 +257,10 @@ src/
 | 2026-10-06 | Dexie (IndexedDB) for local storage                | Same on web and Capacitor with no plugins; data is small and document-shaped |
 | 2026-10-06 | Soft deletes with tombstones                       | Required so deletes sync correctly                                           |
 | 2026-10-06 | Gemini key never synced                            | Per-device secret                                                            |
+| 2026-10-07 | React Router v7, library mode, `react-router` only | Most documented; no server needed; avoids the old `react-router-dom` habit   |
+| 2026-10-07 | Start with browser routing                         | Fine for PWA; revisit hash routing in P4-01 if Capacitor deep links break    |
+| 2026-10-07 | Check docs for installed major versions            | Agent training data is older than the libraries in use                       |
+| 2026-10-07 | No manual memoization by default                   | React Compiler is enabled                                                    |
 
 ## 9. Open Questions
 
@@ -262,10 +268,12 @@ src/
 - Publish to the stores, or keep the PWA for personal use?
 - Is an iOS build needed (requires a Mac or a cloud Mac build service)?
 - Should essay questions require a reference answer?
+- Browser history router or hash router once Capacitor is added (check in P4-01)?
 
 ## 10. Changelog
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-07: Updated AGENTS.md (up-to-date code rules, routing, React 19 and tooling conventions) and PLAN.md (React Router decision, Tailwind v4, routing folded into P1-05). Next: P1-03 (types + Dexie schema).
 - 2026-10-07: P1-01 and P1-02 complete. The project is scaffolded with Vite + React + TS, Tailwind is configured, and the theme toggle persists correctly; `dev`, `build`, `lint`, `typecheck`, and `test` all pass. Next: P1-03 (types + Dexie schema).
 - 2026-10-06: Plan created. Next: P1-01 (scaffold project).

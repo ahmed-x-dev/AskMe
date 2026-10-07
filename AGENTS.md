@@ -12,6 +12,7 @@ A mobile-first revision quiz app (MCQ and essay questions) built with Vite + Rea
 2. Find the current phase and the first task that is not `[x]`.
 3. If a task is `[~]` (in progress), continue it. Do not start another task.
 4. Read the **Decisions Log** so you do not reverse a decision without cause.
+5. Run `npm outdated` and note any new major versions in the Changelog. Do not upgrade without asking.
 
 ## How to track progress
 
@@ -46,10 +47,24 @@ A mobile-first revision quiz app (MCQ and essay questions) built with Vite + Rea
 - **Secrets:** the Gemini API key lives in per-device secure storage and must never be written to the database, the sync files, logs, or git.
 - **Themes:** light and dark only, using CSS variables. No third theme.
 - **Dependencies:** prefer few, well-maintained packages. Mention any new dependency in the Decisions Log.
+- **Routing:** React Router v7 in library mode. Install `react-router` only (not `react-router-dom`) and import everything from `"react-router"` (`createBrowserRouter`, `RouterProvider`, `Link`, `useParams`, `useNavigate`). Do not use framework mode (no `react-router.config.ts`, no SSR, no file-based routes). Define all routes in `src/routes.tsx`.
+- **React:** function components only. No `React.FC`, no `forwardRef` (`ref` is a normal prop in React 19). The React Compiler is enabled, so do not add `useMemo`, `useCallback` or `React.memo` unless you have measured a problem.
+- **Tooling:** ESLint uses flat config (`eslint.config.js`). Tailwind v4 has no `tailwind.config.js` and no PostCSS config; theme tokens live in CSS (`@theme`) as described in `DESIGN.md`. Do not swap or "fix" the Vite/Babel React setup (`@vitejs/plugin-react` with the React Compiler preset).
+
+## Keeping code up to date
+
+Your training data is older than the libraries in this repo. Do not rely on memory for library APIs.
+
+- The installed versions in `package.json` are the source of truth. If a doc, example or your memory disagrees, follow the installed version.
+- Before using an API from React, React Router, Zustand, Dexie, Tailwind, Vite, Vitest, ESLint, TypeScript, Capacitor or vite-plugin-pwa, check the official docs for the installed major version (docs tools, Context7 or web search if available).
+- Install packages with `npm install <pkg>@latest`. Never copy a version number from memory.
+- When you add Zustand, Dexie or any other new package, read its current docs first and do not assume patterns from older major versions.
+- Treat deprecation warnings, ESLint warnings and TypeScript deprecation hints as bugs. Fix them before marking a task `[x]`.
+- If you are unsure whether an API still exists, verify it, and note the uncertainty in the Changelog.
 
 ## Commands
 
-Fill these in once the project is scaffolded (task P1-01):
+These scripts were set up in task P1-01:
 
 ```
 npm run dev        # start dev server
