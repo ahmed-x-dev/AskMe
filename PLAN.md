@@ -6,7 +6,7 @@
 
 ```yaml
 current_phase: P1
-current_task: P1-03
+current_task: P1-04
 last_updated: 2026-10-07
 phases:
   P1: { name: "Local app (web)", status: in_progress }
@@ -154,7 +154,7 @@ src/
   - Done when: `dev`, `build`, `lint`, `typecheck`, `test` all run successfully.
 - [x] **P1-02** Add Tailwind and light/dark theming with CSS variables; theme toggle persists the choice.
   - Done when: both themes render correctly and the choice survives a reload.
-- [ ] **P1-03** Define TypeScript types (`QuizSet`, `Question`, `McqQuestion`, `EssayQuestion`) and the Dexie schema.
+- [x] **P1-03** Define TypeScript types (`QuizSet`, `Question`, `McqQuestion`, `EssayQuestion`) and the Dexie schema.
   - Done when: types compile and the DB opens in the browser.
 - [ ] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
   - Done when: tests cover create, update, soft delete, and listing excludes deleted rows.
@@ -275,5 +275,6 @@ src/
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
 - 2026-10-07: Updated AGENTS.md (up-to-date code rules, routing, React 19 and tooling conventions) and PLAN.md (React Router decision, Tailwind v4, routing folded into P1-05). Next: P1-03 (types + Dexie schema).
+- 2026-10-07: P1-03 complete. Added the strict `QuizSet`/`Question` model types and a Dexie database schema; the DB opens successfully in the test environment. Next: P1-04 (repository layer and unit tests).
 - 2026-10-07: P1-01 and P1-02 complete. The project is scaffolded with Vite + React + TS, Tailwind is configured, and the theme toggle persists correctly; `dev`, `build`, `lint`, `typecheck`, and `test` all pass. Next: P1-03 (types + Dexie schema).
 - 2026-10-06: Plan created. Next: P1-01 (scaffold project).
