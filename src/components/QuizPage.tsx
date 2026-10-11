@@ -4,24 +4,28 @@ import { Link, useLoaderData, useParams, useSearchParams } from 'react-router'
 import { buildQuizQueue, type QuizMode } from '../features/quiz'
 import type { Question, QuizSet } from '../types/quiz'
 
-function hasAnswered(question: Question, answer: string | number | undefined): boolean {
-  if (answer === undefined) {
-    return false
-  }
-
+function hasAnswered(
+  question: Question,
+  answer: string | number | undefined,
+  essayResult: boolean | undefined,
+): boolean {
   if (question.type === 'mcq') {
     return typeof answer === 'number'
   }
 
-  return typeof answer === 'string' && answer.trim().length > 0
+  return essayResult !== undefined
 }
 
-function isCorrect(question: Question, answer: string | number | undefined): boolean {
+function isCorrect(
+  question: Question,
+  answer: string | number | undefined,
+  essayResult: boolean | undefined,
+): boolean {
   if (question.type === 'mcq') {
     return typeof answer === 'number' && answer === question.answerIndex
   }
 
-  return typeof answer === 'string' && answer.trim().length > 0
+  return essayResult === true
 }
 
 export function QuizPage() {
@@ -33,6 +37,8 @@ export function QuizPage() {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string | number>>({})
+  const [essayResults, setEssayResults] = useState<Record<string, boolean>>({})
+  const [revealedReferences, setRevealedReferences] = useState<Record<string, boolean>>({})
 
   if (!set) {
     return (
@@ -68,7 +74,7 @@ export function QuizPage() {
 
   const endScore = queue.reduce((total, question) => {
     const answer = answers[question.id]
-    return total + (isCorrect(question, answer) ? 1 : 0)
+    return total + (isCorrect(question, answer, essayResults[question.id]) ? 1 : 0)
   }, 0)
 
   if (currentIndex >= queue.length) {
@@ -93,6 +99,8 @@ export function QuizPage() {
             onClick={() => {
               setCurrentIndex(0)
               setAnswers({})
+              setEssayResults({})
+              setRevealedReferences({})
             }}
             className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
@@ -112,7 +120,10 @@ export function QuizPage() {
   const progress = ((currentIndex + 1) / queue.length) * 100
   const currentQuestion = queue[currentIndex]
   const currentAnswer = answers[currentQuestion.id]
-  const isAnswered = hasAnswered(currentQuestion, currentAnswer)
+  const currentEssayResult = essayResults[currentQuestion.id]
+  const isAnswered = hasAnswered(currentQuestion, currentAnswer, currentEssayResult)
+  const hasRevealedReference =
+    currentQuestion.type === 'essay' && revealedReferences[currentQuestion.id] === true
   const modeLabel = mode === 'mcq' ? 'MCQ only' : mode === 'essay' ? 'Essay only' : 'Random mix'
 
   return (
@@ -197,38 +208,95 @@ export function QuizPage() {
           <textarea
             value={typeof currentAnswer === 'string' ? currentAnswer : ''}
             onChange={(event) => {
-              if (isAnswered) {
+              if (hasRevealedReference || isAnswered) {
                 return
               }
               setAnswers((previous) => ({ ...previous, [currentQuestion.id]: event.target.value }))
             }}
+            disabled={hasRevealedReference}
             rows={5}
-            placeholder="Write your answer here…"
+            placeholder="Write your answer here, or think it through…"
             className="min-h-[120px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
           />
           <p className="mt-2 text-[13px] leading-[18px] text-muted">
-            Essay grading is a stub for now; the score is based on having a response.
+            Compare your answer with the reference, then mark yourself right or wrong.
           </p>
         </div>
       )}
+
+      {hasRevealedReference && currentQuestion.type === 'essay' ? (
+        <>
+          <div className="mt-4 rounded-[14px] bg-bg p-4" aria-live="polite">
+            <p className="text-[13px] font-medium leading-[18px] text-muted">Reference answer</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-[16px] leading-6 text-fg">
+              {currentQuestion.referenceAnswer?.trim() ||
+                'No reference answer was added for this question.'}
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              disabled={isAnswered}
+              onClick={() =>
+                setEssayResults((previous) => ({ ...previous, [currentQuestion.id]: true }))
+              }
+              className={`min-h-12 rounded-[14px] px-3 text-[15px] font-medium leading-5 transition duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
+                isAnswered && currentEssayResult !== true
+                  ? 'bg-card text-muted opacity-60'
+                  : 'bg-ok-bg text-ok-fg'
+              }`}
+            >
+              <span aria-hidden="true">✓ </span>I got it right
+            </button>
+            <button
+              type="button"
+              disabled={isAnswered}
+              onClick={() =>
+                setEssayResults((previous) => ({ ...previous, [currentQuestion.id]: false }))
+              }
+              className={`min-h-12 rounded-[14px] px-3 text-[15px] font-medium leading-5 transition duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed ${
+                isAnswered && currentEssayResult !== false
+                  ? 'bg-card text-muted opacity-60'
+                  : 'bg-bad-bg text-bad-fg'
+              }`}
+            >
+              <span aria-hidden="true">✕ </span>I got it wrong
+            </button>
+          </div>
+        </>
+      ) : null}
 
       {!isAnswered ? (
         <p className="mt-3 text-[13px] leading-[18px] text-muted">
           {currentQuestion.type === 'mcq'
             ? 'Choose an option to continue.'
-            : 'Write an answer to continue.'}
+            : hasRevealedReference
+              ? 'Mark your answer to continue.'
+              : 'Think through your answer, then reveal the reference.'}
         </p>
       ) : null}
 
       <div className="mt-6 flex gap-3">
-        <button
-          type="button"
-          onClick={() => setCurrentIndex((previous) => Math.min(previous + 1, queue.length))}
-          className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!isAnswered}
-        >
-          {currentIndex === queue.length - 1 ? 'Finish' : 'Next'}
-        </button>
+        {currentQuestion.type === 'essay' && !hasRevealedReference ? (
+          <button
+            type="button"
+            onClick={() =>
+              setRevealedReferences((previous) => ({ ...previous, [currentQuestion.id]: true }))
+            }
+            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          >
+            Reveal reference
+          </button>
+        ) : currentQuestion.type === 'mcq' || isAnswered ? (
+          <button
+            type="button"
+            onClick={() => setCurrentIndex((previous) => Math.min(previous + 1, queue.length))}
+            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!isAnswered}
+          >
+            {currentIndex === queue.length - 1 ? 'Finish' : 'Next'}
+          </button>
+        ) : null}
         <Link
           to={`/set/${set.id}`}
           className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"

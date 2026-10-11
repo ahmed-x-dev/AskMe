@@ -293,6 +293,9 @@ learn/             explanation files for everything we add (see AGENTS.md)
 - [x] **P5-10** Make library set cards open on click and replace rename/delete labels with icon buttons.
   - Done when: the card navigates to its set, separate open button is gone, and rename/delete remain accessible 44px icon actions.
   - Learn: `learn/05-routing-and-sets.md`.
+- [x] **P5-11** Add reference-answer reveal and self-assessment controls for essay quiz questions.
+  - Done when: essay questions reveal their optional reference answer, let users mark themselves right or wrong, and count that mark in the final score without changing MCQ scoring.
+  - Learn: `learn/08-quiz-flow-and-scoring.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -329,6 +332,7 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-12: Added a reveal-reference and self-assessment flow for essay quiz questions; quiz scores now use the learner's right/wrong mark for essays while MCQs retain answer-key scoring. `typecheck`, `lint`, `test`, `build`, and manual quiz-flow checks pass. `npm outdated` reports newer majors for @babel/core (8), @types/node (26), and TypeScript (7), plus a Vite patch update; none upgraded. Next: P2-01 (secure storage and Gemini API key settings).
 - 2026-10-12: Made the entire set card a link, removed its separate Open button, and replaced Rename/Delete text with accessible 44px icon buttons. Verified card navigation, delete action, and 44px controls at 360px. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
 - 2026-10-12: Kept the AskMe brand in the library header and replaced it on inner routes with a touch-sized “Back to sets” link; the theme toggle remains in place. Verified on a 360px viewport and confirmed the link returns to the library. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
 - 2026-10-12: Removed the set-detail “All sets” shortcut and replaced whole-set import there with question import. It accepts a Question, Question array, or set export, validates the questions, assigns fresh IDs, and appends them without replacing the destination set; failures and success are visible. `typecheck`, `lint`, all 13 tests, `build`, and a browser single-question import check pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.

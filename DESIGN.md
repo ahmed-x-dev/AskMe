@@ -216,13 +216,13 @@ Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 
 | Question editor | `/set/:id/q/:qid?` | MCQ/Essay segmented control, text area, options with correct-answer selector, reference answer (essay), Save |
 | Quiz setup | `/set/:id/play` | Three mode cards: Random, MCQ only, Essay only, each with a count; selected card has the accent outline |
 | Quiz: MCQ | `/quiz` | Progress bar, question card, option buttons, Continue |
-| Quiz: essay | `/quiz` | Progress bar, question card with Essay chip, large text area, Submit |
+| Quiz: essay | `/quiz` | Progress bar, question card with Essay chip, large answer area, Reveal reference, self-assessment choices, Next |
 | Results | `/quiz/result` | Score `8 / 10`, progress bar, list of missed questions, Retry, Back to set |
 | Settings | `/settings` | Theme toggle (light, dark) |
 
 Quiz-flow rules:
 - The question text and the options must fit on one phone screen without scrolling for typical questions.
-- Essay text area fills the free height so the keyboard does not hide Submit.
+- Essay answers can be written before revealing the reference answer; after reveal, the learner marks the response right or wrong before continuing.
 - A mode card is shown but explains itself when it has 0 questions.
 
 ## 7. Motion
