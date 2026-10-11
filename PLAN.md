@@ -5,11 +5,11 @@
 > Agents: update this block whenever a task changes state.
 
 ```yaml
-current_phase: P1
-current_task: P1-05
-last_updated: 2026-10-07
+current_phase: P2
+current_task: P2-01
+last_updated: 2026-10-11
 phases:
-  P1: { name: "Local app (web)", status: in_progress }
+  P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: not_started }
   P3: { name: "Google Drive sync", status: not_started }
   P4: { name: "Mobile (Capacitor) and store release", status: not_started }
@@ -164,28 +164,28 @@ learn/             explanation files for everything we add (see AGENTS.md)
 - [x] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
   - Done when: tests cover create, update, soft delete, and listing excludes deleted rows.
   - Learn: `learn/04-repository-and-tests.md` (backfill).
-- [ ] **P1-05** Install React Router and define the routes in `src/routes.tsx` (see DESIGN.md section 6); Sets screen: list, create, rename, delete sets. Start only after reviewing the P1-01 to P1-04 learning-file backfill.
+- [x] **P1-05** Install React Router and define the routes in `src/routes.tsx` (see DESIGN.md section 6); Sets screen: list, create, rename, delete sets. Start only after reviewing the P1-01 to P1-04 learning-file backfill.
   - Done when: routing works with placeholder screens, and all four set actions work and persist after reload.
   - Learn: `learn/05-routing-and-sets.md`.
-- [ ] **P1-06** Question editor: add, edit, delete MCQ and essay questions in a set.
+- [x] **P1-06** Question editor: add, edit, delete MCQ and essay questions in a set.
   - Done when: both types can be created and edited, and invalid input is rejected.
   - Learn: `learn/06-question-editor.md`.
-- [ ] **P1-07** Quiz engine: build a question list for random, MCQ-only and essay-only modes; Fisher-Yates shuffle; unit tests.
+- [x] **P1-07** Quiz engine: build a question list for random, MCQ-only and essay-only modes; Fisher-Yates shuffle; unit tests.
   - Done when: each mode returns only the right question types and tests pass.
   - Learn: `learn/07-quiz-modes-and-shuffling.md`.
-- [ ] **P1-08** Quiz screens: MCQ answering with instant correct/incorrect feedback; essay answering with a text box (grading stub for now); end-of-quiz score.
+- [x] **P1-08** Quiz screens: MCQ answering with instant correct/incorrect feedback; essay answering with a text box (grading stub for now); end-of-quiz score.
   - Done when: a full quiz can be completed in each mode.
   - Learn: `learn/08-quiz-flow-and-scoring.md`.
-- [ ] **P1-09** JSON import and export per set, with `schemaVersion` validation.
+- [x] **P1-09** JSON import and export per set, with `schemaVersion` validation.
   - Done when: an exported set re-imports without loss, and bad files show a clear error.
   - Learn: `learn/09-json-import-export.md`.
-- [ ] **P1-10** PWA setup: manifest, icons, service worker for offline use.
+- [x] **P1-10** PWA setup: manifest, icons, service worker for offline use.
   - Done when: the app installs and works offline after the first load.
   - Learn: `learn/10-pwa-and-offline.md`.
-- [ ] **P1-11** Make the layout mobile-first and responsive (small screens first, safe areas, touch-sized controls).
+- [x] **P1-11** Make the layout mobile-first and responsive (small screens first, safe areas, touch-sized controls).
   - Done when: all screens are usable at 360px width and on desktop.
   - Learn: `learn/11-responsive-layout.md`.
-- [ ] **P1-12** Final learning check: verify that each P1-01 to P1-11 task has its matching lesson, `learn/README.md` indexes them in order, and the Phase 1 recap is complete.
+- [x] **P1-12** Final learning check: verify that each P1-01 to P1-11 task has its matching lesson, `learn/README.md` indexes them in order, and the Phase 1 recap is complete.
   - Done when: `learn/01-...md` through `learn/11-...md` all exist and are indexed, and `learn/phase-1-recap.md` summarizes Phase 1 with five quiz questions and answers hidden at the bottom.
 
 **Exit criteria:** every P1 task is `[x]`; `typecheck`, `lint`, `test` and `build` pass; the app works offline in the browser; `learn/phase-1-recap.md` exists.
@@ -317,6 +317,9 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-11: Refined the library, set details, question editor, quiz, and shared header using the existing design tokens; fixed the library's desktop two-column width and improved touch targets and progress feedback. No dependencies or theme tokens added. Next: P2-01 (secure storage and Gemini API key settings).
+- 2026-10-11: Phase 1 complete. Added question editing with validation, quiz mode shuffling and scoring, JSON import/export with schema checks, a service-worker-based offline shell, and a responsive layout; the phase 1 lessons and recap are all indexed and present. `typecheck`, `lint`, `test`, and `build` all pass. Next: P2-01 (secure storage and Gemini API key settings).
+- 2026-10-09: P1-05 complete. Installed React Router v7, defined the browser route tree, and added a set library screen with working create, rename, delete, and list actions that persist to IndexedDB and survive reloads. The app renders a set detail screen and a placeholder question editor route as required. `typecheck`, `lint`, `test`, and `build` all pass. Next: P1-06 (question editor).
 - 2026-10-07: Reviewed P1-01 to P1-05 and the P1-01 to P1-04 backfill; corrected the repository example and clarified that TypeScript types do not validate runtime data. `typecheck`, `lint`, `test` (5 tests), and `build` pass. P1-05 remains not started. Next: begin P1-05 only when requested.
 - 2026-10-07: Made `DESIGN.md` authoritative in `AGENTS.md` and aligned the current app theme tokens and placeholder screen with its colors, typography, card, button, focus, and motion rules. Updated the matching learn note. Next: keep using DESIGN.md for all UI work; P1-05 remains not started.
 - 2026-10-07: Added a matching sequential learn-file reference to every P2-P5 task as well as P1-01 to P1-11; phase recap files remain required by each phase's exit criteria. Backfilled and indexed P1-01 to P1-04; no later task started. Next: review the backfill before beginning P1-05.

@@ -1,4 +1,5 @@
 import { db } from './db'
+import { parseSetJson } from './importExport'
 import type { Question, QuizSet } from '../types/quiz'
 
 const SCHEMA_VERSION = 1
@@ -79,6 +80,59 @@ export async function softDeleteSet(id: string): Promise<QuizSet | null> {
 
   await db.sets.put(updated)
   return updated
+}
+
+/** Replaces the entire set record after it is validated and normalized. */
+export async function replaceSet(nextSet: QuizSet): Promise<QuizSet> {
+  const normalized: QuizSet = {
+    ...nextSet,
+    id: nextSet.id.trim() || crypto.randomUUID(),
+    title: sanitizeTitle(nextSet.title),
+    updatedAt: nextSet.updatedAt || nowIso(),
+    deleted: Boolean(nextSet.deleted),
+    questions: nextSet.questions.map((question) => ({
+      ...question,
+      deleted: Boolean(question.deleted),
+      updatedAt: question.updatedAt || nowIso(),
+    })),
+  }
+
+  await db.sets.put(normalized)
+  return normalized
+}
+
+/** Exports a set as a JSON string in the app's portable schema. */
+export async function exportSetAsJson(setId: string): Promise<string | null> {
+  const set = await getSet(setId)
+
+  if (!set) {
+    return null
+  }
+
+  return JSON.stringify(
+    {
+      ...set,
+      questions: set.questions.filter((question) => !question.deleted),
+    },
+    null,
+    2,
+  )
+}
+
+/** Validates a JSON export and swaps the current set record for the imported one. */
+export async function importSetFromJson(rawJson: string): Promise<QuizSet | null> {
+  const importedSet = parseSetJson(rawJson)
+  const existingSet = await getSet(importedSet.id)
+
+  const nextSet: QuizSet = {
+    ...importedSet,
+    id: existingSet?.id ?? importedSet.id,
+    updatedAt: nowIso(),
+    deleted: false,
+  }
+
+  await db.sets.put(nextSet)
+  return nextSet
 }
 
 /** Adds a question to an active set and refreshes its record timestamps. */
