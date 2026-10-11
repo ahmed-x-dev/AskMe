@@ -4,6 +4,7 @@ import { db } from '../../src/data/db'
 import {
   addQuestion,
   createSet,
+  importQuestionsFromJson,
   listSets,
   softDeleteQuestion,
   softDeleteSet,
@@ -105,5 +106,33 @@ describe('repository', () => {
 
     const afterDelete = await softDeleteQuestion(set.id, essayQuestion.id)
     expect(afterDelete?.questions.find((question) => question.id === essayQuestion.id)?.deleted).toBe(true)
+  })
+
+  it('appends imported questions with fresh IDs and leaves existing set data intact', async () => {
+    const set = await createSet('Question import target')
+    const existingQuestion: McqQuestion = {
+      id: 'existing-question',
+      type: 'mcq',
+      text: 'Existing question',
+      options: ['A', 'B', 'C', 'D'],
+      answerIndex: 0,
+      updatedAt: new Date().toISOString(),
+      deleted: false,
+    }
+    await addQuestion(set.id, existingQuestion)
+
+    const importedQuestion: McqQuestion = {
+      ...existingQuestion,
+      id: 'source-question',
+      text: 'Imported question',
+    }
+    const updated = await importQuestionsFromJson(set.id, JSON.stringify(importedQuestion))
+
+    expect(updated?.title).toBe(set.title)
+    expect(updated?.questions).toHaveLength(2)
+    expect(updated?.questions[0].id).toBe(existingQuestion.id)
+    expect(updated?.questions[1].text).toBe(importedQuestion.text)
+    expect(updated?.questions[1].id).not.toBe(importedQuestion.id)
+    expect((await db.sets.get(set.id))?.questions).toEqual(updated?.questions)
   })
 })

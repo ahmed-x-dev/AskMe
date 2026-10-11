@@ -115,6 +115,30 @@ export function parseSetJson(rawJson: string): QuizSet {
   }
 }
 
+/** Parses one question, a question array, or an exported set and returns its active questions. */
+export function parseQuestionsJson(rawJson: string): Question[] {
+  const parsed: unknown = JSON.parse(rawJson)
+  const questionValues = Array.isArray(parsed)
+    ? parsed
+    : isRecord(parsed) && 'questions' in parsed
+      ? parsed.questions
+      : [parsed]
+
+  if (!Array.isArray(questionValues)) {
+    throw new Error('The JSON file must contain a question or a questions array.')
+  }
+
+  const questions = questionValues
+    .map((question, index) => normalizeQuestion(question, index))
+    .filter((question) => !question.deleted)
+
+  if (questions.length === 0) {
+    throw new Error('The JSON file does not contain any active questions.')
+  }
+
+  return questions
+}
+
 /** Serializes a set to JSON for export. */
 export function exportSetJson(set: QuizSet): string {
   return JSON.stringify(

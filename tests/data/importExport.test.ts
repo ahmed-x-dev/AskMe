@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { exportSetJson, parseSetJson } from '../../src/data/importExport'
+import { exportSetJson, parseQuestionsJson, parseSetJson } from '../../src/data/importExport'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
@@ -49,5 +49,25 @@ describe('import/export helpers', () => {
     })
 
     expect(() => parseSetJson(invalidJson)).toThrowError(/Unsupported schema version/)
+  })
+
+  it('parses one Question object and arrays using the Question shape', () => {
+    expect(parseQuestionsJson(JSON.stringify(sampleSet.questions[0]))).toEqual([
+      sampleSet.questions[0],
+    ])
+    expect(parseQuestionsJson(JSON.stringify(sampleSet.questions))).toEqual(sampleSet.questions)
+  })
+
+  it('extracts questions from a set export without treating it as an import of that set', () => {
+    expect(parseQuestionsJson(exportSetJson(sampleSet))).toEqual(sampleSet.questions)
+  })
+
+  it('rejects invalid and empty question imports', () => {
+    expect(() =>
+      parseQuestionsJson(
+        '{"id":"bad-question","type":"unsupported","text":"Bad","updatedAt":"2026-10-12T00:00:00.000Z"}',
+      ),
+    ).toThrowError(/unsupported type/)
+    expect(() => parseQuestionsJson('[]')).toThrowError(/active questions/)
   })
 })

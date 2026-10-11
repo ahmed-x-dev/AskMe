@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router'
 
 import {
   createSet,
+  importSetFromJson,
   listSets,
   softDeleteSet,
   updateSetTitle,
@@ -44,6 +45,12 @@ export function SetsPage() {
   const navigate = useNavigate()
   const initialSets = useLoaderData() as QuizSet[]
   const [sets, setSets] = useState<QuizSet[]>(initialSets)
+  const [isImporting, setIsImporting] = useState(false)
+  const [importFeedback, setImportFeedback] = useState<{
+    kind: 'error' | 'success'
+    message: string
+  } | null>(null)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   const refreshSets = async () => {
     const nextSets = await listSets()
@@ -54,6 +61,32 @@ export function SetsPage() {
     const created = await createSet(`Set ${sets.length + 1}`)
     await refreshSets()
     navigate(`/set/${created.id}`)
+  }
+
+  const handleImportSet = async (file: File) => {
+    setIsImporting(true)
+    setImportFeedback(null)
+
+    try {
+      const importedSet = await importSetFromJson(await file.text())
+
+      if (!importedSet) {
+        throw new Error('The selected file did not contain an importable set.')
+      }
+
+      await refreshSets()
+      setImportFeedback({
+        kind: 'success',
+        message: `Imported “${importedSet.title}”.`,
+      })
+    } catch (error) {
+      setImportFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'The set could not be imported.',
+      })
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   const handleRenameSet = async (setId: string, currentTitle: string) => {
@@ -92,8 +125,8 @@ export function SetsPage() {
 
   return (
     <>
-      <section className="flex items-center justify-between gap-3">
-        <div>
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="text-[13px] leading-[18px] text-muted">Library</p>
           <h2 className="mt-1 text-[22px] font-medium leading-[28px] text-fg">
             Your sets
@@ -103,16 +136,52 @@ export function SetsPage() {
           </p>
         </div>
 
-        {sets.length > 0 ? (
+        <div className="flex w-full gap-2 sm:w-auto">
+          {sets.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => void handleCreateSet()}
+              className="min-h-12 min-w-0 flex-1 rounded-2xl bg-accent px-3 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] sm:flex-none sm:px-4"
+            >
+              New set
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={() => void handleCreateSet()}
-            className="min-h-12 shrink-0 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            onClick={() => importInputRef.current?.click()}
+            disabled={isImporting}
+            className="min-h-12 min-w-0 flex-1 rounded-2xl bg-card px-3 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent active:scale-[0.98] disabled:cursor-wait disabled:opacity-70 sm:flex-none sm:px-4"
           >
-            New set
+            Import set
           </button>
-        ) : null}
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            aria-label="Choose a set JSON file"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0]
+              event.currentTarget.value = ''
+
+              if (file) {
+                void handleImportSet(file)
+              }
+            }}
+          />
+        </div>
       </section>
+
+      {importFeedback ? (
+        <p
+          role={importFeedback.kind === 'error' ? 'alert' : 'status'}
+          className={`-mt-5 text-[13px] leading-[18px] ${
+            importFeedback.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
+          }`}
+        >
+          {importFeedback.message}
+        </p>
+      ) : null}
 
       {sets.length === 0 ? (
         <EmptyState
@@ -127,8 +196,13 @@ export function SetsPage() {
             const activeQuestionCount = set.questions.filter((question) => !question.deleted).length
 
             return (
-              <article key={set.id} className="flex flex-col rounded-2xl bg-card p-4">
-                <div className="flex items-start justify-between gap-3">
+              <article key={set.id} className="relative flex flex-col rounded-2xl bg-card p-4">
+                <Link
+                  to={`/set/${set.id}`}
+                  aria-label={`Open ${set.title}`}
+                  className="absolute inset-0 z-10 rounded-2xl"
+                />
+                <div className="relative z-20 flex flex-col gap-3 pointer-events-none sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
                     <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-[18px] text-muted tabular-nums">
                       {activeQuestionCount} question{activeQuestionCount === 1 ? '' : 's'}
@@ -142,30 +216,44 @@ export function SetsPage() {
                     <button
                       type="button"
                       onClick={() => void handleRenameSet(set.id, set.title)}
-                      className="min-h-11 rounded-[14px] bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+                      aria-label={`Rename ${set.title}`}
+                      title="Rename set"
+                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-accent hover:text-on-accent"
                     >
-                      Rename
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                        <path
+                          d="m14 5 5 5M4 20l4.5-1 10.7-10.7a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </button>
                     <button
                       type="button"
                       onClick={() => void handleDeleteSet(set.id, set.title)}
-                      className="min-h-11 rounded-[14px] bg-bg px-3 text-[13px] font-medium text-bad-fg transition-colors hover:bg-bad-bg"
+                      aria-label={`Delete ${set.title}`}
+                      title="Delete set"
+                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
                     >
-                      Delete
+                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                        <path
+                          d="M4 7h16m-10 4v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-2">
+                <div className="relative z-20 mt-4 flex items-center gap-2 pointer-events-none">
                   <span className="text-[13px] leading-[18px] text-muted">
                     Updated {new Date(set.updatedAt).toLocaleDateString()}
                   </span>
-                  <Link
-                    to={`/set/${set.id}`}
-                    className="inline-flex min-h-12 items-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-accent hover:text-on-accent"
-                  >
-                    Open
-                  </Link>
                 </div>
               </article>
             )

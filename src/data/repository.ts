@@ -1,5 +1,5 @@
 import { db } from './db'
-import { parseSetJson } from './importExport'
+import { parseQuestionsJson, parseSetJson } from './importExport'
 import type { Question, QuizSet } from '../types/quiz'
 
 const SCHEMA_VERSION = 1
@@ -133,6 +133,36 @@ export async function importSetFromJson(rawJson: string): Promise<QuizSet | null
 
   await db.sets.put(nextSet)
   return nextSet
+}
+
+/** Adds validated questions from JSON to an active set without importing set metadata. */
+export async function importQuestionsFromJson(
+  setId: string,
+  rawJson: string,
+): Promise<QuizSet | null> {
+  const importedQuestions = parseQuestionsJson(rawJson)
+  const set = await getSet(setId)
+
+  if (!set) {
+    return null
+  }
+
+  const timestamp = nowIso()
+  const nextQuestions: Question[] = importedQuestions.map((question) => ({
+    ...question,
+    id: crypto.randomUUID(),
+    updatedAt: timestamp,
+    deleted: false,
+  }))
+
+  const updated: QuizSet = {
+    ...set,
+    questions: [...set.questions, ...nextQuestions],
+    updatedAt: timestamp,
+  }
+
+  await db.sets.put(updated)
+  return updated
 }
 
 /** Adds a question to an active set and refreshes its record timestamps. */

@@ -14,6 +14,8 @@ Theme values are CSS custom properties. CSS reads a variable with `var(--name)`.
 
 React state controls which theme is active. `localStorage` keeps the choice in this browser across reloads. The app uses the system preference only when there is no valid saved choice.
 
+An icon-only theme switch saves space on small screens. Because the icon alone does not say what the button does, give the button an accessible name with `aria-label`.
+
 ## In our code
 
 From `src/App.tsx`:
@@ -34,17 +36,23 @@ useEffect(() => {
 
 `DESIGN.md` is the source of truth for every color and styling rule. In `src/index.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card` and `text-muted`. Keep these mappings aligned with the design token table.
 
+In `src/components/AppLayout.tsx`, the theme button shows a moon when it can switch to dark mode and a sun when it can switch to light mode. The SVGs are decorative; the button's `aria-label` communicates the action to assistive technology.
+
 ## ❌ / ✅ examples
 
 ❌ Store arbitrary user input as a theme without checking it; unexpected values may not match any CSS theme.
 
 ✅ `getPreferredTheme` accepts only `"light"` or `"dark"` and otherwise uses the system preference.
 
+❌ Use an icon-only button without an accessible name.
+
+✅ Keep the icon visual and set an `aria-label` that describes the action.
+
 ## Try it yourself
 
 1. Toggle the theme and inspect the `<html>` element's `data-theme` attribute.
-2. Reload the page and check that the selected theme is restored.
-3. In browser dev tools, inspect `--bg` on the root element in both themes.
+2. Check that the theme button has a useful accessible name in the accessibility tree.
+3. Reload the page and check that the selected theme is restored.
 
 ## Quick Reference
 
@@ -78,6 +86,7 @@ window.localStorage.setItem("askme-theme", "dark");
 - CSS variables allow values to change by theme without rewriting components.
 - React state drives the active theme; `localStorage` persists it in this browser.
 - The saved value is validated before it is used.
+- Icon-only controls still need accessible names.
 
 ## Links to related files
 

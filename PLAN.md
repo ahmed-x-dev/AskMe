@@ -7,13 +7,13 @@
 ```yaml
 current_phase: P2
 current_task: P2-01
-last_updated: 2026-10-11
+last_updated: 2026-10-12
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: not_started }
   P3: { name: "Google Drive sync", status: not_started }
   P4: { name: "Mobile (Capacitor) and store release", status: not_started }
-  P5: { name: "Polish and extras", status: not_started }
+  P5: { name: "Polish and extras", status: in_progress }
 ```
 
 Phase status values: `not_started`, `in_progress`, `done`, `blocked`.
@@ -281,6 +281,18 @@ learn/             explanation files for everything we add (see AGENTS.md)
   - Learn: `learn/34-localization-and-language.md`.
 - [ ] **P5-06** Desktop wrapper with Tauri, only if needed.
   - Learn: `learn/35-tauri-desktop-wrapper.md`.
+- [x] **P5-07** Improve the front-page theme control and responsive layout; add a set-import action.
+  - Done when: the theme switch is icon-only and accessible, the library works on mobile and desktop, and valid/invalid JSON imports provide visible feedback.
+  - Learn: `learn/02-tailwind-and-themes.md`, `learn/09-json-import-export.md`, `learn/11-responsive-layout.md`.
+- [x] **P5-08** Replace set-detail whole-set import with additive question import; remove the All sets shortcut.
+  - Done when: the set screen no longer shows All sets or Import JSON, imported Question JSON is validated and appended to the active set without overwriting its metadata/questions, and import errors are visible.
+  - Learn: `learn/09-json-import-export.md`.
+- [x] **P5-09** Replace the inner-page brand header with a back-to-library button.
+  - Done when: the front page retains its AskMe logo, and every inner route has an accessible back link to the library with the theme control preserved.
+  - Learn: `learn/11-responsive-layout.md`.
+- [x] **P5-10** Make library set cards open on click and replace rename/delete labels with icon buttons.
+  - Done when: the card navigates to its set, separate open button is gone, and rename/delete remain accessible 44px icon actions.
+  - Learn: `learn/05-routing-and-sets.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -317,6 +329,10 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-12: Made the entire set card a link, removed its separate Open button, and replaced Rename/Delete text with accessible 44px icon buttons. Verified card navigation, delete action, and 44px controls at 360px. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
+- 2026-10-12: Kept the AskMe brand in the library header and replaced it on inner routes with a touch-sized “Back to sets” link; the theme toggle remains in place. Verified on a 360px viewport and confirmed the link returns to the library. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
+- 2026-10-12: Removed the set-detail “All sets” shortcut and replaced whole-set import there with question import. It accepts a Question, Question array, or set export, validates the questions, assigns fresh IDs, and appends them without replacing the destination set; failures and success are visible. `typecheck`, `lint`, all 13 tests, `build`, and a browser single-question import check pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
+- 2026-10-12: Made the theme switch icon-only and accessible, improved library layouts on phone and desktop, and added front-page JSON import with visible success/error feedback. `typecheck`, `lint`, `test` (9 tests), `build`, browser import checks, and 360px/1440px overflow checks pass. `npm outdated` reports newer majors for @babel/core (8), @types/node (26), and TypeScript (7); none upgraded. Next: continue the requested UI/UX iterations; P2-01 remains the next roadmap task.
 - 2026-10-11: Refined the library, set details, question editor, quiz, and shared header using the existing design tokens; fixed the library's desktop two-column width and improved touch targets and progress feedback. No dependencies or theme tokens added. Next: P2-01 (secure storage and Gemini API key settings).
 - 2026-10-11: Phase 1 complete. Added question editing with validation, quiz mode shuffling and scoring, JSON import/export with schema checks, a service-worker-based offline shell, and a responsive layout; the phase 1 lessons and recap are all indexed and present. `typecheck`, `lint`, `test`, and `build` all pass. Next: P2-01 (secure storage and Gemini API key settings).
 - 2026-10-09: P1-05 complete. Installed React Router v7, defined the browser route tree, and added a set library screen with working create, rename, delete, and list actions that persist to IndexedDB and survive reloads. The app renders a set detail screen and a placeholder question editor route as required. `typecheck`, `lint`, `test`, and `build` all pass. Next: P1-06 (question editor).

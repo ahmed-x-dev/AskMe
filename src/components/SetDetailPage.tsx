@@ -1,13 +1,23 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router'
 
-import { exportSetAsJson, getSet, importSetFromJson, softDeleteQuestion } from '../data/repository'
+import {
+  exportSetAsJson,
+  importQuestionsFromJson,
+  softDeleteQuestion,
+} from '../data/repository'
 import type { QuizSet } from '../types/quiz'
 
 export function SetDetailPage() {
   const navigate = useNavigate()
   const initialSet = useLoaderData() as QuizSet | null
   const [set, setSet] = useState<QuizSet | null>(initialSet)
+  const [importFeedback, setImportFeedback] = useState<{
+    kind: 'error' | 'success'
+    message: string
+  } | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const importInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
     if (!set) {
@@ -29,30 +39,34 @@ export function SetDetailPage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !set) {
+  const handleImport = async (file: File) => {
+    if (!set) {
       return
     }
 
+    setIsImporting(true)
+    setImportFeedback(null)
+
     try {
-      const rawJson = await file.text()
-      const importedSet = await importSetFromJson(rawJson)
+      const updatedSet = await importQuestionsFromJson(set.id, await file.text())
 
-      if (!importedSet) {
-        return
+      if (!updatedSet) {
+        throw new Error('This set is no longer available.')
       }
 
-      const saved = await getSet(set.id)
-      if (saved) {
-        setSet(saved)
-      } else {
-        setSet(importedSet)
-      }
+      setSet(updatedSet)
+      const importedCount = updatedSet.questions.length - set.questions.length
+      setImportFeedback({
+        kind: 'success',
+        message: `Imported ${importedCount} question${importedCount === 1 ? '' : 's'}.`,
+      })
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'The imported file is invalid.')
+      setImportFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'The questions could not be imported.',
+      })
     } finally {
-      event.target.value = ''
+      setIsImporting(false)
     }
   }
 
@@ -103,20 +117,14 @@ export function SetDetailPage() {
         <h2 className="mt-3 break-words text-[22px] font-medium leading-[28px] text-fg">
           {set.title}
         </h2>
-        <div className="mt-5 flex gap-3">
+        <div className="mt-5">
           <button
             type="button"
             onClick={() => navigate(`/set/${set.id}/quiz?mode=random`)}
-            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className="min-h-12 w-full rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
             Start quiz
           </button>
-          <Link
-            to="/"
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
-          >
-            All sets
-          </Link>
         </div>
 
         <div className="mt-4 flex gap-2">
@@ -127,11 +135,40 @@ export function SetDetailPage() {
           >
             Export JSON
           </button>
-          <label className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card">
-            <input type="file" accept="application/json" className="hidden" onChange={(event) => void handleImport(event)} />
-            Import JSON
-          </label>
+          <button
+            type="button"
+            onClick={() => importInputRef.current?.click()}
+            disabled={isImporting}
+            className="min-h-12 flex-1 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+          >
+            Import questions
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            aria-label="Choose a questions JSON file"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0]
+              event.currentTarget.value = ''
+
+              if (file) {
+                void handleImport(file)
+              }
+            }}
+          />
         </div>
+        {importFeedback ? (
+          <p
+            role={importFeedback.kind === 'error' ? 'alert' : 'status'}
+            className={`mt-3 text-[13px] leading-[18px] ${
+              importFeedback.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
+            }`}
+          >
+            {importFeedback.message}
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-2xl bg-card p-4">

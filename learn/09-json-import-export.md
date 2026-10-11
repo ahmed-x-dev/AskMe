@@ -22,7 +22,9 @@ if (parsed.schemaVersion !== CURRENT_SCHEMA_VERSION) {
 }
 ```
 
-The repository then persists the imported set through `replaceSet` and `importSetFromJson`, ensuring only valid content is written.
+The repository persists the validated set through `importSetFromJson`, ensuring only valid content is written.
+
+On the library page, **Import set** accepts a full set export. On a set page, **Import questions** accepts one `Question`, an array of questions, or a full set export. It validates the question fields and appends copies to the open set; it does not replace the destination set or its existing questions. New question IDs prevent collisions when a file is imported more than once. Both flows show success or validation feedback.
 
 ## ❌ / ✅ examples
 
@@ -30,18 +32,25 @@ The repository then persists the imported set through `replaceSet` and `importSe
 - ✅ Rejecting it with a clear validation error.
 - ❌ Saving a set without an `id` or `questions` array.
 - ✅ Blocking unsafe input before it hits Dexie.
+- ❌ Hiding a parse failure after the user selects a file.
+- ✅ Showing the validation message next to the library actions.
+- ❌ Replacing a destination set when the goal is to add questions.
+- ✅ Extracting and validating questions, then appending them to the selected set.
 
 ## Try it yourself
 
-1. Export a set from the app and open the JSON file.
+1. Export a set from the app and import the JSON file from the library page.
 2. Change the `schemaVersion` to a wrong value and re-import it.
-3. Confirm the app throws the validation message instead of crashing.
+3. On a set page, import a single Question object or a full set export; confirm only questions are appended.
 
 ## Quick Reference
 
 - `schemaVersion` tells the app which data format the file is built for.
 - `parseSetJson` validates and normalizes raw JSON.
 - `exportSetJson` produces a portable, human-readable file.
+- The library uses `importSetFromJson` to validate and save a selected file.
+- `parseQuestionsJson` validates a Question, a question array, or questions inside a set export.
+- `importQuestionsFromJson` gives imported questions fresh IDs and appends them to an existing set.
 
 ## Key Takeaways
 

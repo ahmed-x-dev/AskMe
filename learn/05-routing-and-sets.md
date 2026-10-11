@@ -42,6 +42,8 @@ const handleCreateSet = async () => {
 
 That pattern is important: the app does not keep a second copy of the same list in a separate state store. It re-reads from the repository after each write, so the UI matches the actual IndexedDB state.
 
+Each set card uses a full-card `Link` to open its set. Rename and delete controls sit above that link and retain their own button semantics, accessible names, and 44px tap targets. This lets the card act as one large navigation target without nesting buttons inside a link.
+
 ## ❌ / ✅ examples
 
 ❌ Bad: creating a set in the UI but never refreshing the list, so the card disappears after reload.
@@ -50,11 +52,15 @@ That pattern is important: the app does not keep a second copy of the same list 
 ❌ Bad: put restore logic in multiple screens.
 ✅ Good: route to a detail view and use the same repository fetch path whenever the page loads.
 
+❌ Bad: nest a delete button inside a card link; clicking delete could also navigate.
+✅ Good: make the card link a sibling layer and keep action buttons above it.
+
 ## Try it yourself
 
 1. Open the app and create a couple of sets.
 2. Rename one of them and reload the page.
 3. Delete a set and confirm it is hidden from the set list after the reload.
+4. Click a card's title area to open it; use the separate icon buttons to rename or delete.
 
 ## Quick Reference
 
@@ -63,6 +69,7 @@ That pattern is important: the app does not keep a second copy of the same list 
 - `useNavigate()` pushes a new route after a successful action.
 - `listSets()` is the read path for the set library.
 - `updateSetTitle()` and `softDeleteSet()` are the write paths for rename and delete.
+- Each card link opens its set; icon actions remain separate accessible buttons.
 
 ## Key Takeaways
 
