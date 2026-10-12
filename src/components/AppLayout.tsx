@@ -43,7 +43,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 <span className="block text-[16px] font-medium leading-6 text-fg">
                   AskMe
                 </span>
-                <span className="block text-[13px] leading-[18px] text-muted">
+                <span className="block text-[13px] leading-4.5 text-muted">
                   Your revision space
                 </span>
               </span>
