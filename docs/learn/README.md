@@ -1,4 +1,4 @@
-# Learn
+# Documentation and learning guides
 
 Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 

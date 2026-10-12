@@ -57,5 +57,5 @@ The validation step makes sure the score and feedback are in a safe range before
 
 ## Links to related files
 
-- [src/features/ai.ts](../src/features/ai.ts)
-- [src/components/QuizPage.tsx](../src/components/QuizPage.tsx)
+- [src/features/ai.ts](../../src/features/ai.ts)
+- [src/components/QuizPage.tsx](../../src/components/QuizPage.tsx)

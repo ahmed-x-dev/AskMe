@@ -101,6 +101,6 @@ This keeps each provider's key isolated and makes the rest of the app provider-a
 
 ## Links to related files
 
-- [src/platform/secureStorage.ts](../src/platform/secureStorage.ts)
-- [src/features/ai.ts](../src/features/ai.ts)
-- [src/components/SettingsPage.tsx](../src/components/SettingsPage.tsx)
+- [src/platform/secureStorage.ts](../../src/platform/secureStorage.ts)
+- [src/features/ai.ts](../../src/features/ai.ts)
+- [src/components/SettingsPage.tsx](../../src/components/SettingsPage.tsx)

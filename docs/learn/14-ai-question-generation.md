@@ -61,5 +61,5 @@ The preview is inserted into the set by `addQuestion`, which uses the same repos
 
 ## Links to related files
 
-- [src/features/ai.ts](../src/features/ai.ts)
-- [src/components/SetDetailPage.tsx](../src/components/SetDetailPage.tsx)
+- [src/features/ai.ts](../../src/features/ai.ts)
+- [src/components/SetDetailPage.tsx](../../src/components/SetDetailPage.tsx)

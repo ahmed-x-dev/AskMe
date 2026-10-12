@@ -13,7 +13,7 @@ A responsive revision quiz app (MCQ and essay questions) built with Next.js App 
 3. If a task is `[~]` (in progress), continue it. Do not start another task.
 4. Read the **Decisions Log** so you do not reverse a decision without cause.
 5. Run `npm outdated` and note any new major versions in the Changelog. Do not upgrade without asking.
-6. Read `learn/README.md` so you know which explanation files already exist.
+6. Read `docs/learn/README.md` so you know which explanation files already exist.
 
 ## How to track progress
 
@@ -67,23 +67,23 @@ Your training data is older than the libraries in this repo. Do not rely on memo
 - Treat deprecation warnings, ESLint warnings and TypeScript deprecation hints as bugs. Fix them before marking a task `[x]`.
 - If you are unsure whether an API still exists, verify it, and note the uncertainty in the Changelog.
 
-## Learning folder (`learn/`)
+## Learning documentation (`docs/learn/`)
 
-The owner is building this project to learn. Alongside the code, maintain a folder called `learn/` at the project root that explains everything we introduce, step by step.
+The owner is building this project to learn. Alongside the code, maintain the learning guides in `docs/learn/`. Keep general project documentation directly in `docs/`. Explain everything we introduce, step by step.
 
 ### Core rule
 Every time we add or use something new (a library, a tool, a concept, a pattern, a piece of logic), create or update an explanation file for it BEFORE or right as we use it. Nothing new goes into the code without a matching explanation.
 
 ### Folder structure
 ```
-learn/
-  README.md            <- index: list of all files, in order, with one-line summaries
+docs/learn/
+  README.md            <- learning index: list of lessons, in order, with one-line summaries
   01-<topic>.md
   02-<topic>.md
   ...
   phase-1-recap.md     <- one per finished phase
 ```
-- Number files in the order things appear in the project: 01, 02, 03... No reserved ranges per phase, because phases need different numbers of files. Group the index in `learn/README.md` by phase.
+- Number files in the order things appear in the project: 01, 02, 03... No reserved ranges per phase, because phases need different numbers of files. Group the index in `docs/learn/README.md` by phase.
 - Never renumber existing files. Add new ones at the end.
 - Work done before this folder existed (P1-01 to P1-04) is backfilled first, as task P1-12. Do not start any other task until the backfill is written.
 
@@ -117,7 +117,7 @@ learn/
 - When the owner makes a decision, explain the tradeoff in the matching learn file.
 - After each step, tell the owner which learn file(s) you created or updated and what to read before moving on.
 - If something the owner wrote works but is not ideal, say so and explain why in the learn file rather than silently fixing it.
-- At the end of each phase, add `learn/phase-N-recap.md` summarizing what was learned, plus 5 quiz-style questions with the answers hidden at the bottom. A phase is not `done` until its recap exists.
+- At the end of each phase, add `docs/learn/phase-N-recap.md` summarizing what was learned, plus 5 quiz-style questions with the answers hidden at the bottom. A phase is not `done` until its recap exists.
 
 ## Commands
 
@@ -131,7 +131,7 @@ npm run typecheck  # tsc --noEmit
 npm run test       # unit tests
 ```
 
-Before marking a task `[x]`, run `typecheck`, `lint` and `test` (when they exist), make sure they pass, and make sure the matching `learn/` file(s) exist.
+Before marking a task `[x]`, run `typecheck`, `lint` and `test` (when they exist), make sure they pass, and make sure the matching `docs/learn/` file(s) exist.
 
 ## Do not
 
@@ -140,4 +140,4 @@ Before marking a task `[x]`, run `typecheck`, `lint` and `test` (when they exist
 - Do not hard-delete synced data.
 - Do not change the JSON set format without bumping a `schemaVersion` and adding a migration.
 - Do not rewrite or delete `PLAN.md` sections to hide unfinished work.
-- Do not put a new library, concept, pattern or config decision into the code without a matching file in `learn/`.
+- Do not put a new library, concept, pattern or config decision into the code without a matching guide in `docs/learn/`.

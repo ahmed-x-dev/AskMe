@@ -69,5 +69,5 @@ The key is sent in a request header rather than the URL to reduce exposure in UR
 
 ## Links to related files
 
-- [src/features/ai.ts](../src/features/ai.ts)
-- [src/components/SettingsPage.tsx](../src/components/SettingsPage.tsx)
+- [src/features/ai.ts](../../src/features/ai.ts)
+- [src/components/SettingsPage.tsx](../../src/components/SettingsPage.tsx)

@@ -78,6 +78,6 @@ npm run test
 ## Links to related files
 
 - [02 — Tailwind and themes](./02-tailwind-and-themes.md)
-- Project scripts: [package.json](../package.json)
-- Current entry route: [app/page.tsx](../app/page.tsx)
+- Project scripts: [package.json](../../package.json)
+- Current entry route: [app/page.tsx](../../app/page.tsx)
 - Current framework guide: [18 — Next.js App Router](./18-nextjs-app-router.md)

@@ -97,6 +97,6 @@ window.localStorage.setItem("askme-theme", "dark");
 ## Links to related files
 
 - [01 — Vite, React, and TypeScript](./01-vite-react-typescript.md)
-- Design tokens and visual rules: [DESIGN.md](../DESIGN.md)
-- Theme component: [src/components/AppShell.tsx](../src/components/AppShell.tsx)
-- CSS variables: [app/globals.css](../app/globals.css)
+- Design tokens and visual rules: [DESIGN.md](../../DESIGN.md)
+- Theme component: [src/components/AppShell.tsx](../../src/components/AppShell.tsx)
+- CSS variables: [app/globals.css](../../app/globals.css)

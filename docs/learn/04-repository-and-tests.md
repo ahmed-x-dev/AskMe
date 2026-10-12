@@ -83,6 +83,6 @@ if (!set) return
 ## Links to related files
 
 - [03 — Domain types and Dexie](./03-domain-types-and-dexie.md)
-- Repository implementation: [src/data/repository.ts](../src/data/repository.ts)
-- Tests: [tests/data/repository.test.ts](../tests/data/repository.test.ts)
-- Test setup: [tests/setup.ts](../tests/setup.ts)
+- Repository implementation: [src/data/repository.ts](../../src/data/repository.ts)
+- Tests: [tests/data/repository.test.ts](../../tests/data/repository.test.ts)
+- Test setup: [tests/setup.ts](../../tests/setup.ts)

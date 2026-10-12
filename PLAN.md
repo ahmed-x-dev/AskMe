@@ -34,7 +34,7 @@ A simple, fast revision app for short study sessions on any device. The user bui
 - No backend. Local storage plus sync through the user's own Google Drive.
 - Simple UI with two themes only: light (white) and dark (black).
 - The user owns their data. Each set is a plain JSON file that can be exported and imported.
-- The project is also a learning exercise: everything new gets an explanation file in `learn/` (rules in `AGENTS.md`).
+- The project is also a learning exercise: everything new gets an explanation file in `docs/` (rules in `AGENTS.md`).
 
 ## 2. Requirements
 
@@ -148,7 +148,8 @@ src/
   types/           shared domain models
 tests/              tests grouped by source area
 public/             manifest, icons, and service worker
-learn/             explanation files for everything we add (see AGENTS.md)
+docs/              project documentation
+  learn/           learning guides and phase recaps (see AGENTS.md)
 ```
 
 This tree describes the current app. Add future sync or desktop-platform modules when those roadmap tasks are implemented.
@@ -163,41 +164,41 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 - [x] **P1-01** Scaffold Vite + React + TypeScript project; add ESLint, Vitest, and the scripts listed in `AGENTS.md`.
   - Done when: `dev`, `build`, `lint`, `typecheck`, `test` all run successfully.
-  - Learn: `learn/01-vite-react-typescript.md` (backfill).
+  - Learn: `docs/learn/01-vite-react-typescript.md` (backfill).
 - [x] **P1-02** Add Tailwind and light/dark theming with CSS variables; theme toggle persists the choice.
   - Done when: both themes render correctly and the choice survives a reload.
-  - Learn: `learn/02-tailwind-and-themes.md` (backfill).
+  - Learn: `docs/learn/02-tailwind-and-themes.md` (backfill).
 - [x] **P1-03** Define TypeScript types (`QuizSet`, `Question`, `McqQuestion`, `EssayQuestion`) and the Dexie schema.
   - Done when: types compile and the DB opens in the browser.
-  - Learn: `learn/03-domain-types-and-dexie.md` (backfill).
+  - Learn: `docs/learn/03-domain-types-and-dexie.md` (backfill).
 - [x] **P1-04** Implement `repository.ts` (list, create, update, soft delete for sets and questions) with unit tests.
   - Done when: tests cover create, update, soft delete, and listing excludes deleted rows.
-  - Learn: `learn/04-repository-and-tests.md` (backfill).
+  - Learn: `docs/learn/04-repository-and-tests.md` (backfill).
 - [x] **P1-05** Install React Router and define the routes in `src/routes.tsx` (see DESIGN.md section 6); Sets screen: list, create, rename, delete sets. Start only after reviewing the P1-01 to P1-04 learning-file backfill.
   - Done when: routing works with placeholder screens, and all four set actions work and persist after reload.
-  - Learn: `learn/05-routing-and-sets.md`.
+  - Learn: `docs/learn/05-routing-and-sets.md`.
 - [x] **P1-06** Question editor: add, edit, delete MCQ and essay questions in a set.
   - Done when: both types can be created and edited, and invalid input is rejected.
-  - Learn: `learn/06-question-editor.md`.
+  - Learn: `docs/learn/06-question-editor.md`.
 - [x] **P1-07** Quiz engine: build a question list for random, MCQ-only and essay-only modes; Fisher-Yates shuffle; unit tests.
   - Done when: each mode returns only the right question types and tests pass.
-  - Learn: `learn/07-quiz-modes-and-shuffling.md`.
+  - Learn: `docs/learn/07-quiz-modes-and-shuffling.md`.
 - [x] **P1-08** Quiz screens: MCQ answering with instant correct/incorrect feedback; essay answering with a text box (grading stub for now); end-of-quiz score.
   - Done when: a full quiz can be completed in each mode.
-  - Learn: `learn/08-quiz-flow-and-scoring.md`.
+  - Learn: `docs/learn/08-quiz-flow-and-scoring.md`.
 - [x] **P1-09** JSON import and export per set, with `schemaVersion` validation.
   - Done when: an exported set re-imports without loss, and bad files show a clear error.
-  - Learn: `learn/09-json-import-export.md`.
+  - Learn: `docs/learn/09-json-import-export.md`.
 - [x] **P1-10** PWA setup: manifest, icons, service worker for offline use.
   - Done when: the app installs and works offline after the first load.
-  - Learn: `learn/10-pwa-and-offline.md`.
+  - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [x] **P1-11** Make the layout mobile-first and responsive (small screens first, safe areas, touch-sized controls).
   - Done when: all screens are usable at 360px width and on desktop.
-  - Learn: `learn/11-responsive-layout.md`.
-- [x] **P1-12** Final learning check: verify that each P1-01 to P1-11 task has its matching lesson, `learn/README.md` indexes them in order, and the Phase 1 recap is complete.
-  - Done when: `learn/01-...md` through `learn/11-...md` all exist and are indexed, and `learn/phase-1-recap.md` summarizes Phase 1 with five quiz questions and answers hidden at the bottom.
+  - Learn: `docs/learn/11-responsive-layout.md`.
+- [x] **P1-12** Final learning check: verify that each P1-01 to P1-11 task has its matching lesson, `docs/learn/README.md` indexes them in order, and the Phase 1 recap is complete.
+  - Done when: `docs/learn/01-...md` through `docs/learn/11-...md` all exist and are indexed, and `docs/learn/phase-1-recap.md` summarizes Phase 1 with five quiz questions and answers hidden at the bottom.
 
-**Exit criteria:** every P1 task is `[x]`; `typecheck`, `lint`, `test` and `build` pass; the app works offline in the browser; `learn/phase-1-recap.md` exists.
+**Exit criteria:** every P1 task is `[x]`; `typecheck`, `lint`, `test` and `build` pass; the app works offline in the browser; `docs/learn/phase-1-recap.md` exists.
 
 ### Phase P2: AI features
 
@@ -205,21 +206,21 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 - [x] **P2-01** `platform/secureStorage` abstraction (localStorage on web for now) and a settings screen to enter, replace and remove the Gemini key.
   - Done when: the key is saved, hidden in the UI by default, and never stored in the DB.
-  - Learn: `learn/12-secure-storage-and-api-keys.md`.
+  - Learn: `docs/learn/12-secure-storage-and-api-keys.md`.
 - [x] **P2-02** Gemini client with structured JSON output, timeouts and clear error handling (bad key, rate limit, offline).
   - Done when: errors show readable messages and the app never crashes on API failure.
-  - Learn: `learn/13-gemini-client-and-errors.md`.
+  - Learn: `docs/learn/13-gemini-client-and-errors.md`.
 - [x] **P2-03** Question generation: pick type and count, preview results, "Add to set" per question.
   - Done when: a generated MCQ or essay question can be added to a set and appears in quizzes.
-  - Learn: `learn/14-ai-question-generation.md`.
+  - Learn: `docs/learn/14-ai-question-generation.md`.
 - [x] **P2-04** Essay grading: send question, reference answer and user answer; return `{score, feedback, missingPoints}`; show in the quiz screen.
   - Done when: grading works for essays with and without a reference answer, and results display clearly.
-  - Learn: `learn/15-ai-essay-grading.md`.
+  - Learn: `docs/learn/15-ai-essay-grading.md`.
 - [x] **P2-05** Validate all AI responses against the schema before use; reject malformed output.
   - Done when: malformed responses are handled with a retry or a clear message.
-  - Learn: `learn/16-validating-ai-responses.md`.
+  - Learn: `docs/learn/16-validating-ai-responses.md`.
 
-**Exit criteria:** every P2 task is `[x]`; provider keys stay out of Dexie and sync data (browser `localStorage` is not encrypted); checks pass; `learn/phase-2-recap.md` exists.
+**Exit criteria:** every P2 task is `[x]`; provider keys stay out of Dexie and sync data (browser `localStorage` is not encrypted); checks pass; `docs/learn/phase-2-recap.md` exists.
 
 ### Phase P3: Google Drive sync
 
@@ -227,27 +228,27 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 - [x] **P3-07** Migrate the web app from Vite and React Router to Next.js App Router without moving Dexie data or AI keys off the browser.
   - Done when: all existing routes and PWA behavior work under Next.js, checks pass, and Vite/React Router are no longer the app runtime.
-  - Learn: `learn/18-nextjs-app-router.md`.
+  - Learn: `docs/learn/18-nextjs-app-router.md`.
 - [ ] **P3-01** Merge function (per-question newest `updatedAt` wins, tombstones respected) with thorough unit tests.
   - Done when: tests cover add, edit, delete, and concurrent edits from two devices.
-  - Learn: `learn/19-merging-synced-data.md`.
+  - Learn: `docs/learn/19-merging-synced-data.md`.
 - [ ] **P3-02** Google OAuth (PKCE) with the `drive.appdata` scope; sign in and sign out.
   - Done when: the user can sign in on web and the token is stored securely.
-  - Learn: `learn/20-google-oauth-and-pkce.md`.
+  - Learn: `docs/learn/20-google-oauth-and-pkce.md`.
 - [ ] **P3-03** `SyncProvider` implementation for Drive `appDataFolder` (list, get, put with revision check).
   - Done when: files can be created, read, and updated, and stale writes are rejected.
-  - Learn: `learn/21-google-drive-sync-provider.md`.
+  - Learn: `docs/learn/21-google-drive-sync-provider.md`.
 - [ ] **P3-04** Sync engine: pull, merge, save, push, retry on conflict; first sync on a new device pulls before pushing.
   - Done when: two browsers stay consistent after edits and deletes on either one.
-  - Learn: `learn/22-sync-engine-and-conflicts.md`.
+  - Learn: `docs/learn/22-sync-engine-and-conflicts.md`.
 - [ ] **P3-05** Sync triggers (start, focus, debounced after edit) and a manual "Sync now" button with status and error display.
   - Done when: status shows idle, syncing, error, and last-synced time.
-  - Learn: `learn/23-sync-triggers-and-status.md`.
+  - Learn: `docs/learn/23-sync-triggers-and-status.md`.
 - [ ] **P3-06** Tombstone purge for records older than 30 days.
   - Done when: old tombstones are removed locally and remotely without resurrecting data.
-  - Learn: `learn/24-tombstone-retention.md`.
+  - Learn: `docs/learn/24-tombstone-retention.md`.
 
-**Exit criteria:** every P3 task is `[x]`; manual test with two devices or browsers passes (add, edit, delete, offline edit, reconnect); `learn/phase-3-recap.md` exists.
+**Exit criteria:** every P3 task is `[x]`; manual test with two devices or browsers passes (add, edit, delete, offline edit, reconnect); `docs/learn/phase-3-recap.md` exists.
 
 ### Phase P4: Desktop and mobile PWA
 
@@ -269,47 +270,47 @@ This tree describes the current app. Add future sync or desktop-platform modules
   - Not in current scope: mobile distribution is through the PWA.
 - [ ] **P4-08** Package the stable web app for desktop; choose a desktop wrapper only if browser installation is insufficient.
   - Done when: the desktop delivery approach is documented and the app launches with its routes, local data, and offline behavior working.
-  - Learn: `learn/37-tauri-desktop-wrapper.md`.
+  - Learn: `docs/learn/37-tauri-desktop-wrapper.md`.
 - [ ] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
   - Done when: users can install/open the PWA, use core quiz flows, retain local data, and load the app offline after a successful visit.
-  - Learn: `learn/10-pwa-and-offline.md`.
+  - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [ ] **P4-10** Revisit desktop and mobile delivery after testing real devices and browsers.
   - Done when: supported platforms, known PWA limitations, and any future native-app need are documented.
-  - Learn: `learn/10-pwa-and-offline.md`, `learn/37-tauri-desktop-wrapper.md`.
+  - Learn: `docs/learn/10-pwa-and-offline.md`, `docs/learn/37-tauri-desktop-wrapper.md`.
 
-**Exit criteria:** P4-08 to P4-10 are `[x]`; desktop delivery and mobile PWA behavior are verified; `learn/phase-4-recap.md` exists.
+**Exit criteria:** P4-08 to P4-10 are `[x]`; desktop delivery and mobile PWA behavior are verified; `docs/learn/phase-4-recap.md` exists.
 
 ### Phase P5: Polish and extras
 
 **Goal:** improvements after the core is stable. Pick in any order.
 
 - [ ] **P5-01** Images in questions (stored as hashed files, synced alongside sets).
-  - Learn: `learn/32-question-images-and-file-sync.md`.
+  - Learn: `docs/learn/32-question-images-and-file-sync.md`.
 - [ ] **P5-02** Spaced repetition: track results and resurface wrong answers.
-  - Learn: `learn/33-spaced-repetition.md`.
+  - Learn: `docs/learn/33-spaced-repetition.md`.
 - [ ] **P5-03** Daily reminders and streak counter.
-  - Learn: `learn/34-reminders-and-streaks.md`.
+  - Learn: `docs/learn/34-reminders-and-streaks.md`.
 - [ ] **P5-04** Generate question sets from pasted notes or a photo.
-  - Learn: `learn/35-generating-from-notes-and-photos.md`.
+  - Learn: `docs/learn/35-generating-from-notes-and-photos.md`.
 - [ ] **P5-05** Full English UI and content pass (and optional i18n for Arabic).
-  - Learn: `learn/36-localization-and-language.md`.
+  - Learn: `docs/learn/36-localization-and-language.md`.
 - [!] **P5-06** Desktop wrapper with Tauri, only if needed.
   - Moved to P4-08 to match the web-first, desktop-second delivery order.
 - [x] **P5-07** Improve the front-page theme control and responsive layout; add a set-import action.
   - Done when: the theme switch is icon-only and accessible, the library works on mobile and desktop, and valid/invalid JSON imports provide visible feedback.
-  - Learn: `learn/02-tailwind-and-themes.md`, `learn/09-json-import-export.md`, `learn/11-responsive-layout.md`.
+  - Learn: `docs/learn/02-tailwind-and-themes.md`, `docs/learn/09-json-import-export.md`, `docs/learn/11-responsive-layout.md`.
 - [x] **P5-08** Replace set-detail whole-set import with additive question import; remove the All sets shortcut.
   - Done when: the set screen no longer shows All sets or Import JSON, imported Question JSON is validated and appended to the active set without overwriting its metadata/questions, and import errors are visible.
-  - Learn: `learn/09-json-import-export.md`.
+  - Learn: `docs/learn/09-json-import-export.md`.
 - [x] **P5-09** Replace the inner-page brand header with a back-to-library button.
   - Done when: the front page retains its AskMe logo, and every inner route has an accessible back link to the library with the theme control preserved.
-  - Learn: `learn/11-responsive-layout.md`.
+  - Learn: `docs/learn/11-responsive-layout.md`.
 - [x] **P5-10** Make library set cards open on click and replace rename/delete labels with icon buttons.
   - Done when: the card navigates to its set, separate open button is gone, and rename/delete remain accessible 44px icon actions.
-  - Learn: `learn/05-routing-and-sets.md`.
+  - Learn: `docs/learn/05-routing-and-sets.md`.
 - [x] **P5-11** Add reference-answer reveal and self-assessment controls for essay quiz questions.
   - Done when: essay questions reveal their optional reference answer, let users mark themselves right or wrong, and count that mark in the final score without changing MCQ scoring.
-  - Learn: `learn/08-quiz-flow-and-scoring.md`.
+  - Learn: `docs/learn/08-quiz-flow-and-scoring.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -334,7 +335,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
 | 2026-10-07 | Keep shared domain types under `src/types/`                  | Groups reusable models by domain, separate from persistence implementation   |
 | 2026-10-07 | Document API contracts with concise JSDoc                    | Clarifies non-obvious behavior without duplicating self-explanatory code     |
-| 2026-10-07 | Maintain a `learn/` folder; owner writes code, agent reviews | The project is also a learning exercise                                      |
+| 2026-10-07 | Maintain learning guides in `docs/`; owner writes code, agent reviews | The project is also a learning exercise                              |
 
 ## 9. Open Questions
 
@@ -348,6 +349,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-12: Moved the learning guides into `docs/learn/`, preserving other docs directory contents and updating links and contributor guidance. Next: continue P3-01.
 - 2026-10-12: Set platform direction to web first, desktop second, and mobile through the installable PWA; marked native Capacitor and store-release tasks out of scope, promoted desktop packaging, and added mobile PWA verification. Next: continue P3-01, then desktop delivery before mobile PWA validation.
 - 2026-10-12: Migrated the app from Vite/React Router to Next.js 16 App Router, retaining client-side Dexie storage, browser-only AI keys, theme controls, and offline routes. Removed the stale Vite build output and corrected the documented project structure and route lesson. `typecheck`, `lint`, all 22 tests, production build, route/editor/quiz/settings smoke checks, 404 handling, and offline service-worker checks pass. `npm outdated` shows major updates available for `@types/node` and TypeScript plus a Vitest patch; none upgraded. Vite remains only as a transitive Vitest dependency, not a direct app dependency. Next: P3-01 (sync merge logic).
 - 2026-10-12: Investigated the reported white screen. The app renders in a fresh browser; found the service worker served cached HTML indefinitely and returned HTML for failed asset requests. Updated it to use network-first navigation with an offline shell fallback, cache successful same-origin assets only, and bumped the cache version so old caches are removed. Next: confirm whether the user's installed/deployed app recovers after its service worker updates.
@@ -365,7 +367,7 @@ Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 - 2026-10-07: Reviewed P1-01 to P1-05 and the P1-01 to P1-04 backfill; corrected the repository example and clarified that TypeScript types do not validate runtime data. `typecheck`, `lint`, `test` (5 tests), and `build` pass. P1-05 remains not started. Next: begin P1-05 only when requested.
 - 2026-10-07: Made `DESIGN.md` authoritative in `AGENTS.md` and aligned the current app theme tokens and placeholder screen with its colors, typography, card, button, focus, and motion rules. Updated the matching learn note. Next: keep using DESIGN.md for all UI work; P1-05 remains not started.
 - 2026-10-07: Added a matching sequential learn-file reference to every P2-P5 task as well as P1-01 to P1-11; phase recap files remain required by each phase's exit criteria. Backfilled and indexed P1-01 to P1-04; no later task started. Next: review the backfill before beginning P1-05.
-- 2026-10-07: Added the `learn/` folder rules to AGENTS.md and a new task P1-12 (set up `learn/`, backfill P1-01 to P1-04, propose Phase 1 files, write the P1-01 to P1-04 backfill first, before P1-05); phase exit criteria now require a recap file. Next: P1-12, then P1-05.
+- 2026-10-07: Added the `docs/` folder rules to AGENTS.md and a new task P1-12 (set up `docs/`, backfill P1-01 to P1-04, propose Phase 1 files, write the P1-01 to P1-04 backfill first, before P1-05); phase exit criteria now require a recap file. Next: P1-12, then P1-05.
 - 2026-10-07: Added concise JSDoc for exported data APIs and domain types, plus a comment policy in AGENTS.md. No runtime behavior changed. Next: P1-05 (routes and sets screen).
 - 2026-10-07: Moved tests into a root `tests/` tree mirroring `src/`, centralized IndexedDB setup, and added tests to TypeScript checking. `npm outdated` reports newer majors for Babel (8), `@types/node` (26), and TypeScript (7); left installed versions unchanged. Next: P1-05 (routes and sets screen).
 - 2026-10-07: Moved quiz domain models from `src/data/types.ts` into `src/types/quiz.ts` and documented the shared-types convention. Next: P1-05 (routes and sets screen).

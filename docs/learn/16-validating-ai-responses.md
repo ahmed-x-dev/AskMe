@@ -64,5 +64,5 @@ The same idea is used for `score`, `feedback`, and `missingPoints` in the gradin
 
 ## Links to related files
 
-- [src/features/ai.ts](../src/features/ai.ts)
-- [src/data/importExport.ts](../src/data/importExport.ts)
+- [src/features/ai.ts](../../src/features/ai.ts)
+- [src/data/importExport.ts](../../src/data/importExport.ts)

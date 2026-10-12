@@ -88,5 +88,5 @@ await db.open()
 
 - [02 — Tailwind and themes](./02-tailwind-and-themes.md)
 - [04 — Repository and tests](./04-repository-and-tests.md)
-- Domain model: [src/types/quiz.ts](../src/types/quiz.ts)
-- Database definition: [src/data/db.ts](../src/data/db.ts)
+- Domain model: [src/types/quiz.ts](../../src/types/quiz.ts)
+- Database definition: [src/data/db.ts](../../src/data/db.ts)

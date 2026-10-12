@@ -72,7 +72,7 @@ Each set card uses a full-card `Link` to open its set. Rename and delete control
 ## Links to related files
 
 - [04-repository-and-tests.md](./04-repository-and-tests.md)
-- [src/data/repository.ts](../src/data/repository.ts)
-- [app/page.tsx](../app/page.tsx)
-- [app/set/[id]/page.tsx](../app/set/[id]/page.tsx)
+- [src/data/repository.ts](../../src/data/repository.ts)
+- [app/page.tsx](../../app/page.tsx)
+- [app/set/[id]/page.tsx](../../app/set/[id]/page.tsx)
 - [18-nextjs-app-router.md](./18-nextjs-app-router.md)

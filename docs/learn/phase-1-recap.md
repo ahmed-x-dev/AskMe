@@ -34,7 +34,7 @@ Phase 1 built the core app in the browser: the set library, question editor, qui
 
 ## Related files
 
-- `learn/README.md`
+- `docs/learn/README.md`
 - `app/page.tsx`
 - `app/set/[id]/page.tsx`
 - `src/data/repository.ts`

@@ -58,5 +58,5 @@ The key is read only when a request for that provider is sent. The Settings scre
 
 ## Links to related files
 
-- [src/platform/secureStorage.ts](../src/platform/secureStorage.ts)
-- [src/components/SettingsPage.tsx](../src/components/SettingsPage.tsx)
+- [src/platform/secureStorage.ts](../../src/platform/secureStorage.ts)
+- [src/components/SettingsPage.tsx](../../src/components/SettingsPage.tsx)

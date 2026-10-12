@@ -100,8 +100,8 @@ The browser reads IndexedDB after mounting, and a failure is shown rather than h
 
 ## Links to related files
 
-- [PLAN.md](../PLAN.md)
-- [app/layout.tsx](../app/layout.tsx)
-- [app/page.tsx](../app/page.tsx)
-- [src/hooks/useQuizSet.ts](../src/hooks/useQuizSet.ts)
-- [learn/10-pwa-and-offline.md](./10-pwa-and-offline.md)
+- [PLAN.md](../../PLAN.md)
+- [app/layout.tsx](../../app/layout.tsx)
+- [app/page.tsx](../../app/page.tsx)
+- [src/hooks/useQuizSet.ts](../../src/hooks/useQuizSet.ts)
+- [10-pwa-and-offline.md](./10-pwa-and-offline.md)

@@ -25,5 +25,5 @@ Run a production build locally with `npm start` after `npm run build`.
 ## Project notes
 
 - Routes live in `app/`; interactive screens and browser storage stay in client components.
-- `PLAN.md` is the roadmap and `learn/README.md` indexes the project lessons.
+- `PLAN.md` is the roadmap and `docs/learn/README.md` indexes the project lessons.
 - The web app includes an install manifest and an offline service worker.
