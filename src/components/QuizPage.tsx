@@ -1,10 +1,13 @@
+'use client'
+
 import { useMemo, useRef, useState } from 'react'
-import { Link, useLoaderData, useParams, useSearchParams } from 'react-router'
+import Link from 'next/link'
 
 import { gradeEssayAnswer, describeError } from '../features/ai'
 import { buildQuizQueue, type QuizMode } from '../features/quiz'
 import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
-import type { Question, QuizSet } from '../types/quiz'
+import type { Question } from '../types/quiz'
+import { useQuizSet } from '../hooks/useQuizSet'
 
 function hasAnswered(
   question: Question,
@@ -30,11 +33,8 @@ function isCorrect(
   return essayResult === true
 }
 
-export function QuizPage() {
-  const { id } = useParams()
-  const [searchParams] = useSearchParams()
-  const set = useLoaderData() as QuizSet | null
-  const mode: QuizMode = (searchParams.get('mode') as QuizMode) ?? 'random'
+export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
+  const { set, isLoading, errorMessage } = useQuizSet(setId)
   const queue = useMemo(() => buildQuizQueue(set, mode), [set, mode])
 
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -124,12 +124,20 @@ export function QuizPage() {
   }
 
   if (!set) {
+    if (isLoading) {
+      return <p role="status" className="text-[16px] leading-6 text-muted">Loading quiz…</p>
+    }
+
     return (
       <section className="rounded-2xl bg-card p-5">
-        <h2 className="text-[18px] font-medium leading-7 text-fg">Set not found</h2>
-        <p className="mt-2 text-[16px] leading-6 text-muted">This quiz cannot be opened.</p>
+        <h2 className="text-[18px] font-medium leading-7 text-fg">
+          {errorMessage ? 'Could not load set' : 'Set not found'}
+        </h2>
+        <p role={errorMessage ? 'alert' : undefined} className="mt-2 text-[16px] leading-6 text-muted">
+          {errorMessage ?? 'This quiz cannot be opened.'}
+        </p>
         <Link
-          to="/"
+          href="/"
           className="mt-4 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Back to sets
@@ -146,7 +154,7 @@ export function QuizPage() {
           Add at least one active question before starting a quiz.
         </p>
         <Link
-          to={`/set/${set.id}`}
+          href={`/set/${set.id}`}
           className="mt-4 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Return to set
@@ -193,7 +201,7 @@ export function QuizPage() {
             Restart
           </button>
           <Link
-            to={`/set/${id ?? set.id}`}
+            href={`/set/${setId}`}
             className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
           >
             Back to set
@@ -430,7 +438,7 @@ export function QuizPage() {
           </button>
         ) : null}
         <Link
-          to={`/set/${set.id}`}
+          href={`/set/${set.id}`}
           className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
         >
           Exit

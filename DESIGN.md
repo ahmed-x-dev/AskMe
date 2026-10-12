@@ -7,6 +7,7 @@ Agents: use only the tokens in this file. Do not invent new colors, radii or fon
 
 - Fast, calm, readable. Short study sessions on a phone.
 - Mobile first. Desktop is the same layout centered in a column.
+- This describes the responsive layout, not release order: web first, desktop second, and mobile through the PWA.
 - Two themes only: light (white) and dark (black). No third theme.
 - Soft filled cards, no hairline borders, no shadows, no gradients.
 - One accent color (green). Meaning is never carried by color alone: correct and wrong states also show an icon.

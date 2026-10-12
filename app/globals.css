@@ -57,19 +57,14 @@
   --color-essay-fg: var(--essay-fg);
 }
 
-html {
-  background-color: var(--bg);
-  color: var(--fg);
-}
-
 html,
-body,
-#root {
+body {
   min-height: 100%;
 }
 
-#root {
-  width: 100%;
+html {
+  background-color: var(--bg);
+  color: var(--fg);
 }
 
 body {

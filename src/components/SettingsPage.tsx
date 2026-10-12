@@ -1,8 +1,11 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 import {
   clearAiApiKey,
+  DEFAULT_AI_PROVIDER,
   getAiApiKey,
   getAiProvider,
   saveAiApiKey,
@@ -16,10 +19,20 @@ const providerOptions: { value: AiProvider; label: string }[] = [
 ]
 
 export function SettingsPage() {
-  const [provider, setProvider] = useState<AiProvider>(getAiProvider())
-  const [apiKey, setApiKey] = useState(getAiApiKey(provider))
+  const [provider, setProvider] = useState<AiProvider>(DEFAULT_AI_PROVIDER)
+  const [apiKey, setApiKey] = useState('')
+  const [isLoaded, setIsLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const savedProvider = getAiProvider()
+      setProvider(savedProvider)
+      setApiKey(getAiApiKey(savedProvider))
+      setIsLoaded(true)
+    })
+  }, [])
 
   const handleProviderChange = (nextProvider: AiProvider) => {
     setProvider(nextProvider)
@@ -55,7 +68,7 @@ export function SettingsPage() {
           <h2 className="mt-1 text-[22px] font-medium leading-[28px] text-fg">AI key</h2>
         </div>
         <Link
-          to="/"
+          href="/"
           className="inline-flex min-h-11 items-center rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
         >
           Back to sets
@@ -72,6 +85,7 @@ export function SettingsPage() {
       <select
         id="ai-provider"
         value={provider}
+        disabled={!isLoaded}
         onChange={(event) => handleProviderChange(event.target.value as AiProvider)}
         className="mt-2 min-h-12 w-full rounded-2xl border border-transparent bg-bg px-3 text-[16px] leading-6 text-fg focus:border-accent"
       >
@@ -90,6 +104,7 @@ export function SettingsPage() {
           id="ai-key"
           type={isVisible ? 'text' : 'password'}
           value={apiKey}
+          disabled={!isLoaded}
           onChange={(event) => setApiKey(event.target.value)}
           placeholder={`Enter your ${provider === 'openai' ? 'OpenAI' : 'Gemini'} key`}
           className="min-h-12 flex-1 rounded-2xl border border-transparent bg-bg px-3 text-[16px] leading-6 text-fg placeholder:text-muted focus:border-accent"
@@ -107,6 +122,7 @@ export function SettingsPage() {
         <button
           type="button"
           onClick={handleSave}
+          disabled={!isLoaded}
           className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Save key
@@ -114,6 +130,7 @@ export function SettingsPage() {
         <button
           type="button"
           onClick={handleRemove}
+          disabled={!isLoaded}
           className="min-h-12 flex-1 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
         >
           Remove

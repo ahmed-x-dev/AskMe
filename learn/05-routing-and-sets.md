@@ -1,6 +1,6 @@
 # Routing and sets
 
-One-line goal: connect the app to browser routes and build the first real collection screen for creating, renaming, and deleting quiz sets.
+One-line goal: understand how Next.js App Router URLs connect to AskMe screens and how the library persists set changes.
 
 ## Why we need it
 
@@ -8,39 +8,30 @@ Before the app can do anything practical, it needs a way to move between screens
 
 ## The concept, simply
 
-A router maps URLs to screens. In this app, the root URL (`/`) shows the set library, and a detail URL like `/set/:id` shows one specific set. The repository stays responsible for persistence, while the routes only decide which screen the user is viewing and which repository action to call.
+A route maps a URL to a page. Next.js uses folders and `page.tsx` files under `app/`: `/` shows the set library, and `/set/[id]` shows one set. The route page reads its URL parameters and passes them to a screen component. The repository remains responsible for persistence.
 
 ## In our code
 
-The main route setup lives in `src/routes.tsx`.
+The library route lives in `app/page.tsx`:
 
 ```tsx
-export function createAppRouter(theme: Theme, setTheme: ThemeSetter) {
-  return createBrowserRouter([
-    {
-      path: '/',
-      element: <AppLayout theme={theme} setTheme={setTheme} />,
-      children: [
-        { index: true, element: <SetsPage /> },
-        { path: 'set/:id', element: <SetDetailPage /> },
-        { path: 'set/:id/q/:qid?', element: <QuestionEditorPage /> },
-      ],
-    },
-  ])
+import { SetsPage } from '../src/components/SetsPage'
+
+export default function Page() {
+  return <SetsPage />
 }
 ```
 
-This makes the URL state the source of truth for navigation. Then the sets screen calls the repository methods directly:
+The set detail route at `app/set/[id]/page.tsx` receives its dynamic URL parameter and passes it to the screen:
 
 ```tsx
-const handleCreateSet = async () => {
-  const created = await createSet(`Set ${sets.length + 1}`)
-  await refreshSets()
-  navigate(`/set/${created.id}`)
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <SetDetailPage key={id} setId={id} />
 }
 ```
 
-That pattern is important: the app does not keep a second copy of the same list in a separate state store. It re-reads from the repository after each write, so the UI matches the actual IndexedDB state.
+The route files stay small. Interactive behavior and browser-only data access live in client-side screen components, while `src/data/repository.ts` remains the persistence boundary. The library refreshes from that repository after writes so it displays the stored state.
 
 Each set card uses a full-card `Link` to open its set. Rename and delete controls sit above that link and retain their own button semantics, accessible names, and 44px tap targets. This lets the card act as one large navigation target without nesting buttons inside a link.
 
@@ -64,9 +55,10 @@ Each set card uses a full-card `Link` to open its set. Rename and delete control
 
 ## Quick Reference
 
-- `createBrowserRouter(...)` defines routes and nested screens.
-- `Link` navigates without reloading the page.
-- `useNavigate()` pushes a new route after a successful action.
+- `app/**/page.tsx` maps folders to routes.
+- `[id]` is a dynamic route segment; its value comes from `params`.
+- `Link` from `next/link` navigates between app routes.
+- `useRouter()` from `next/navigation` supports programmatic navigation in client components.
 - `listSets()` is the read path for the set library.
 - `updateSetTitle()` and `softDeleteSet()` are the write paths for rename and delete.
 - Each card link opens its set; icon actions remain separate accessible buttons.
@@ -81,4 +73,6 @@ Each set card uses a full-card `Link` to open its set. Rename and delete control
 
 - [04-repository-and-tests.md](./04-repository-and-tests.md)
 - [src/data/repository.ts](../src/data/repository.ts)
-- [src/routes.tsx](../src/routes.tsx)
+- [app/page.tsx](../app/page.tsx)
+- [app/set/[id]/page.tsx](../app/set/[id]/page.tsx)
+- [18-nextjs-app-router.md](./18-nextjs-app-router.md)

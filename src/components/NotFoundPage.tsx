@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import Link from 'next/link'
 
 export function NotFoundPage() {
   return (
@@ -8,7 +8,7 @@ export function NotFoundPage() {
         This route does not exist yet.
       </p>
       <Link
-        to="/"
+        href="/"
         className="mt-4 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
       >
         Back to sets

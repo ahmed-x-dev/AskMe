@@ -10,6 +10,8 @@ The app is meant to be used on a phone, but the same layout should still feel co
 
 CSS should start from the narrowest view and add layout improvements as the screen gets wider. This keeps content readable and touch-friendly everywhere.
 
+This phone-first layout approach is separate from release order: AskMe ships as a web app first, desktop second, and mobile through the installable PWA.
+
 In this project, the shell uses a centered column with safe-area padding. The library can widen for a two-column set grid, while question and quiz screens stay in a narrower reading column.
 
 The library header stacks its controls on phones and places them beside the heading at wider sizes. Set-card actions also move below the title on narrow screens, giving long set names more room.
@@ -18,13 +20,9 @@ The shared header keeps the AskMe brand on the library page. On inner pages it r
 
 ## In our code
 
-`src/components/AppLayout.tsx` selects the library width based on the current route. `src/components/SetsPage.tsx` uses a responsive grid, and `src/index.css` keeps the app centered with safe-area padding.
+`src/components/AppLayout.tsx` selects the library width with the Next.js pathname. `src/components/SetsPage.tsx` uses a responsive grid, and `app/globals.css` keeps the app centered with safe-area padding.
 
 ```css
-#root {
-  width: 100%;
-}
-
 body {
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 }
@@ -37,7 +35,7 @@ body {
 }
 ```
 
-The root needs a full width because the body becomes a flex container on desktop. Without it, the app root can shrink to its content width, preventing the library from reaching its 800px maximum. The layout classes in `AppLayout.tsx` set an 800px maximum for the library and a 480px maximum for other screens. In `SetsPage.tsx`, breakpoint variants such as `sm:flex-row` switch the page actions from a vertical stack to a horizontal row. The shared `AppLayout` uses the current route to show the brand on `/` and a direct library link elsewhere.
+The page does not need a Vite `#root` element: Next.js renders the route under the root layout. The layout classes in `AppLayout.tsx` set an 800px maximum for the library and a 480px maximum for other screens. In `SetsPage.tsx`, breakpoint variants such as `sm:flex-row` switch the page actions from a vertical stack to a horizontal row. The shared `AppLayout` uses `usePathname()` to show the brand on `/` and a direct library link elsewhere.
 
 ## ❌ / ✅ examples
 
@@ -62,7 +60,7 @@ The root needs a full width because the body becomes a flex container on desktop
 - `max-w-[480px]` keeps question and quiz screens readable at a desktop width.
 - `md:grid-cols-2` expands the set library on larger screens.
 - `sm:flex-row` can move stacked controls into a row when there is room.
-- `Link to="/"` provides a reliable return to the library from any inner route.
+- `Link href="/"` provides a reliable return to the library from any inner route.
 - `env(safe-area-inset-*)` keeps the app from being clipped on modern phones.
 
 ## Key Takeaways
@@ -73,6 +71,6 @@ The root needs a full width because the body becomes a flex container on desktop
 
 ## Links to related files
 
-- `src/index.css`
+- `app/globals.css`
 - `src/components/SetsPage.tsx`
 - `src/components/AppLayout.tsx`

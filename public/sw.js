@@ -1,5 +1,5 @@
-const CACHE_NAME = 'askme-v2'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg']
+const CACHE_NAME = 'askme-next-v1'
+const APP_SHELL = ['/', '/offline', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -33,18 +33,25 @@ self.addEventListener('fetch', (event) => {
         .then(async (networkResponse) => {
           if (networkResponse.ok) {
             const cache = await caches.open(CACHE_NAME)
-            await cache.put('/index.html', networkResponse.clone())
+            await cache.put(event.request, networkResponse.clone())
           }
           return networkResponse
         })
         .catch(async () => {
-          const cachedShell = await caches.match('/index.html')
-          if (cachedShell) {
-            return cachedShell
-          }
-          throw new Error('The app shell is not available offline.')
+          return (await caches.match(event.request)) ?? (await caches.match('/offline')) ?? Response.error()
         }),
     )
+    return
+  }
+
+  if (event.request.headers.has('RSC') || requestUrl.searchParams.has('_rsc')) {
+    return
+  }
+
+  if (
+    !requestUrl.pathname.startsWith('/_next/static/') &&
+    !['script', 'style', 'image', 'font'].includes(event.request.destination)
+  ) {
     return
   }
 

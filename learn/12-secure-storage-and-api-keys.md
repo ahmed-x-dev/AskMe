@@ -10,9 +10,9 @@ The app can generate questions and grade essays, but API keys are secrets. If we
 
 ## The concept, simply
 
-The app uses a small platform wrapper instead of reaching directly into browser APIs. That wrapper is a place to replace the browser implementation with native secure storage later.
+The app uses a small platform wrapper instead of reaching directly into browser APIs. This keeps browser storage isolated and testable. Native secure storage is not currently planned because mobile access uses the PWA; reconsider it only if the platform strategy changes.
 
-In this web version, keys are stored in `localStorage`. This keeps them out of the app database and sync files, but it does **not** encrypt them: same-origin scripts can read them. Do not describe browser `localStorage` as secure storage. A native keychain/keystore integration is still needed for stronger protection on mobile.
+Keys are stored in `localStorage`. This keeps them out of the app database and sync files, but it does **not** encrypt them: same-origin scripts can read them. Do not describe browser `localStorage` as secure storage.
 
 ## In our code
 
@@ -46,7 +46,7 @@ The key is read only when a request for that provider is sent. The Settings scre
 ## Quick Reference
 
 - `localStorage` is persistent browser storage, not encrypted secure storage.
-- The platform wrapper is the replacement point for a native keychain/keystore.
+- The platform wrapper keeps the browser storage API isolated from the rest of the app.
 - Keep secrets out of `src/data` and out of JSON exports.
 
 ## Key Takeaways

@@ -11,8 +11,8 @@ last_updated: 2026-10-12
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
-  P3: { name: "Google Drive sync", status: not_started }
-  P4: { name: "Mobile (Capacitor) and store release", status: not_started }
+  P3: { name: "Google Drive sync", status: in_progress }
+  P4: { name: "Desktop and mobile PWA", status: not_started }
   P5: { name: "Polish and extras", status: in_progress }
 ```
 
@@ -25,10 +25,12 @@ Task markers: `[ ]` todo, `[~]` in progress, `[x]` done, `[!]` blocked.
 
 A simple, fast revision app for short study sessions on any device. The user builds question sets (MCQ and essay), practices them in different modes, and gets AI help generating questions and grading essays. Anything added on one device appears on the others, with no backend to run.
 
+**Platform delivery order:** build and stabilize the web app first, package for desktop second, then support phones through the installable mobile PWA. Native Capacitor apps and app-store releases are not part of the current roadmap.
+
 **Principles**
 
-- Mobile first. Web and desktop come almost for free.
-- One codebase for web, Android and iOS.
+- Web first, desktop second, mobile through the PWA.
+- One responsive web app across desktop and mobile browsers.
 - No backend. Local storage plus sync through the user's own Google Drive.
 - Simple UI with two themes only: light (white) and dark (black).
 - The user owns their data. Each set is a plain JSON file that can be exported and imported.
@@ -49,7 +51,7 @@ A simple, fast revision app for short study sessions on any device. The user bui
 - AI generates MCQ or essay questions; the user can add a liked one to the set.
 - The key stays on the device and is never synced.
 
-**Platforms and sync:** web, Android, iOS. Adds, edits and deletes sync across devices.
+**Platforms and sync:** web first, then desktop, then mobile through the PWA. Adds, edits and deletes sync across devices.
 
 **Later ideas:** images in questions, English UI and content, spaced repetition, daily reminders and streaks, generating sets from notes or photos.
 
@@ -58,16 +60,17 @@ A simple, fast revision app for short study sessions on any device. The user bui
 | Concern        | Choice                                                     |
 | -------------- | ---------------------------------------------------------- |
 | Language       | TypeScript (strict)                                        |
-| UI             | React 19 + Vite (React Compiler enabled)                   |
-| Routing        | React Router v7 (library mode, import from `react-router`) |
-| Styling        | Tailwind CSS v4, light/dark via CSS variables              |
-| State          | Zustand                                                    |
+| UI             | React 19 + Next.js App Router (React Compiler enabled)     |
+| Routing        | Next.js App Router file-based routes                       |
+| Styling        | Tailwind CSS v4 via PostCSS, light/dark via CSS variables  |
+| State          | React component state (no external state library)          |
 | Local database | Dexie (IndexedDB) behind a repository layer                |
-| Mobile wrapper | Capacitor (Android, iOS)                                   |
-| Web            | PWA (installable, offline)                                 |
+| Desktop        | Desktop packaging after the web app is stable (approach TBD) |
+| Mobile         | Installable Next.js PWA; no native wrapper planned          |
+| Web            | Next.js-served web app and PWA (installable, offline cache) |
 | Sync           | Google Drive `appDataFolder` (OAuth PKCE, client-side)     |
-| AI             | Gemini API from the client, structured JSON output         |
-| Secrets        | Gemini key in per-device secure storage                    |
+| AI             | Gemini and OpenAI APIs from the client, structured JSON    |
+| Secrets        | Provider keys in browser `localStorage` (not encrypted)     |
 | Tests          | Vitest                                                     |
 
 ## 4. Data Model
@@ -128,21 +131,27 @@ interface SyncProvider {
 ## 6. Project Structure
 
 ```
+app/
+  layout.tsx       document shell, metadata, and global styles
+  page.tsx         library route
+  settings/        settings route
+  set/[id]/        set detail, quiz, and question editor routes
 src/
-  routes.tsx       all route definitions (React Router)
-  ui/              components, pages, themes
-  features/
-    quiz/          modes, shuffling, scoring
-    sets/          set and question editing
-    ai/            Gemini generation and grading
-    sync/          Drive provider, merge logic
+  components/      app shell and client-side screens
+  hooks/           shared client-side data loading
+  features/        quiz logic and AI generation/grading
   data/
     db.ts          Dexie schema
-    repository.ts  getSets, addQuestion, softDelete, ...
+    repository.ts  set and question persistence
     importExport.ts
-  platform/        secure storage, share, notifications, OAuth wrappers
+  platform/        browser storage and platform adapters
+  types/           shared domain models
+tests/              tests grouped by source area
+public/             manifest, icons, and service worker
 learn/             explanation files for everything we add (see AGENTS.md)
 ```
+
+This tree describes the current app. Add future sync or desktop-platform modules when those roadmap tasks are implemented.
 
 ---
 
@@ -210,77 +219,82 @@ learn/             explanation files for everything we add (see AGENTS.md)
   - Done when: malformed responses are handled with a retry or a clear message.
   - Learn: `learn/16-validating-ai-responses.md`.
 
-**Exit criteria:** every P2 task is `[x]`; the key is never persisted outside secure storage; checks pass; `learn/phase-2-recap.md` exists.
+**Exit criteria:** every P2 task is `[x]`; provider keys stay out of Dexie and sync data (browser `localStorage` is not encrypted); checks pass; `learn/phase-2-recap.md` exists.
 
 ### Phase P3: Google Drive sync
 
 **Goal:** changes on one device appear on all others.
 
+- [x] **P3-07** Migrate the web app from Vite and React Router to Next.js App Router without moving Dexie data or AI keys off the browser.
+  - Done when: all existing routes and PWA behavior work under Next.js, checks pass, and Vite/React Router are no longer the app runtime.
+  - Learn: `learn/18-nextjs-app-router.md`.
 - [ ] **P3-01** Merge function (per-question newest `updatedAt` wins, tombstones respected) with thorough unit tests.
   - Done when: tests cover add, edit, delete, and concurrent edits from two devices.
-  - Learn: `learn/17-merging-synced-data.md`.
+  - Learn: `learn/19-merging-synced-data.md`.
 - [ ] **P3-02** Google OAuth (PKCE) with the `drive.appdata` scope; sign in and sign out.
   - Done when: the user can sign in on web and the token is stored securely.
-  - Learn: `learn/18-google-oauth-and-pkce.md`.
+  - Learn: `learn/20-google-oauth-and-pkce.md`.
 - [ ] **P3-03** `SyncProvider` implementation for Drive `appDataFolder` (list, get, put with revision check).
   - Done when: files can be created, read, and updated, and stale writes are rejected.
-  - Learn: `learn/19-google-drive-sync-provider.md`.
+  - Learn: `learn/21-google-drive-sync-provider.md`.
 - [ ] **P3-04** Sync engine: pull, merge, save, push, retry on conflict; first sync on a new device pulls before pushing.
   - Done when: two browsers stay consistent after edits and deletes on either one.
-  - Learn: `learn/20-sync-engine-and-conflicts.md`.
+  - Learn: `learn/22-sync-engine-and-conflicts.md`.
 - [ ] **P3-05** Sync triggers (start, focus, debounced after edit) and a manual "Sync now" button with status and error display.
   - Done when: status shows idle, syncing, error, and last-synced time.
-  - Learn: `learn/21-sync-triggers-and-status.md`.
+  - Learn: `learn/23-sync-triggers-and-status.md`.
 - [ ] **P3-06** Tombstone purge for records older than 30 days.
   - Done when: old tombstones are removed locally and remotely without resurrecting data.
-  - Learn: `learn/22-tombstone-retention.md`.
+  - Learn: `learn/24-tombstone-retention.md`.
 
 **Exit criteria:** every P3 task is `[x]`; manual test with two devices or browsers passes (add, edit, delete, offline edit, reconnect); `learn/phase-3-recap.md` exists.
 
-### Phase P4: Mobile (Capacitor) and store release
+### Phase P4: Desktop and mobile PWA
 
-**Goal:** Android and iOS apps, published.
+**Goal:** deliver a desktop app after the web app is stable, then verify a good installable PWA experience on mobile. Do not add a native wrapper or app-store release flow under the current roadmap.
 
-- [ ] **P4-01** Add Capacitor; create Android and iOS projects; `cap sync` works in the build flow.
-  - Done when: the app launches on an Android emulator or device.
-  - Learn: `learn/23-capacitor-project-setup.md`.
-- [ ] **P4-02** Replace web OAuth with a native or system-browser flow for Google sign-in.
-  - Done when: sign-in works on a real Android device (and iOS when available).
-  - Learn: `learn/24-native-google-sign-in.md`.
-- [ ] **P4-03** Move the Gemini key to native secure storage via the `platform/` layer.
-  - Done when: the key is stored in the keychain/keystore on device.
-  - Learn: `learn/25-native-secure-storage.md`.
-- [ ] **P4-04** Native touches: haptics, share sheet, safe areas, keyboard handling, local reminder notifications.
-  - Done when: each works on a real device.
-  - Learn: `learn/26-native-device-features.md`.
-- [ ] **P4-05** App icon, splash screen, store screenshots, privacy policy (mention Gemini and Drive).
-  - Done when: all store assets exist.
-  - Learn: `learn/27-app-branding-and-privacy.md`.
-- [ ] **P4-06** Google Play: developer account, signed AAB, testing track, production release.
-  - Done when: the app is live or in review on Google Play.
-  - Learn: `learn/28-google-play-release.md`.
-- [ ] **P4-07** App Store (optional): Apple developer account, Xcode archive or cloud build, TestFlight, submission.
-  - Done when: the app is in review or live on the App Store.
-  - Learn: `learn/29-app-store-release.md`.
+- [!] **P4-01** Add Capacitor; create Android and iOS projects; `cap sync` works in the build flow.
+  - Not in current scope: mobile will use the PWA instead of native app packages.
+- [!] **P4-02** Replace web OAuth with a native or system-browser flow for Google sign-in.
+  - Not in current scope: no native app is planned.
+- [!] **P4-03** Move AI provider keys to native secure storage via the `platform/` layer.
+  - Not in current scope: mobile will use the browser PWA and its browser storage.
+- [!] **P4-04** Add native haptics, share sheet, and local reminder notifications.
+  - Not in current scope: no native app is planned.
+- [!] **P4-05** Prepare native app-store assets and privacy policy.
+  - Not in current scope: native app-store releases are not planned.
+- [!] **P4-06** Publish a Google Play native app.
+  - Not in current scope: mobile distribution is through the PWA.
+- [!] **P4-07** Publish an iOS App Store native app.
+  - Not in current scope: mobile distribution is through the PWA.
+- [ ] **P4-08** Package the stable web app for desktop; choose a desktop wrapper only if browser installation is insufficient.
+  - Done when: the desktop delivery approach is documented and the app launches with its routes, local data, and offline behavior working.
+  - Learn: `learn/37-tauri-desktop-wrapper.md`.
+- [ ] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
+  - Done when: users can install/open the PWA, use core quiz flows, retain local data, and load the app offline after a successful visit.
+  - Learn: `learn/10-pwa-and-offline.md`.
+- [ ] **P4-10** Revisit desktop and mobile delivery after testing real devices and browsers.
+  - Done when: supported platforms, known PWA limitations, and any future native-app need are documented.
+  - Learn: `learn/10-pwa-and-offline.md`, `learn/37-tauri-desktop-wrapper.md`.
 
-**Exit criteria:** P4-01 to P4-06 are `[x]` (P4-07 is optional); the app installs and syncs on a real device; `learn/phase-4-recap.md` exists.
+**Exit criteria:** P4-08 to P4-10 are `[x]`; desktop delivery and mobile PWA behavior are verified; `learn/phase-4-recap.md` exists.
 
 ### Phase P5: Polish and extras
 
 **Goal:** improvements after the core is stable. Pick in any order.
 
 - [ ] **P5-01** Images in questions (stored as hashed files, synced alongside sets).
-  - Learn: `learn/30-question-images-and-file-sync.md`.
+  - Learn: `learn/32-question-images-and-file-sync.md`.
 - [ ] **P5-02** Spaced repetition: track results and resurface wrong answers.
-  - Learn: `learn/31-spaced-repetition.md`.
+  - Learn: `learn/33-spaced-repetition.md`.
 - [ ] **P5-03** Daily reminders and streak counter.
-  - Learn: `learn/32-reminders-and-streaks.md`.
+  - Learn: `learn/34-reminders-and-streaks.md`.
 - [ ] **P5-04** Generate question sets from pasted notes or a photo.
-  - Learn: `learn/33-generating-from-notes-and-photos.md`.
+  - Learn: `learn/35-generating-from-notes-and-photos.md`.
 - [ ] **P5-05** Full English UI and content pass (and optional i18n for Arabic).
-  - Learn: `learn/34-localization-and-language.md`.
-- [ ] **P5-06** Desktop wrapper with Tauri, only if needed.
-  - Learn: `learn/35-tauri-desktop-wrapper.md`.
+  - Learn: `learn/36-localization-and-language.md`.
+- [!] **P5-06** Desktop wrapper with Tauri, only if needed.
+  - Moved to P4-08 to match the web-first, desktop-second delivery order.
 - [x] **P5-07** Improve the front-page theme control and responsive layout; add a set-import action.
   - Done when: the theme switch is icon-only and accessible, the library works on mobile and desktop, and valid/invalid JSON imports provide visible feedback.
   - Learn: `learn/02-tailwind-and-themes.md`, `learn/09-json-import-export.md`, `learn/11-responsive-layout.md`.
@@ -305,14 +319,16 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 | Date       | Decision                                                     | Reason                                                                       |
 | ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| 2026-10-06 | Vite + React + TS with Capacitor, not React Native           | Reuses existing web skills; UI is simple enough for a WebView                |
-| 2026-10-06 | Mobile first, PWA first                                      | Revision happens in short sessions on phones                                 |
+| 2026-10-06 | Vite + React + TS for the initial web app                    | Reuses existing web skills and keeps the first release browser-based          |
 | 2026-10-06 | Sync through Google Drive, no backend                        | No server to build, host or pay for                                          |
-| 2026-10-06 | Dexie (IndexedDB) for local storage                          | Same on web and Capacitor with no plugins; data is small and document-shaped |
+| 2026-10-06 | Dexie (IndexedDB) for local storage                          | Browser-native persistence fits the web app and PWA; data is document-shaped |
 | 2026-10-06 | Soft deletes with tombstones                                 | Required so deletes sync correctly                                           |
 | 2026-10-06 | Gemini key never synced                                      | Per-device secret                                                            |
 | 2026-10-07 | React Router v7, library mode, `react-router` only           | Most documented; no server needed; avoids the old `react-router-dom` habit   |
-| 2026-10-07 | Start with browser routing                                   | Fine for PWA; revisit hash routing in P4-01 if Capacitor deep links break    |
+| 2026-10-07 | Start with browser routing                                   | The app is delivered through the web and installable PWA                     |
+| 2026-10-12 | Next.js App Router for the web app; browser remains data owner | Requested migration; Dexie and keys stay client-side; hosting needs Next.js |
+| 2026-10-12 | Web first, desktop second, mobile through PWA                 | Avoid native wrappers and store releases; reuse the responsive web app        |
+| 2026-10-12 | Native Capacitor work is out of scope for now                 | Mobile access will use the installable PWA; reconsider native only if needed |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -323,19 +339,21 @@ learn/             explanation files for everything we add (see AGENTS.md)
 ## 9. Open Questions
 
 - Keep Dexie, or move to SQLite later if heavy queries are needed?
-- Publish to the stores, or keep the PWA for personal use?
-- Is an iOS build needed (requires a Mac or a cloud Mac build service)?
+- Is a desktop wrapper needed, or is installing the web app sufficient?
+- Which mobile browsers and PWA capabilities should be supported?
 - Should essay questions require a reference answer?
-- Browser history router or hash router once Capacitor is added (check in P4-01)?
+- Which Next.js-compatible host should serve the PWA in production?
 
 ## 10. Changelog
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-12: Set platform direction to web first, desktop second, and mobile through the installable PWA; marked native Capacitor and store-release tasks out of scope, promoted desktop packaging, and added mobile PWA verification. Next: continue P3-01, then desktop delivery before mobile PWA validation.
+- 2026-10-12: Migrated the app from Vite/React Router to Next.js 16 App Router, retaining client-side Dexie storage, browser-only AI keys, theme controls, and offline routes. Removed the stale Vite build output and corrected the documented project structure and route lesson. `typecheck`, `lint`, all 22 tests, production build, route/editor/quiz/settings smoke checks, 404 handling, and offline service-worker checks pass. `npm outdated` shows major updates available for `@types/node` and TypeScript plus a Vitest patch; none upgraded. Vite remains only as a transitive Vitest dependency, not a direct app dependency. Next: P3-01 (sync merge logic).
 - 2026-10-12: Investigated the reported white screen. The app renders in a fresh browser; found the service worker served cached HTML indefinitely and returned HTML for failed asset requests. Updated it to use network-first navigation with an offline shell fallback, cache successful same-origin assets only, and bumped the cache version so old caches are removed. Next: confirm whether the user's installed/deployed app recovers after its service worker updates.
 - 2026-10-12: Fixed three AI-provider review findings: documented that browser `localStorage` is not encrypted secure storage, moved Gemini key authentication from the URL to `x-goog-api-key`, and invalidated stale essay-grading responses when answers or quiz questions change. Added a request-header regression assertion and updated the related lessons. `typecheck`, `lint`, `test`, and `build` pass. Next: P3-01 (merge logic and sync design).
 - 2026-10-12: Added provider-aware AI key storage and request routing so the app can use Gemini or OpenAI with a separate saved key per provider, while keeping the rest of the generation and grading flow the same. `typecheck`, `lint`, `test`, and `build` all pass. Next: P3-01 (merge logic and sync design).
-- 2026-10-12: Phase 2 complete. Added browser secure storage for the Gemini key, a settings screen, the Gemini API client with timeout and validation guards, generated-question previews that can be inserted into a set, AI essay grading with a visible score and feedback, and the required phase recap and lesson index updates. `typecheck`, `lint`, `test`, and `build` pass. Next: P3-01 (merge logic and sync design).
+- 2026-10-12: Phase 2 complete. Added browser `localStorage` storage for the Gemini key (not encrypted secure storage), a settings screen, the Gemini API client with timeout and validation guards, generated-question previews that can be inserted into a set, AI essay grading with a visible score and feedback, and the required phase recap and lesson index updates. `typecheck`, `lint`, `test`, and `build` pass. Next: P3-01 (merge logic and sync design).
 - 2026-10-12: Added a reveal-reference and self-assessment flow for essay quiz questions; quiz scores now use the learner's right/wrong mark for essays while MCQs retain answer-key scoring. `typecheck`, `lint`, `test`, `build`, and manual quiz-flow checks pass. `npm outdated` reports newer majors for @babel/core (8), @types/node (26), and TypeScript (7), plus a Vite patch update; none upgraded. Next: P2-01 (secure storage and Gemini API key settings).
 - 2026-10-12: Made the entire set card a link, removed its separate Open button, and replaced Rename/Delete text with accessible 44px icon buttons. Verified card navigation, delete action, and 44px controls at 360px. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
 - 2026-10-12: Kept the AskMe brand in the library header and replaced it on inner routes with a touch-sized “Back to sets” link; the theme toggle remains in place. Verified on a 360px viewport and confirmed the link returns to the library. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.

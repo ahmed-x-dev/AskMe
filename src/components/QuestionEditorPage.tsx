@@ -1,8 +1,11 @@
+'use client'
+
 import { useMemo, useState } from 'react'
-import { useLoaderData, useNavigate, useParams } from 'react-router'
+import { useRouter } from 'next/navigation'
 
 import { addQuestion, softDeleteQuestion, updateQuestion } from '../data/repository'
 import type { Question, QuestionType, QuizSet } from '../types/quiz'
+import { useQuizSet } from '../hooks/useQuizSet'
 
 const EMPTY_OPTIONS = ['', '', '', '']
 
@@ -29,7 +32,7 @@ function QuestionEditorForm({
     existingQuestion?.type === 'essay' ? existingQuestion.referenceAnswer ?? '' : '',
   )
   const [errorMessage, setErrorMessage] = useState('')
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleOptionChange = (index: number, nextValue: string) => {
     setOptions((current) => {
@@ -86,7 +89,7 @@ function QuestionEditorForm({
         : await addQuestion(set.id, nextQuestion)
 
       if (savedSet) {
-        navigate(`/set/${set.id}`)
+        router.push(`/set/${set.id}`)
       }
       return
     }
@@ -105,7 +108,7 @@ function QuestionEditorForm({
       : await addQuestion(set.id, nextQuestion)
 
     if (savedSet) {
-      navigate(`/set/${set.id}`)
+      router.push(`/set/${set.id}`)
     }
   }
 
@@ -121,7 +124,7 @@ function QuestionEditorForm({
 
     const updatedSet = await softDeleteQuestion(set.id, existingQuestion.id)
     if (updatedSet) {
-      navigate(`/set/${set.id}`)
+      router.push(`/set/${set.id}`)
     }
   }
 
@@ -136,7 +139,7 @@ function QuestionEditorForm({
         </div>
         <button
           type="button"
-          onClick={() => navigate(`/set/${set.id}`)}
+          onClick={() => router.push(`/set/${set.id}`)}
           className="min-h-12 shrink-0 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card"
         >
           Cancel
@@ -240,7 +243,7 @@ function QuestionEditorForm({
         </button>
         <button
           type="button"
-          onClick={() => navigate(`/set/${set.id}`)}
+          onClick={() => router.push(`/set/${set.id}`)}
           className="min-h-12 flex-1 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
         >
           Back
@@ -260,23 +263,30 @@ function QuestionEditorForm({
   )
 }
 
-export function QuestionEditorPage() {
-  const { qid } = useParams()
-  const navigate = useNavigate()
-  const set = useLoaderData() as QuizSet | null
+export function QuestionEditorPage({ setId, qid }: { setId: string; qid?: string }) {
+  const router = useRouter()
+  const { set, isLoading, errorMessage } = useQuizSet(setId)
   const existingQuestion = useMemo(
     () => set?.questions.find((question) => question.id === qid && !question.deleted),
     [qid, set],
   )
 
   if (!set) {
+    if (isLoading) {
+      return <p role="status" className="text-[16px] leading-6 text-muted">Loading question…</p>
+    }
+
     return (
       <section className="rounded-2xl bg-card p-4">
-        <h2 className="text-[18px] font-medium leading-7 text-fg">Set not found</h2>
-        <p className="mt-2 text-[16px] leading-6 text-muted">This question cannot be edited.</p>
+        <h2 className="text-[18px] font-medium leading-7 text-fg">
+          {errorMessage ? 'Could not load set' : 'Set not found'}
+        </h2>
+        <p role={errorMessage ? 'alert' : undefined} className="mt-2 text-[16px] leading-6 text-muted">
+          {errorMessage ?? 'This question cannot be edited.'}
+        </p>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => router.push('/')}
           className="mt-4 min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Back to sets

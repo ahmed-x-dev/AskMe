@@ -1,4 +1,8 @@
-import { Link, Outlet, useLocation } from "react-router";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 export type Theme = "light" | "dark";
 
@@ -9,11 +13,12 @@ export type ThemeSetter = (
 export type AppLayoutProps = {
   theme: Theme;
   setTheme: ThemeSetter;
+  children: ReactNode;
 };
 
-export function AppLayout({ theme, setTheme }: AppLayoutProps) {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
+export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
 
   return (
     <main className="min-h-screen bg-bg text-fg transition-colors duration-200">
@@ -25,7 +30,7 @@ export function AppLayout({ theme, setTheme }: AppLayoutProps) {
         <header className="flex items-center justify-between gap-4">
           {isHomePage ? (
             <Link
-              to="/"
+              href="/"
               className="flex min-w-0 items-center gap-3 rounded-2xl"
             >
               <span
@@ -45,7 +50,7 @@ export function AppLayout({ theme, setTheme }: AppLayoutProps) {
             </Link>
           ) : (
             <Link
-              to="/"
+              href="/"
               className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
             >
               <svg
@@ -68,7 +73,7 @@ export function AppLayout({ theme, setTheme }: AppLayoutProps) {
 
           <div className="flex items-center gap-2">
             <Link
-              to="/settings"
+              href="/settings"
               className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent"
               aria-label="Open settings"
               title="Open settings"
@@ -149,7 +154,7 @@ export function AppLayout({ theme, setTheme }: AppLayoutProps) {
           </div>
         </header>
 
-        <Outlet />
+        {children}
       </div>
     </main>
   );

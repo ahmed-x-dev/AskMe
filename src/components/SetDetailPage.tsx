@@ -1,5 +1,8 @@
-import { useRef, useState } from 'react'
-import { Link, useLoaderData, useNavigate } from 'react-router'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import {
   addQuestion,
@@ -8,13 +11,14 @@ import {
   softDeleteQuestion,
 } from '../data/repository'
 import { describeError, generateQuestions } from '../features/ai'
-import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
-import type { Question, QuizSet } from '../types/quiz'
+import { DEFAULT_AI_PROVIDER, getAiProvider, hasAiApiKey, type AiProvider } from '../platform/secureStorage'
+import type { Question } from '../types/quiz'
+import { useQuizSet } from '../hooks/useQuizSet'
 
-export function SetDetailPage() {
-  const navigate = useNavigate()
-  const initialSet = useLoaderData() as QuizSet | null
-  const [set, setSet] = useState<QuizSet | null>(initialSet)
+export function SetDetailPage({ setId }: { setId: string }) {
+  const router = useRouter()
+  const { set, setSet, isLoading, errorMessage } = useQuizSet(setId)
+  const [activeProvider, setActiveProvider] = useState<AiProvider>(DEFAULT_AI_PROVIDER)
   const [importFeedback, setImportFeedback] = useState<{
     kind: 'error' | 'success'
     message: string
@@ -30,6 +34,12 @@ export function SetDetailPage() {
   const [generationPrompt, setGenerationPrompt] = useState('')
   const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([])
   const importInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setActiveProvider(getAiProvider())
+    })
+  }, [])
 
   const handleExport = async () => {
     if (!set) {
@@ -168,14 +178,20 @@ export function SetDetailPage() {
   }
 
   if (!set) {
+    if (isLoading) {
+      return <p role="status" className="text-[16px] leading-6 text-muted">Loading set…</p>
+    }
+
     return (
       <section className="rounded-2xl bg-card p-5">
-        <h2 className="text-[18px] font-medium leading-7 text-fg">Set not found</h2>
-        <p className="mt-2 text-[16px] leading-6 text-muted">
-          The set was removed or never existed.
+        <h2 className="text-[18px] font-medium leading-7 text-fg">
+          {errorMessage ? 'Could not load set' : 'Set not found'}
+        </h2>
+        <p role={errorMessage ? 'alert' : undefined} className="mt-2 text-[16px] leading-6 text-muted">
+          {errorMessage ?? 'The set was removed or never existed.'}
         </p>
         <Link
-          to="/"
+          href="/"
           className="mt-4 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Back to sets
@@ -185,7 +201,6 @@ export function SetDetailPage() {
   }
 
   const questionCount = set.questions.filter((question) => !question.deleted).length
-  const activeProvider = getAiProvider()
 
   return (
     <>
@@ -202,7 +217,7 @@ export function SetDetailPage() {
         <div className="mt-5">
           <button
             type="button"
-            onClick={() => navigate(`/set/${set.id}/quiz?mode=random`)}
+            onClick={() => router.push(`/set/${set.id}/quiz?mode=random`)}
             className="min-h-12 w-full rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
             Start quiz
@@ -260,7 +275,7 @@ export function SetDetailPage() {
             <h3 className="text-[16px] font-medium leading-6 text-fg">Generate revision questions</h3>
           </div>
           <Link
-            to="/settings"
+            href="/settings"
             className="min-h-11 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
           >
             {hasAiApiKey(activeProvider) ? 'Key ready' : 'Add key'}
@@ -378,7 +393,7 @@ export function SetDetailPage() {
           </div>
           <button
             type="button"
-            onClick={() => navigate(`/set/${set.id}/q/new`)}
+            onClick={() => router.push(`/set/${set.id}/q/new`)}
             className="min-h-12 shrink-0 rounded-2xl bg-bg px-4 text-[13px] font-medium text-accent-text transition-colors hover:bg-accent hover:text-on-accent"
           >
             Add question
@@ -413,7 +428,7 @@ export function SetDetailPage() {
                   <div className="mt-4 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => navigate(`/set/${set.id}/q/${question.id}`)}
+                      onClick={() => router.push(`/set/${set.id}/q/${question.id}`)}
                       className="min-h-11 flex-1 rounded-[14px] bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
                     >
                       Edit

@@ -1,5 +1,8 @@
-import { useRef, useState } from 'react'
-import { Link, useLoaderData, useNavigate } from 'react-router'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import {
   createSet,
@@ -42,9 +45,9 @@ function EmptyState({
 }
 
 export function SetsPage() {
-  const navigate = useNavigate()
-  const initialSets = useLoaderData() as QuizSet[]
-  const [sets, setSets] = useState<QuizSet[]>(initialSets)
+  const router = useRouter()
+  const [sets, setSets] = useState<QuizSet[] | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
   const [importFeedback, setImportFeedback] = useState<{
     kind: 'error' | 'success'
@@ -52,15 +55,40 @@ export function SetsPage() {
   } | null>(null)
   const importInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    let isCurrent = true
+
+    listSets()
+      .then((nextSets) => {
+        if (isCurrent) {
+          setSets(nextSets)
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setLoadError(error instanceof Error ? error.message : 'Could not load your sets.')
+        }
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
   const refreshSets = async () => {
-    const nextSets = await listSets()
-    setSets(nextSets)
+    try {
+      const nextSets = await listSets()
+      setSets(nextSets)
+      setLoadError(null)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not refresh your sets.')
+    }
   }
 
   const handleCreateSet = async () => {
-    const created = await createSet(`Set ${sets.length + 1}`)
+    const created = await createSet(`Set ${(sets?.length ?? 0) + 1}`)
     await refreshSets()
-    navigate(`/set/${created.id}`)
+    router.push(`/set/${created.id}`)
   }
 
   const handleImportSet = async (file: File) => {
@@ -123,8 +151,26 @@ export function SetsPage() {
     }
   }
 
+  if (sets === null) {
+    return (
+      <section className="rounded-2xl bg-card p-5">
+        {loadError ? (
+          <>
+            <h2 className="text-[18px] font-medium leading-7 text-fg">Could not load sets</h2>
+            <p role="alert" className="mt-2 text-[13px] leading-[18px] text-bad-fg">{loadError}</p>
+          </>
+        ) : (
+          <p role="status" className="text-[16px] leading-6 text-muted">Loading your sets…</p>
+        )}
+      </section>
+    )
+  }
+
   return (
     <>
+      {loadError ? (
+        <p role="alert" className="text-[13px] leading-[18px] text-bad-fg">{loadError}</p>
+      ) : null}
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-[13px] leading-[18px] text-muted">Library</p>
@@ -198,7 +244,7 @@ export function SetsPage() {
             return (
               <article key={set.id} className="relative flex flex-col rounded-2xl bg-card p-4">
                 <Link
-                  to={`/set/${set.id}`}
+                  href={`/set/${set.id}`}
                   aria-label={`Open ${set.title}`}
                   className="absolute inset-0 z-10 rounded-2xl"
                 />

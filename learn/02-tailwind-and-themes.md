@@ -8,7 +8,7 @@ The app needs a consistent visual language and a theme that remains selected aft
 
 ## The concept, simply
 
-Tailwind utilities are small classes for individual styles, such as `min-h-screen` or `px-4`. Tailwind CSS v4 is imported in the stylesheet and integrated with Vite through `@tailwindcss/vite`.
+Tailwind utilities are small classes for individual styles, such as `min-h-screen` or `px-4`. Tailwind CSS v4 is imported in the global stylesheet and integrated with Next.js through its PostCSS plugin.
 
 Theme values are CSS custom properties. CSS reads a variable with `var(--name)`. The app puts `data-theme="light"` or `"dark"` on the root HTML element, allowing CSS to select the corresponding values.
 
@@ -18,23 +18,29 @@ An icon-only theme switch saves space on small screens. Because the icon alone d
 
 ## In our code
 
-From `src/App.tsx`:
+From `src/components/AppShell.tsx`:
 
 ```tsx
-const [theme, setTheme] = useState<Theme>(() => getPreferredTheme());
-
 useEffect(() => {
-  document.documentElement.setAttribute("data-theme", theme);
-  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-}, [theme]);
+  let isCurrent = true;
+  queueMicrotask(() => {
+    if (!isCurrent) return;
+    const preferredTheme = getPreferredTheme();
+    setTheme(preferredTheme);
+    document.documentElement.setAttribute("data-theme", preferredTheme);
+    setIsThemeLoaded(true);
+  });
+  return () => {
+    isCurrent = false;
+  };
+}, []);
 ```
 
-- The state initializer reads the saved preference once when the component starts.
-- The effect updates the root element so CSS can respond to the new theme.
-- The same effect stores the selection for the next visit.
-- The dependency list `[theme]` means the effect runs when the selected theme changes.
+- The browser preference is read in an effect because Next.js can pre-render client components on the server.
+- The effect updates the root element so CSS can respond to the saved theme.
+- A second effect persists later theme changes after the saved value has loaded.
 
-`DESIGN.md` is the source of truth for every color and styling rule. In `src/index.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card` and `text-muted`. Keep these mappings aligned with the design token table.
+`DESIGN.md` is the source of truth for every color and styling rule. In `app/globals.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card` and `text-muted`. Keep these mappings aligned with the design token table.
 
 In `src/components/AppLayout.tsx`, the theme button shows a moon when it can switch to dark mode and a sun when it can switch to light mode. The SVGs are decorative; the button's `aria-label` communicates the action to assistive technology.
 
@@ -92,5 +98,5 @@ window.localStorage.setItem("askme-theme", "dark");
 
 - [01 — Vite, React, and TypeScript](./01-vite-react-typescript.md)
 - Design tokens and visual rules: [DESIGN.md](../DESIGN.md)
-- Theme component: [src/App.tsx](../src/App.tsx)
-- CSS variables: [src/index.css](../src/index.css)
+- Theme component: [src/components/AppShell.tsx](../src/components/AppShell.tsx)
+- CSS variables: [app/globals.css](../app/globals.css)
