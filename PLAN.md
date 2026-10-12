@@ -5,12 +5,12 @@
 > Agents: update this block whenever a task changes state.
 
 ```yaml
-current_phase: P2
-current_task: P2-01
+current_phase: P3
+current_task: P3-01
 last_updated: 2026-10-12
 phases:
   P1: { name: "Local app (web)", status: done }
-  P2: { name: "AI features", status: not_started }
+  P2: { name: "AI features", status: done }
   P3: { name: "Google Drive sync", status: not_started }
   P4: { name: "Mobile (Capacitor) and store release", status: not_started }
   P5: { name: "Polish and extras", status: in_progress }
@@ -194,19 +194,19 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 **Goal:** Gemini-powered question generation and essay grading.
 
-- [ ] **P2-01** `platform/secureStorage` abstraction (localStorage on web for now) and a settings screen to enter, replace and remove the Gemini key.
+- [x] **P2-01** `platform/secureStorage` abstraction (localStorage on web for now) and a settings screen to enter, replace and remove the Gemini key.
   - Done when: the key is saved, hidden in the UI by default, and never stored in the DB.
   - Learn: `learn/12-secure-storage-and-api-keys.md`.
-- [ ] **P2-02** Gemini client with structured JSON output, timeouts and clear error handling (bad key, rate limit, offline).
+- [x] **P2-02** Gemini client with structured JSON output, timeouts and clear error handling (bad key, rate limit, offline).
   - Done when: errors show readable messages and the app never crashes on API failure.
   - Learn: `learn/13-gemini-client-and-errors.md`.
-- [ ] **P2-03** Question generation: pick type and count, preview results, "Add to set" per question.
+- [x] **P2-03** Question generation: pick type and count, preview results, "Add to set" per question.
   - Done when: a generated MCQ or essay question can be added to a set and appears in quizzes.
   - Learn: `learn/14-ai-question-generation.md`.
-- [ ] **P2-04** Essay grading: send question, reference answer and user answer; return `{score, feedback, missingPoints}`; show in the quiz screen.
+- [x] **P2-04** Essay grading: send question, reference answer and user answer; return `{score, feedback, missingPoints}`; show in the quiz screen.
   - Done when: grading works for essays with and without a reference answer, and results display clearly.
   - Learn: `learn/15-ai-essay-grading.md`.
-- [ ] **P2-05** Validate all AI responses against the schema before use; reject malformed output.
+- [x] **P2-05** Validate all AI responses against the schema before use; reject malformed output.
   - Done when: malformed responses are handled with a retry or a clear message.
   - Learn: `learn/16-validating-ai-responses.md`.
 
@@ -332,6 +332,10 @@ learn/             explanation files for everything we add (see AGENTS.md)
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-12: Investigated the reported white screen. The app renders in a fresh browser; found the service worker served cached HTML indefinitely and returned HTML for failed asset requests. Updated it to use network-first navigation with an offline shell fallback, cache successful same-origin assets only, and bumped the cache version so old caches are removed. Next: confirm whether the user's installed/deployed app recovers after its service worker updates.
+- 2026-10-12: Fixed three AI-provider review findings: documented that browser `localStorage` is not encrypted secure storage, moved Gemini key authentication from the URL to `x-goog-api-key`, and invalidated stale essay-grading responses when answers or quiz questions change. Added a request-header regression assertion and updated the related lessons. `typecheck`, `lint`, `test`, and `build` pass. Next: P3-01 (merge logic and sync design).
+- 2026-10-12: Added provider-aware AI key storage and request routing so the app can use Gemini or OpenAI with a separate saved key per provider, while keeping the rest of the generation and grading flow the same. `typecheck`, `lint`, `test`, and `build` all pass. Next: P3-01 (merge logic and sync design).
+- 2026-10-12: Phase 2 complete. Added browser secure storage for the Gemini key, a settings screen, the Gemini API client with timeout and validation guards, generated-question previews that can be inserted into a set, AI essay grading with a visible score and feedback, and the required phase recap and lesson index updates. `typecheck`, `lint`, `test`, and `build` pass. Next: P3-01 (merge logic and sync design).
 - 2026-10-12: Added a reveal-reference and self-assessment flow for essay quiz questions; quiz scores now use the learner's right/wrong mark for essays while MCQs retain answer-key scoring. `typecheck`, `lint`, `test`, `build`, and manual quiz-flow checks pass. `npm outdated` reports newer majors for @babel/core (8), @types/node (26), and TypeScript (7), plus a Vite patch update; none upgraded. Next: P2-01 (secure storage and Gemini API key settings).
 - 2026-10-12: Made the entire set card a link, removed its separate Open button, and replaced Rename/Delete text with accessible 44px icon buttons. Verified card navigation, delete action, and 44px controls at 360px. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.
 - 2026-10-12: Kept the AskMe brand in the library header and replaced it on inner routes with a touch-sized “Back to sets” link; the theme toggle remains in place. Verified on a 360px viewport and confirmed the link returns to the library. `typecheck`, `lint`, all 13 tests, and `build` pass. Next: continue the UI/UX iterations; P2-01 remains the next roadmap task.

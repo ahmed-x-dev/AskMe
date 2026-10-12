@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link, useLoaderData, useParams, useSearchParams } from 'react-router'
 
+import { gradeEssayAnswer, describeError } from '../features/ai'
 import { buildQuizQueue, type QuizMode } from '../features/quiz'
+import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
 import type { Question, QuizSet } from '../types/quiz'
 
 function hasAnswered(
@@ -39,6 +41,87 @@ export function QuizPage() {
   const [answers, setAnswers] = useState<Record<string, string | number>>({})
   const [essayResults, setEssayResults] = useState<Record<string, boolean>>({})
   const [revealedReferences, setRevealedReferences] = useState<Record<string, boolean>>({})
+  const [aiGrade, setAiGrade] = useState<{
+    questionId: string
+    answer: string
+    score: number
+    feedback: string
+    missingPoints: number
+  } | null>(null)
+  const [aiMessage, setAiMessage] = useState<{ kind: 'error' | 'success'; message: string } | null>(null)
+  const [isAiGrading, setIsAiGrading] = useState(false)
+  const aiGradingRequestId = useRef(0)
+
+  const handleGradeEssay = async () => {
+    if (!set) {
+      return
+    }
+
+    const currentQuestion = queue[currentIndex]
+    if (currentQuestion.type !== 'essay') {
+      return
+    }
+
+    const rawAnswer = answers[currentQuestion.id]
+    const answerText = typeof rawAnswer === 'string' ? rawAnswer : ''
+    if (!answerText.trim()) {
+      setAiMessage({
+        kind: 'error',
+        message: 'Write an answer before asking the AI to grade it.',
+      })
+      return
+    }
+
+    const activeProvider = getAiProvider()
+
+    if (!hasAiApiKey(activeProvider)) {
+      setAiMessage({
+        kind: 'error',
+        message: `Add a ${activeProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key in Settings before grading essays.`,
+      })
+      return
+    }
+
+    setIsAiGrading(true)
+    setAiMessage(null)
+    const requestId = ++aiGradingRequestId.current
+
+    try {
+      const grade = await gradeEssayAnswer({
+        questionText: currentQuestion.text,
+        userAnswer: answerText,
+        referenceAnswer: currentQuestion.referenceAnswer,
+        provider: activeProvider,
+      })
+
+      if (aiGradingRequestId.current === requestId) {
+        setAiGrade({ ...grade, questionId: currentQuestion.id, answer: answerText })
+        setAiMessage({
+          kind: 'success',
+          message: `AI score: ${grade.score}/10 — ${grade.feedback}`,
+        })
+      }
+    } catch (error) {
+      if (aiGradingRequestId.current === requestId) {
+        setAiMessage({
+          kind: 'error',
+          message: describeError(error),
+        })
+      }
+    } finally {
+      if (aiGradingRequestId.current === requestId) {
+        setIsAiGrading(false)
+      }
+    }
+  }
+
+  const advanceToNextQuestion = () => {
+    aiGradingRequestId.current += 1
+    setIsAiGrading(false)
+    setAiGrade(null)
+    setAiMessage(null)
+    setCurrentIndex((previous) => Math.min(previous + 1, queue.length))
+  }
 
   if (!set) {
     return (
@@ -97,10 +180,13 @@ export function QuizPage() {
           <button
             type="button"
             onClick={() => {
+              aiGradingRequestId.current += 1
               setCurrentIndex(0)
               setAnswers({})
               setEssayResults({})
               setRevealedReferences({})
+              setAiGrade(null)
+              setAiMessage(null)
             }}
             className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
@@ -211,13 +297,59 @@ export function QuizPage() {
               if (hasRevealedReference || isAnswered) {
                 return
               }
+              aiGradingRequestId.current += 1
+              setIsAiGrading(false)
               setAnswers((previous) => ({ ...previous, [currentQuestion.id]: event.target.value }))
+              setAiGrade(null)
+              setAiMessage(null)
             }}
             disabled={hasRevealedReference}
             rows={5}
             placeholder="Write your answer here, or think it through…"
             className="min-h-[120px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
           />
+
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => void handleGradeEssay()}
+              disabled={isAiGrading || !String(currentAnswer ?? '').trim()}
+              className="min-h-12 flex-1 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+            >
+              {isAiGrading ? 'Grading…' : 'AI grade'}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setRevealedReferences((previous) => ({ ...previous, [currentQuestion.id]: true }))
+              }
+              className="min-h-12 flex-1 rounded-2xl bg-accent px-3 text-[13px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90"
+            >
+              Reveal reference
+            </button>
+          </div>
+
+          {aiGrade?.questionId === currentQuestion.id && aiGrade.answer === currentAnswer ? (
+            <div className="mt-3 rounded-[14px] bg-bg p-3" aria-live="polite">
+              <p className="text-[13px] font-medium leading-[18px] text-muted">AI grading</p>
+              <p className="mt-1 text-[16px] font-medium leading-6 text-fg">
+                {aiGrade.score}/10 • missing points: {aiGrade.missingPoints}
+              </p>
+              <p className="mt-1 text-[15px] leading-5 text-muted">{aiGrade.feedback}</p>
+            </div>
+          ) : null}
+
+          {aiMessage ? (
+            <p
+              role={aiMessage.kind === 'error' ? 'alert' : 'status'}
+              className={`mt-3 text-[13px] leading-[18px] ${
+                aiMessage.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
+              }`}
+            >
+              {aiMessage.message}
+            </p>
+          ) : null}
+
           <p className="mt-2 text-[13px] leading-[18px] text-muted">
             Compare your answer with the reference, then mark yourself right or wrong.
           </p>
@@ -290,7 +422,7 @@ export function QuizPage() {
         ) : currentQuestion.type === 'mcq' || isAnswered ? (
           <button
             type="button"
-            onClick={() => setCurrentIndex((previous) => Math.min(previous + 1, queue.length))}
+            onClick={advanceToNextQuestion}
             className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!isAnswered}
           >

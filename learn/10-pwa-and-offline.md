@@ -12,7 +12,7 @@ A PWA is a web app with install metadata and a service worker. The service worke
 
 ## In our code
 
-The app registers a service worker in `src/main.tsx`, and the cache logic lives in `public/sw.js`.
+The app registers a service worker in `src/main.tsx`, and the cache logic lives in `public/sw.js`. The worker uses network-first navigation so deployments can deliver the latest HTML, then falls back to the cached shell offline. Other same-origin assets use cache-first when previously cached. Failed assets are not replaced with HTML, which would otherwise cause confusing JavaScript parse errors and a blank page. Increment the cache version when changing the service-worker behavior so older caches are removed on activation.
 
 ```ts
 if ('serviceWorker' in navigator) {
@@ -27,9 +27,11 @@ The manifest in `public/manifest.webmanifest` adds the install metadata, and the
 ## ❌ / ✅ examples
 
 - ❌ Assuming the app works offline before it has ever been loaded.
-- ✅ First load caches the shell and future sessions can work without a connection.
+- ✅ First load caches the shell; later navigation checks the network first and uses the cache offline.
 - ❌ Forgetting to register the service worker.
 - ✅ A registered worker makes the app behave like a package.
+- ❌ Returning `index.html` for a failed JavaScript or CSS request.
+- ✅ Only navigation requests use the offline HTML fallback.
 
 ## Try it yourself
 

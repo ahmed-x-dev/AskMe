@@ -16,3 +16,13 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [10 — PWA and offline](./10-pwa-and-offline.md): How the web app installs as a standalone app and caches its shell for offline use.
 - [11 — Responsive layout](./11-responsive-layout.md): How the UI starts phone-first and expands gracefully on larger screens.
 - [phase-1-recap](./phase-1-recap.md): A summary of the Phase 1 app and its key decisions.
+
+## Phase 2: AI features
+
+- [12 — Secure storage and API keys](./12-secure-storage-and-api-keys.md): How the app stores the Gemini key locally outside the database and keeps sync exports clean.
+- [13 — Gemini client and errors](./13-gemini-client-and-errors.md): How the app calls Gemini with safeguards for timeouts, malformed JSON, and readable failure messages.
+- [14 — AI question generation](./14-ai-question-generation.md): How generated MCQ and essay prompts are validated, previewed, and inserted into a set.
+- [15 — AI essay grading](./15-ai-essay-grading.md): How essay answers get scored with a structured result object and shown in the quiz flow.
+- [16 — Validating AI responses](./16-validating-ai-responses.md): How the app rejects malformed AI output before it reaches the app model or repository.
+- [17 — AI provider abstraction](./17-ai-provider-abstraction.md): How the app keeps provider-specific API keys separate and lets the same AI flow run against Gemini or OpenAI.
+- [phase-2-recap](./phase-2-recap.md): A summary of the Phase 2 Gemini integration and the key guardrails it introduced.

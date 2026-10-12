@@ -5,6 +5,7 @@ import { NotFoundPage } from './components/NotFoundPage'
 import { QuestionEditorPage } from './components/QuestionEditorPage'
 import { QuizPage } from './components/QuizPage'
 import { SetDetailPage } from './components/SetDetailPage'
+import { SettingsPage } from './components/SettingsPage'
 import { SetsPage } from './components/SetsPage'
 import { getSet, listSets } from './data/repository'
 
@@ -18,6 +19,10 @@ export default function AppRoutes({ theme, setTheme }: AppLayoutProps) {
           index: true,
           element: <SetsPage />,
           loader: async () => listSets(),
+        },
+        {
+          path: 'settings',
+          element: <SettingsPage />,
         },
         {
           path: 'set/:id',

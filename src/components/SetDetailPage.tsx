@@ -2,11 +2,14 @@ import { useRef, useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router'
 
 import {
+  addQuestion,
   exportSetAsJson,
   importQuestionsFromJson,
   softDeleteQuestion,
 } from '../data/repository'
-import type { QuizSet } from '../types/quiz'
+import { describeError, generateQuestions } from '../features/ai'
+import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
+import type { Question, QuizSet } from '../types/quiz'
 
 export function SetDetailPage() {
   const navigate = useNavigate()
@@ -16,7 +19,16 @@ export function SetDetailPage() {
     kind: 'error' | 'success'
     message: string
   } | null>(null)
+  const [generationFeedback, setGenerationFeedback] = useState<{
+    kind: 'error' | 'success'
+    message: string
+  } | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [generationType, setGenerationType] = useState<'mcq' | 'essay'>('mcq')
+  const [generationCount, setGenerationCount] = useState(2)
+  const [generationPrompt, setGenerationPrompt] = useState('')
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([])
   const importInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
@@ -86,6 +98,75 @@ export function SetDetailPage() {
     }
   }
 
+  const handleGenerateQuestions = async () => {
+    if (!set) {
+      return
+    }
+
+    const activeProvider = getAiProvider()
+
+    if (!hasAiApiKey(activeProvider)) {
+      setGenerationFeedback({
+        kind: 'error',
+        message: `Add a ${activeProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key in Settings before generating questions.`,
+      })
+      return
+    }
+
+    setIsGenerating(true)
+    setGenerationFeedback(null)
+
+    try {
+      const nextQuestions = await generateQuestions({
+        type: generationType,
+        count: generationCount,
+        setTitle: set.title,
+        prompt: generationPrompt.trim() || undefined,
+        provider: activeProvider,
+      })
+
+      setGeneratedQuestions(nextQuestions)
+      setGenerationFeedback({
+        kind: 'success',
+        message: `Generated ${nextQuestions.length} ${generationType === 'mcq' ? 'MCQ' : 'essay'} question${nextQuestions.length === 1 ? '' : 's'}.`,
+      })
+    } catch (error) {
+      setGeneratedQuestions([])
+      setGenerationFeedback({
+        kind: 'error',
+        message: describeError(error),
+      })
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleAddGeneratedQuestion = async (question: Question) => {
+    if (!set) {
+      return
+    }
+
+    try {
+      const updatedSet = await addQuestion(set.id, question)
+
+      if (!updatedSet) {
+        throw new Error('This set is no longer available.')
+      }
+
+      setSet(updatedSet)
+      setGeneratedQuestions((current) => current.filter((entry) => entry.id !== question.id))
+      setGenerationFeedback({
+        kind: 'success',
+        message: 'The generated question was added to the set.',
+      })
+    } catch (error) {
+      setGenerationFeedback({
+        kind: 'error',
+        message: describeError(error),
+      })
+    }
+  }
+
   if (!set) {
     return (
       <section className="rounded-2xl bg-card p-5">
@@ -104,6 +185,7 @@ export function SetDetailPage() {
   }
 
   const questionCount = set.questions.filter((question) => !question.deleted).length
+  const activeProvider = getAiProvider()
 
   return (
     <>
@@ -174,6 +256,121 @@ export function SetDetailPage() {
       <section className="rounded-2xl bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
+            <p className="text-[13px] leading-[18px] text-muted">AI helper</p>
+            <h3 className="text-[16px] font-medium leading-6 text-fg">Generate revision questions</h3>
+          </div>
+          <Link
+            to="/settings"
+            className="min-h-11 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+          >
+            {hasAiApiKey(activeProvider) ? 'Key ready' : 'Add key'}
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_110px]">
+          <label className="block text-[13px] font-medium leading-[18px] text-muted">
+            Question type
+            <select
+              value={generationType}
+              onChange={(event) => setGenerationType(event.target.value as 'mcq' | 'essay')}
+              className="mt-1 min-h-12 w-full rounded-2xl bg-bg px-3 text-[16px] text-fg"
+            >
+              <option value="mcq">MCQ</option>
+              <option value="essay">Essay</option>
+            </select>
+          </label>
+
+          <label className="block text-[13px] font-medium leading-[18px] text-muted">
+            Count
+            <input
+              type="number"
+              min={1}
+              max={5}
+              value={generationCount}
+              onChange={(event) =>
+                setGenerationCount(Math.min(5, Math.max(1, Number(event.target.value) || 1)))
+              }
+              className="mt-1 min-h-12 w-full rounded-2xl bg-bg px-3 text-[16px] text-fg"
+            />
+          </label>
+        </div>
+
+        <label className="mt-3 block text-[13px] font-medium leading-[18px] text-muted">
+          Extra prompt
+          <textarea
+            value={generationPrompt}
+            onChange={(event) => setGenerationPrompt(event.target.value)}
+            rows={3}
+            placeholder="Focus on a topic, difficulty, or recall style."
+            className="mt-1 min-h-[88px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={() => void handleGenerateQuestions()}
+          disabled={isGenerating}
+          className="mt-4 min-h-12 w-full rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
+        >
+          {isGenerating ? 'Generating…' : `Generate ${generationType === 'mcq' ? 'MCQ' : 'essay'} questions`}
+        </button>
+
+        {generationFeedback ? (
+          <p
+            role={generationFeedback.kind === 'error' ? 'alert' : 'status'}
+            className={`mt-3 text-[13px] leading-[18px] ${
+              generationFeedback.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
+            }`}
+          >
+            {generationFeedback.message}
+          </p>
+        ) : null}
+
+        {generatedQuestions.length > 0 ? (
+          <div className="mt-4 grid gap-3">
+            {generatedQuestions.map((question) => (
+              <div key={question.id} className="rounded-2xl bg-bg p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[13px] font-medium ${
+                      question.type === 'mcq' ? 'bg-ok-bg text-ok-fg' : 'bg-essay-bg text-essay-fg'
+                    }`}
+                  >
+                    {question.type === 'mcq' ? 'MCQ' : 'Essay'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleAddGeneratedQuestion(question)}
+                    className="min-h-11 rounded-[14px] bg-accent px-3 text-[13px] font-medium text-on-accent"
+                  >
+                    Add to set
+                  </button>
+                </div>
+
+                <p className="mt-3 break-words text-[16px] leading-6 text-fg">{question.text}</p>
+
+                {question.type === 'mcq' ? (
+                  <ul className="mt-3 grid gap-2 text-[15px] leading-5 text-fg">
+                    {question.options.map((option, index) => (
+                      <li key={`${question.id}-option-${index}`} className="rounded-xl bg-card px-3 py-2">
+                        {String.fromCharCode(65 + index)}. {option}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 whitespace-pre-wrap break-words text-[15px] leading-5 text-muted">
+                    {question.referenceAnswer || 'Reference answer will be added when the AI provides one.'}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </section>
+
+      <section className="rounded-2xl bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
             <h3 className="text-[16px] font-medium leading-6 text-fg">Questions</h3>
             <p className="mt-1 text-[13px] leading-[18px] text-muted">
               Add or edit what you want to practice.
@@ -224,7 +421,7 @@ export function SetDetailPage() {
                     <button
                       type="button"
                       onClick={() => void handleDeleteQuestion(question.id, question.text)}
-                      className="min-h-11 flex-1 rounded-[14px] bg-card px-3 text-[13px] font-medium text-bad-fg transition-colors hover:bg-bad-bg"
+                      className="min-h-11 flex-1 rounded-[14px] bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-bad-bg hover:text-bad-fg"
                     >
                       Delete
                     </button>
