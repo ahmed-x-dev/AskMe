@@ -21,7 +21,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const isHomePage = pathname === "/";
 
   return (
-    <main className="min-h-screen bg-bg text-fg transition-colors duration-200">
+    <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
       <div
         className={`mx-auto flex min-h-screen w-full flex-col gap-8 px-4 py-6 ${
           isHomePage ? "max-w-200" : "max-w-120"

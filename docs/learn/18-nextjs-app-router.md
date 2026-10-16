@@ -8,7 +8,7 @@ AskMe was built with Vite and React Router. The requested migration replaces tho
 
 ## The concept, simply
 
-The `app/` folder describes URLs: `app/page.tsx` is `/`, while `app/set/[id]/page.tsx` matches `/set/<id>`. A layout wraps pages with shared document structure.
+The `src/app/` folder describes URLs: `src/app/page.tsx` is `/`, while `src/app/set/[id]/page.tsx` matches `/set/<id>`. A layout wraps pages with shared document structure. The project maps the `@/*` import alias to `src/*`, so route files can import shared code as `@/components/...` instead of calculating a relative path.
 
 Pages are Server Components by default. A Client Component starts with `'use client'` and is needed for state, event handlers, browser APIs, and Dexie. A client component may still be pre-rendered, so browser-only reads belong in effects, not render-time state initializers.
 
@@ -21,7 +21,7 @@ The root layout owns document metadata and shared CSS:
 ```tsx
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { AppShell } from '../src/components/AppShell'
+import { AppShell } from '@/components/AppShell'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
 The library route renders a client component because it reads and updates local data:
 
 ```tsx
-import { SetsPage } from '../src/components/SetsPage'
+import { SetsPage } from '@/components/SetsPage'
 
 export default function Page() {
   return <SetsPage />
@@ -88,12 +88,14 @@ The browser reads IndexedDB after mounting, and a failure is shown rather than h
 - `'use client'` enables hooks, handlers, and browser APIs.
 - `Link` comes from `next/link`; imperative navigation comes from `next/navigation`.
 - Read dynamic `params` and `searchParams` as promises in Next.js 16 pages.
+- `@/components/...` resolves to `src/components/...` through the `paths` mapping in `tsconfig.json`.
 - Keep Dexie and per-device keys client-side.
 - `npm run dev`, `npm run build`, and `npm start` run the Next.js app.
 
 ## Key Takeaways
 
-- File paths in `app/` define route paths.
+- File paths in `src/app/` define route paths.
+- The `@/*` path alias makes imports stable when files move between route folders.
 - Server Components are the default; interactive and browser-dependent UI belongs in Client Components.
 - Client Components may be pre-rendered, so browser APIs still need effect-time access.
 - Next.js serving the UI does not require moving app data to a server.
@@ -101,7 +103,8 @@ The browser reads IndexedDB after mounting, and a failure is shown rather than h
 ## Links to related files
 
 - [PLAN.md](../../PLAN.md)
-- [app/layout.tsx](../../app/layout.tsx)
-- [app/page.tsx](../../app/page.tsx)
+- [src/app/layout.tsx](../../src/app/layout.tsx)
+- [src/app/page.tsx](../../src/app/page.tsx)
 - [src/hooks/useQuizSet.ts](../../src/hooks/useQuizSet.ts)
 - [10-pwa-and-offline.md](./10-pwa-and-offline.md)
+- [Next.js path aliases and imports](https://nextjs.org/docs/app/getting-started/installation#path-aliases-and-imports)

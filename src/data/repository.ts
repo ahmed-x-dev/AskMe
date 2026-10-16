@@ -119,20 +119,50 @@ export async function exportSetAsJson(setId: string): Promise<string | null> {
   )
 }
 
-/** Validates a JSON export and swaps the current set record for the imported one. */
-export async function importSetFromJson(rawJson: string): Promise<QuizSet | null> {
-  const importedSet = parseSetJson(rawJson)
-  const existingSet = await getSet(importedSet.id)
-
-  const nextSet: QuizSet = {
-    ...importedSet,
-    id: existingSet?.id ?? importedSet.id,
-    updatedAt: nowIso(),
-    deleted: false,
+/** Validates and imports multiple sets atomically; matching IDs replace their local sets. */
+export async function importSetsFromJson(
+  rawJsonFiles: readonly string[],
+): Promise<{ sets: QuizSet[]; updatedCount: number }> {
+  if (rawJsonFiles.length === 0) {
+    throw new Error('Select at least one set JSON file to import.')
   }
 
-  await db.sets.put(nextSet)
-  return nextSet
+  const importedSets = rawJsonFiles.map(parseSetJson)
+  const importedIds = new Set<string>()
+
+  for (const set of importedSets) {
+    if (importedIds.has(set.id)) {
+      throw new Error(`The import contains more than one set with id "${set.id}".`)
+    }
+
+    importedIds.add(set.id)
+  }
+
+  const timestamp = nowIso()
+
+  return db.transaction('rw', db.sets, async () => {
+    const existingSets = await db.sets.bulkGet(importedSets.map((set) => set.id))
+    const sets = importedSets.map(
+      (set): QuizSet => ({
+        ...set,
+        updatedAt: timestamp,
+        deleted: false,
+      }),
+    )
+
+    await db.sets.bulkPut(sets)
+
+    return {
+      sets,
+      updatedCount: existingSets.filter((set) => set !== undefined).length,
+    }
+  })
+}
+
+/** Validates a JSON export and swaps the current set record for the imported one. */
+export async function importSetFromJson(rawJson: string): Promise<QuizSet | null> {
+  const result = await importSetsFromJson([rawJson])
+  return result.sets[0] ?? null
 }
 
 /** Adds validated questions from JSON to an active set without importing set metadata. */

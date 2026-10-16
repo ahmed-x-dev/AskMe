@@ -14,13 +14,13 @@ This phone-first layout approach is separate from release order: AskMe ships as 
 
 In this project, the shell uses a centered column with safe-area padding. The library can widen for a two-column set grid, while question and quiz screens stay in a narrower reading column.
 
-The library header stacks its controls on phones and places them beside the heading at wider sizes. Set-card actions also move below the title on narrow screens, giving long set names more room.
+The library home page uses a stacked introduction, compact set/question totals, a search field, and library import/export actions. These controls stack on phones and share a row when the available width allows. Set-card actions also move below the title on narrow screens, giving long set names more room.
 
 The shared header keeps the AskMe brand on the library page. On inner pages it replaces that brand with a 48px-tall **Back to sets** link, leaving the theme control in the same place.
 
 ## In our code
 
-`src/components/AppLayout.tsx` selects the library width with the Next.js pathname. `src/components/SetsPage.tsx` uses a responsive grid, and `app/globals.css` keeps the app centered with safe-area padding.
+`src/components/AppLayout.tsx` selects the library width with the Next.js pathname and lets the outer page fill the viewport before its inner column is centered. `src/components/SetsPage.tsx` uses a responsive grid, and `app/globals.css` keeps the app centered with safe-area padding.
 
 ```css
 body {

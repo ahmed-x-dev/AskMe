@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation'
 
 import {
   createSet,
-  importSetFromJson,
+  importSetsFromJson,
   listSets,
   softDeleteSet,
   updateSetTitle,
 } from '../data/repository'
+import { parseSetJson } from '../data/importExport'
+import { createLibraryArchive, readLibraryArchive } from '../data/libraryArchive'
 import type { QuizSet } from '../types/quiz'
 
 function EmptyState({
@@ -49,6 +51,8 @@ export function SetsPage() {
   const [sets, setSets] = useState<QuizSet[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+  const [searchText, setSearchText] = useState('')
   const [importFeedback, setImportFeedback] = useState<{
     kind: 'error' | 'success'
     message: string
@@ -91,29 +95,91 @@ export function SetsPage() {
     router.push(`/set/${created.id}`)
   }
 
-  const handleImportSet = async (file: File) => {
+  const handleImportLibrary = async (files: File[]) => {
     setIsImporting(true)
     setImportFeedback(null)
 
     try {
-      const importedSet = await importSetFromJson(await file.text())
+      const rawJsonFiles: string[] = []
 
-      if (!importedSet) {
-        throw new Error('The selected file did not contain an importable set.')
+      for (const file of files) {
+        const extension = file.name.toLowerCase().split('.').pop()
+
+        if (extension === 'zip') {
+          rawJsonFiles.push(...readLibraryArchive(new Uint8Array(await file.arrayBuffer())))
+        } else if (extension === 'json') {
+          rawJsonFiles.push(await file.text())
+        } else {
+          throw new Error(`“${file.name}” is not a ZIP archive or JSON file.`)
+        }
       }
 
+      const incomingSets = rawJsonFiles.map(parseSetJson)
+      const existingIds = new Set(sets?.map((set) => set.id) ?? [])
+      const replacementCount = incomingSets.filter((set) => existingIds.has(set.id)).length
+
+      if (
+        replacementCount > 0 &&
+        !window.confirm(
+          `${replacementCount} imported set${replacementCount === 1 ? '' : 's'} ${
+            replacementCount === 1 ? 'matches' : 'match'
+          } existing IDs and will replace their current contents. Continue?`,
+        )
+      ) {
+        return
+      }
+
+      const result = await importSetsFromJson(rawJsonFiles)
       await refreshSets()
       setImportFeedback({
         kind: 'success',
-        message: `Imported “${importedSet.title}”.`,
+        message: `Imported ${result.sets.length} set${result.sets.length === 1 ? '' : 's'}${
+          result.updatedCount > 0 ? `; updated ${result.updatedCount} existing` : ''
+        }.`,
       })
     } catch (error) {
       setImportFeedback({
         kind: 'error',
-        message: error instanceof Error ? error.message : 'The set could not be imported.',
+        message: error instanceof Error ? error.message : 'The library could not be imported.',
       })
     } finally {
       setIsImporting(false)
+    }
+  }
+
+  const handleExportLibrary = async () => {
+    setIsExporting(true)
+    setImportFeedback(null)
+
+    try {
+      const activeSets = await listSets()
+      if (activeSets.length === 0) {
+        throw new Error('Create or import a set before exporting your library.')
+      }
+
+      const archive = createLibraryArchive(activeSets)
+      const downloadUrl = URL.createObjectURL(
+        new Blob([archive], { type: 'application/zip' }),
+      )
+      const downloadLink = document.createElement('a')
+      downloadLink.href = downloadUrl
+      downloadLink.download = `askme-library-${new Date().toISOString().slice(0, 10)}.zip`
+      document.body.append(downloadLink)
+      downloadLink.click()
+      downloadLink.remove()
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+
+      setImportFeedback({
+        kind: 'success',
+        message: `Exported ${activeSets.length} set${activeSets.length === 1 ? '' : 's'} to a ZIP archive.`,
+      })
+    } catch (error) {
+      setImportFeedback({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'The library could not be exported.',
+      })
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -166,62 +232,109 @@ export function SetsPage() {
     )
   }
 
+  const activeQuestionCount = sets.reduce(
+    (total, set) => total + set.questions.filter((question) => !question.deleted).length,
+    0,
+  )
+  const filteredSets = sets.filter((set) =>
+    set.title.toLocaleLowerCase().includes(searchText.trim().toLocaleLowerCase()),
+  )
+
   return (
     <>
       {loadError ? (
         <p role="alert" className="text-[13px] leading-[18px] text-bad-fg">{loadError}</p>
       ) : null}
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-5 rounded-2xl bg-card p-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] leading-[18px] text-muted">Library</p>
-          <h2 className="mt-1 text-[22px] font-medium leading-[28px] text-fg">
-            Your sets
+          <p className="text-[13px] leading-[18px] text-accent-text">Your study library</p>
+          <h2 className="mt-2 text-[22px] font-medium leading-[28px] text-fg">
+            Make every study session count.
           </h2>
-          <p className="mt-1 text-[13px] leading-[18px] text-muted">
-            Pick a set and keep your progress moving.
+          <p className="mt-2 max-w-[420px] text-[16px] leading-6 text-muted">
+            Keep your questions organized and pick up where you left off.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => void handleCreateSet()}
+          className="min-h-12 shrink-0 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+        >
+          Create a set
+        </button>
+      </section>
 
-        <div className="flex w-full gap-2 sm:w-auto">
-          {sets.length > 0 ? (
+      <section aria-label="Library overview" className="grid grid-cols-2 gap-3">
+        <article className="rounded-2xl bg-card p-4">
+          <p className="text-[13px] leading-[18px] text-muted">Study sets</p>
+          <p className="mt-1 text-[22px] font-medium leading-[28px] text-fg tabular-nums">
+            {sets.length}
+          </p>
+        </article>
+        <article className="rounded-2xl bg-card p-4">
+          <p className="text-[13px] leading-[18px] text-muted">Questions ready</p>
+          <p className="mt-1 text-[22px] font-medium leading-[28px] text-fg tabular-nums">
+            {activeQuestionCount}
+          </p>
+        </article>
+      </section>
+
+      <section aria-label="Library tools" className="rounded-2xl bg-card p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">Search your sets</span>
+            <input
+              type="search"
+              value={searchText}
+              onChange={(event) => setSearchText(event.currentTarget.value)}
+              placeholder="Search your sets"
+              className="min-h-12 w-full rounded-2xl bg-bg px-4 text-[16px] leading-6 text-fg placeholder:text-muted"
+            />
+          </label>
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-              onClick={() => void handleCreateSet()}
-              className="min-h-12 min-w-0 flex-1 rounded-2xl bg-accent px-3 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] sm:flex-none sm:px-4"
+              onClick={() => importInputRef.current?.click()}
+              disabled={isImporting || isExporting}
+              className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-wait disabled:opacity-70"
             >
-              New set
+              {isImporting ? 'Importing…' : 'Import library'}
             </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => importInputRef.current?.click()}
-            disabled={isImporting}
-            className="min-h-12 min-w-0 flex-1 rounded-2xl bg-card px-3 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent active:scale-[0.98] disabled:cursor-wait disabled:opacity-70 sm:flex-none sm:px-4"
-          >
-            Import set
-          </button>
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".json,application/json"
-            className="hidden"
-            aria-label="Choose a set JSON file"
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0]
-              event.currentTarget.value = ''
-
-              if (file) {
-                void handleImportSet(file)
-              }
-            }}
-          />
+            <button
+              type="button"
+              onClick={() => void handleExportLibrary()}
+              disabled={isImporting || isExporting || sets.length === 0}
+              className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isExporting ? 'Exporting…' : 'Export library'}
+            </button>
+          </div>
         </div>
+        <p className="mt-3 text-[13px] leading-[18px] text-muted">
+          Import a ZIP backup or select multiple set JSON files. Export saves all active sets in one ZIP.
+        </p>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".zip,.json,application/zip,application/json"
+          multiple
+          className="hidden"
+          aria-label="Choose a ZIP archive or multiple set JSON files"
+          onChange={(event) => {
+            const files = Array.from(event.currentTarget.files ?? [])
+            event.currentTarget.value = ''
+
+            if (files.length > 0) {
+              void handleImportLibrary(files)
+            }
+          }}
+        />
       </section>
 
       {importFeedback ? (
         <p
           role={importFeedback.kind === 'error' ? 'alert' : 'status'}
-          className={`-mt-5 text-[13px] leading-[18px] ${
+          className={`text-[13px] leading-[18px] ${
             importFeedback.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
           }`}
         >
@@ -236,9 +349,23 @@ export function SetsPage() {
           actionLabel="Create set"
           onAction={() => void handleCreateSet()}
         />
+      ) : filteredSets.length === 0 ? (
+        <section className="rounded-2xl bg-card p-5 text-center">
+          <h2 className="text-[16px] font-medium leading-6 text-fg">No matching sets</h2>
+          <p className="mt-2 text-[16px] leading-6 text-muted">
+            Try another search or clear the search field.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSearchText('')}
+            className="mt-4 min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+          >
+            Clear search
+          </button>
+        </section>
       ) : (
         <section className="grid gap-3 md:grid-cols-2">
-          {sets.map((set) => {
+          {filteredSets.map((set) => {
             const activeQuestionCount = set.questions.filter((question) => !question.deleted).length
 
             return (

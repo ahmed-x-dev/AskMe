@@ -5,6 +5,7 @@ import {
   addQuestion,
   createSet,
   importQuestionsFromJson,
+  importSetsFromJson,
   listSets,
   softDeleteQuestion,
   softDeleteSet,
@@ -134,5 +135,44 @@ describe('repository', () => {
     expect(updated?.questions[1].text).toBe(importedQuestion.text)
     expect(updated?.questions[1].id).not.toBe(importedQuestion.id)
     expect((await db.sets.get(set.id))?.questions).toEqual(updated?.questions)
+  })
+
+  it('imports multiple sets in one transaction and reports replaced sets', async () => {
+    const existing = await createSet('Old title')
+    const toJson = (id: string, title: string) =>
+      JSON.stringify({
+        schemaVersion: 1,
+        id,
+        title,
+        updatedAt: '2026-10-16T00:00:00.000Z',
+        deleted: false,
+        questions: [],
+      })
+
+    const result = await importSetsFromJson([
+      toJson(existing.id, 'Restored title'),
+      toJson('new-set-id', 'New set'),
+    ])
+
+    expect(result.sets.map((set) => set.title)).toEqual(['Restored title', 'New set'])
+    expect(result.updatedCount).toBe(1)
+    const savedSets = await listSets()
+    expect(savedSets).toHaveLength(2)
+    expect(savedSets.find((set) => set.id === existing.id)?.title).toBe('Restored title')
+    expect(savedSets.find((set) => set.id === 'new-set-id')?.title).toBe('New set')
+  })
+
+  it('does not import any sets when one JSON file is invalid', async () => {
+    const validSet = JSON.stringify({
+      schemaVersion: 1,
+      id: 'valid-set-id',
+      title: 'Valid set',
+      updatedAt: '2026-10-16T00:00:00.000Z',
+      deleted: false,
+      questions: [],
+    })
+
+    await expect(importSetsFromJson([validSet, '{invalid json'])).rejects.toThrow()
+    expect(await listSets()).toEqual([])
   })
 })

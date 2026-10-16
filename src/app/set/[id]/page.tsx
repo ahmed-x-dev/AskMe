@@ -1,4 +1,4 @@
-import { SetDetailPage } from '../../../src/components/SetDetailPage'
+import { SetDetailPage } from '@/components/SetDetailPage'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

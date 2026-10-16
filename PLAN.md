@@ -7,7 +7,7 @@
 ```yaml
 current_phase: P3
 current_task: P3-01
-last_updated: 2026-10-12
+last_updated: 2026-10-16
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
@@ -311,6 +311,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-11** Add reference-answer reveal and self-assessment controls for essay quiz questions.
   - Done when: essay questions reveal their optional reference answer, let users mark themselves right or wrong, and count that mark in the final score without changing MCQ scoring.
   - Learn: `docs/learn/08-quiz-flow-and-scoring.md`.
+- [x] **P5-12** Refresh the library home page and add whole-library ZIP export/import and multi-JSON import; repair relocated App Router imports.
+  - Done when: the library is responsive and easier to navigate; active sets can be exported to one ZIP; ZIP archives and multiple JSON files are validated before any sets are saved; success and failure feedback is visible.
+  - Learn: `docs/learn/09-json-import-export.md`, `docs/learn/11-responsive-layout.md`, `docs/learn/18-nextjs-app-router.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -330,6 +333,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-12 | Next.js App Router for the web app; browser remains data owner | Requested migration; Dexie and keys stay client-side; hosting needs Next.js |
 | 2026-10-12 | Web first, desktop second, mobile through PWA                 | Avoid native wrappers and store releases; reuse the responsive web app        |
 | 2026-10-12 | Native Capacitor work is out of scope for now                 | Mobile access will use the installable PWA; reconsider native only if needed |
+| 2026-10-16 | Use ZIP for whole-library export and import                    | Browsers can create and read ZIP archives locally; genuine RAR creation is not built in and would require a different toolchain |
+| 2026-10-16 | Use fflate for client-side ZIP handling                        | Keeps library backup and restore local without a backend                   |
+| 2026-10-16 | Map the Next.js `@/*` alias to `src/*`                         | Keeps App Router imports stable and readable after moving routes into `src/app` |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -349,6 +355,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-16: Refreshed the responsive library with ZIP backup/restore and atomic multi-JSON import; fixed relocated App Router imports using Next.js's `@/*` alias mapped to `src/*`; regenerated stale route types with `next typegen`. `typecheck`, `lint`, all 28 tests, and production `build` pass. Next: continue P3-01.
 - 2026-10-12: Moved the learning guides into `docs/learn/`, preserving other docs directory contents and updating links and contributor guidance. Next: continue P3-01.
 - 2026-10-12: Set platform direction to web first, desktop second, and mobile through the installable PWA; marked native Capacitor and store-release tasks out of scope, promoted desktop packaging, and added mobile PWA verification. Next: continue P3-01, then desktop delivery before mobile PWA validation.
 - 2026-10-12: Migrated the app from Vite/React Router to Next.js 16 App Router, retaining client-side Dexie storage, browser-only AI keys, theme controls, and offline routes. Removed the stale Vite build output and corrected the documented project structure and route lesson. `typecheck`, `lint`, all 22 tests, production build, route/editor/quiz/settings smoke checks, 404 handling, and offline service-worker checks pass. `npm outdated` shows major updates available for `@types/node` and TypeScript plus a Vitest patch; none upgraded. Vite remains only as a transitive Vitest dependency, not a direct app dependency. Next: P3-01 (sync merge logic).

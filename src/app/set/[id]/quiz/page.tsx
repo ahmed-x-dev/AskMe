@@ -1,5 +1,5 @@
-import { QuizPage } from '../../../../src/components/QuizPage'
-import type { QuizMode } from '../../../../src/features/quiz'
+import { QuizPage } from '@/components/QuizPage'
+import type { QuizMode } from '@/features/quiz'
 
 type PageProps = {
   params: Promise<{ id: string }>
