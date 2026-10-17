@@ -23,7 +23,7 @@ function QuestionEditorForm({
   const [activeType, setActiveType] = useState<QuestionType>(existingQuestion?.type ?? 'mcq')
   const [text, setText] = useState(existingQuestion?.text ?? '')
   const [difficulty, setDifficulty] = useState<QuestionDifficulty>(
-    existingQuestion?.difficulty ?? 'normal',
+    existingQuestion?.difficulty ?? 'medium',
   )
   const [tagsText, setTagsText] = useState(existingQuestion?.tags.join('\n') ?? '')
   const [options, setOptions] = useState<string[]>(
@@ -190,7 +190,7 @@ function QuestionEditorForm({
       <fieldset className="mt-5">
         <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
         <div className="mt-2 flex rounded-[14px] bg-bg p-1">
-          {(['easy', 'normal', 'hard'] as const).map((level) => (
+          {(['easy', 'medium', 'hard'] as const).map((level) => (
             <button
               key={level}
               type="button"

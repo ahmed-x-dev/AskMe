@@ -1,9 +1,9 @@
 import type { Question, QuestionDifficulty, QuizSet } from '../types/quiz'
 
-export const CURRENT_SCHEMA_VERSION = 2
+export const CURRENT_SCHEMA_VERSION = 3
 
-const SUPPORTED_SCHEMA_VERSIONS = [1, CURRENT_SCHEMA_VERSION]
-const QUESTION_DIFFICULTIES: QuestionDifficulty[] = ['easy', 'normal', 'hard']
+const SUPPORTED_SCHEMA_VERSIONS = [1, 2, CURRENT_SCHEMA_VERSION]
+const QUESTION_DIFFICULTIES: QuestionDifficulty[] = ['easy', 'medium', 'hard']
 
 function isQuestionDifficulty(value: unknown): value is QuestionDifficulty {
   return QUESTION_DIFFICULTIES.some((difficulty) => difficulty === value)
@@ -48,7 +48,11 @@ function normalizeQuestion(question: unknown, index: number): Question {
     throw new Error(`Question ${index + 1} is missing an updatedAt value.`)
   }
 
-  if (difficulty !== undefined && !isQuestionDifficulty(difficulty)) {
+  if (
+    difficulty !== undefined &&
+    difficulty !== 'normal' &&
+    !isQuestionDifficulty(difficulty)
+  ) {
     throw new Error(`Question ${index + 1} has an unsupported difficulty.`)
   }
 
@@ -56,7 +60,12 @@ function normalizeQuestion(question: unknown, index: number): Question {
     throw new Error(`Question ${index + 1} tags must be an array of strings.`)
   }
 
-  const normalizedDifficulty = isQuestionDifficulty(difficulty) ? difficulty : 'normal'
+  const normalizedDifficulty =
+    difficulty === 'normal'
+      ? 'medium'
+      : isQuestionDifficulty(difficulty)
+        ? difficulty
+        : 'medium'
   const normalizedTags = [
     ...new Set(
       (Array.isArray(tags) ? tags : [])

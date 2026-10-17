@@ -2,7 +2,7 @@
 export type QuestionType = 'mcq' | 'essay'
 
 /** Difficulty label saved with each question. */
-export type QuestionDifficulty = 'easy' | 'normal' | 'hard'
+export type QuestionDifficulty = 'easy' | 'medium' | 'hard'
 
 /** Union of all question records stored in a quiz set. */
 export type Question = McqQuestion | EssayQuestion

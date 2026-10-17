@@ -1,12 +1,21 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
-import { gradeEssayAnswer, describeError } from '../features/ai'
-import { buildQuizQueue, type QuizMode } from '../features/quiz'
+import {
+  describeError,
+  explainQuestionAnswer,
+  gradeEssayAnswer,
+} from '../features/ai'
+import {
+  buildQuizQueue,
+  formatElapsedTime,
+  type QuizMode,
+  type QuizQuestionType,
+} from '../features/quiz'
 import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
-import type { Question } from '../types/quiz'
+import type { Question, QuestionDifficulty } from '../types/quiz'
 import { useQuizSet } from '../hooks/useQuizSet'
 
 function hasAnswered(
@@ -35,9 +44,33 @@ function isCorrect(
 
 export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
   const { set, isLoading, errorMessage } = useQuizSet(setId)
-  const queue = useMemo(() => buildQuizQueue(set, mode), [set, mode])
+  const [questionType, setQuestionType] = useState<QuizQuestionType>(
+    mode === 'random' ? 'all' : mode,
+  )
+  const [difficulty, setDifficulty] = useState<QuestionDifficulty | 'all'>('all')
+  const [countMode, setCountMode] = useState<'all' | 'limited'>('all')
+  const [questionLimit, setQuestionLimit] = useState(2)
+  const queue = useMemo(
+    () => buildQuizQueue(set, 'random', {
+      questionType,
+      difficulty,
+      limit: countMode === 'limited' ? questionLimit : undefined,
+    }),
+    [set, questionType, difficulty, countMode, questionLimit],
+  )
+  const matchingQuestionCount =
+    set?.questions.filter(
+      (question) =>
+        !question.deleted &&
+        (questionType === 'all' || question.type === questionType) &&
+        (difficulty === 'all' || question.difficulty === difficulty),
+    ).length ?? 0
+  const activeQuestionCount =
+    set?.questions.filter((question) => !question.deleted).length ?? 0
 
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isQuizStarted, setIsQuizStarted] = useState(false)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string | number>>({})
   const [essayResults, setEssayResults] = useState<Record<string, boolean>>({})
   const [revealedReferences, setRevealedReferences] = useState<Record<string, boolean>>({})
@@ -49,16 +82,50 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     missingPoints: number
   } | null>(null)
   const [aiMessage, setAiMessage] = useState<{ kind: 'error' | 'success'; message: string } | null>(null)
+  const [aiExplanation, setAiExplanation] = useState<{ questionId: string; text: string } | null>(null)
+  const [aiExplanationMessage, setAiExplanationMessage] = useState<string | null>(null)
   const [isAiGrading, setIsAiGrading] = useState(false)
+  const [isAiExplaining, setIsAiExplaining] = useState(false)
+  const startedAt = useRef<number | null>(null)
   const aiGradingRequestId = useRef(0)
+  const aiExplanationRequestId = useRef(0)
 
-  const handleGradeEssay = async () => {
-    if (!set) {
+  useEffect(() => {
+    if (!isQuizStarted || currentIndex >= queue.length || startedAt.current === null) {
       return
     }
 
+    const startTime = startedAt.current
+    const updateElapsedTime = () => {
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000))
+    }
+    updateElapsedTime()
+    const intervalId = window.setInterval(updateElapsedTime, 1000)
+
+    return () => window.clearInterval(intervalId)
+  }, [isQuizStarted, currentIndex, queue.length])
+
+  const startQuiz = () => {
+    if (queue.length === 0) {
+      return
+    }
+
+    setCurrentIndex(0)
+    setAnswers({})
+    setEssayResults({})
+    setRevealedReferences({})
+    setAiGrade(null)
+    setAiMessage(null)
+    setAiExplanation(null)
+    setAiExplanationMessage(null)
+    setElapsedSeconds(0)
+    startedAt.current = Date.now()
+    setIsQuizStarted(true)
+  }
+
+  const handleGradeEssay = async () => {
     const currentQuestion = queue[currentIndex]
-    if (currentQuestion.type !== 'essay') {
+    if (!currentQuestion || currentQuestion.type !== 'essay') {
       return
     }
 
@@ -115,11 +182,57 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     }
   }
 
+  const handleExplainAnswer = async () => {
+    const currentQuestion = queue[currentIndex]
+    if (!currentQuestion) {
+      return
+    }
+
+    const activeProvider = getAiProvider()
+    if (!hasAiApiKey(activeProvider)) {
+      setAiExplanationMessage(
+        `Add a ${activeProvider === 'openai' ? 'OpenAI' : 'Gemini'} API key in Settings before requesting an explanation.`,
+      )
+      return
+    }
+
+    setIsAiExplaining(true)
+    setAiExplanationMessage(null)
+    const requestId = ++aiExplanationRequestId.current
+
+    try {
+      const explanation = await explainQuestionAnswer({
+        question: currentQuestion,
+        userAnswer: answers[currentQuestion.id],
+        provider: activeProvider,
+      })
+
+      if (aiExplanationRequestId.current === requestId) {
+        setAiExplanation({ questionId: currentQuestion.id, text: explanation })
+      }
+    } catch (error) {
+      if (aiExplanationRequestId.current === requestId) {
+        setAiExplanationMessage(describeError(error))
+      }
+    } finally {
+      if (aiExplanationRequestId.current === requestId) {
+        setIsAiExplaining(false)
+      }
+    }
+  }
+
   const advanceToNextQuestion = () => {
     aiGradingRequestId.current += 1
+    aiExplanationRequestId.current += 1
     setIsAiGrading(false)
+    setIsAiExplaining(false)
     setAiGrade(null)
     setAiMessage(null)
+    setAiExplanation(null)
+    setAiExplanationMessage(null)
+    if (currentIndex === queue.length - 1 && startedAt.current !== null) {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt.current) / 1000))
+    }
     setCurrentIndex((previous) => Math.min(previous + 1, queue.length))
   }
 
@@ -146,7 +259,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     )
   }
 
-  if (queue.length === 0) {
+  if (activeQuestionCount === 0) {
     return (
       <section className="rounded-2xl bg-card p-5 text-center">
         <h2 className="text-[18px] font-medium leading-7 text-fg">No questions available</h2>
@@ -159,6 +272,132 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         >
           Return to set
         </Link>
+      </section>
+    )
+  }
+
+  if (!isQuizStarted) {
+    const questionTypes: { value: QuizQuestionType; label: string }[] = [
+      { value: 'all', label: 'MCQ + Essay' },
+      { value: 'mcq', label: 'MCQ only' },
+      { value: 'essay', label: 'Essay only' },
+    ]
+    const difficulties: { value: QuestionDifficulty | 'all'; label: string }[] = [
+      { value: 'all', label: 'All' },
+      { value: 'easy', label: 'Easy' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'hard', label: 'Hard' },
+    ]
+
+    return (
+      <section className="rounded-2xl bg-card p-4">
+        <h2 className="text-[22px] font-medium leading-7 text-fg">Set up your quiz</h2>
+
+        <fieldset className="mt-5">
+          <legend className="text-[13px] font-medium leading-[18px] text-muted">Question type</legend>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {questionTypes.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={questionType === option.value}
+                onClick={() => setQuestionType(option.value)}
+                className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
+                  questionType === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-5">
+          <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
+          <div className="mt-2 grid grid-cols-4 gap-2">
+            {difficulties.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={difficulty === option.value}
+                onClick={() => setDifficulty(option.value)}
+                className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
+                  difficulty === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="mt-5">
+          <legend className="text-[13px] font-medium leading-[18px] text-muted">Question count</legend>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              aria-pressed={countMode === 'all'}
+              onClick={() => setCountMode('all')}
+              className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
+                countMode === 'all' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+              }`}
+            >
+              All ({matchingQuestionCount})
+            </button>
+            <button
+              type="button"
+              aria-pressed={countMode === 'limited'}
+              onClick={() => setCountMode('limited')}
+              className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
+                countMode === 'limited' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+              }`}
+            >
+              Choose a number
+            </button>
+          </div>
+          {countMode === 'limited' ? (
+            <label className="mt-3 flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 text-[13px] text-muted">
+              Number of questions
+              <input
+                type="number"
+                min={1}
+                value={questionLimit}
+                onChange={(event) => {
+                  const nextLimit = Number(event.target.value)
+                  setQuestionLimit(Number.isFinite(nextLimit) ? Math.max(1, Math.floor(nextLimit)) : 1)
+                }}
+                className="w-20 rounded-[14px] bg-card px-3 py-2 text-center text-[16px] text-fg"
+              />
+            </label>
+          ) : null}
+        </fieldset>
+
+        {matchingQuestionCount === 0 ? (
+          <p role="status" className="mt-4 text-[13px] leading-[18px] text-muted">
+            No questions match these filters. Choose another type or difficulty.
+          </p>
+        ) : countMode === 'limited' ? (
+          <p className="mt-3 text-[13px] leading-[18px] text-muted">
+            This quiz will include {queue.length} of {matchingQuestionCount} matching questions.
+          </p>
+        ) : null}
+
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            disabled={queue.length === 0}
+            onClick={startQuiz}
+            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Start quiz
+          </button>
+          <Link
+            href={`/set/${set.id}`}
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+          >
+            Back to set
+          </Link>
+        </div>
       </section>
     )
   }
@@ -181,6 +420,9 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
               {endScore} / {queue.length}
             </p>
             <p className="mt-2 text-[16px] leading-6 text-muted">{scorePercent}% correct</p>
+            <p className="mt-2 text-[16px] leading-6 text-muted">
+              Time taken: <span className="tabular-nums">{formatElapsedTime(elapsedSeconds)}</span>
+            </p>
           </div>
         </div>
 
@@ -189,12 +431,17 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
             type="button"
             onClick={() => {
               aiGradingRequestId.current += 1
+              aiExplanationRequestId.current += 1
+              startedAt.current = Date.now()
+              setElapsedSeconds(0)
               setCurrentIndex(0)
               setAnswers({})
               setEssayResults({})
               setRevealedReferences({})
               setAiGrade(null)
               setAiMessage(null)
+              setAiExplanation(null)
+              setAiExplanationMessage(null)
             }}
             className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
@@ -218,7 +465,12 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
   const isAnswered = hasAnswered(currentQuestion, currentAnswer, currentEssayResult)
   const hasRevealedReference =
     currentQuestion.type === 'essay' && revealedReferences[currentQuestion.id] === true
-  const modeLabel = mode === 'mcq' ? 'MCQ only' : mode === 'essay' ? 'Essay only' : 'Random mix'
+  const modeLabel =
+    questionType === 'all'
+      ? 'MCQ + Essay'
+      : questionType === 'mcq'
+        ? 'MCQ only'
+        : 'Essay only'
 
   return (
     <section className="rounded-2xl bg-card p-4">
@@ -229,9 +481,18 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
             {currentIndex + 1} of {queue.length}
           </p>
         </div>
-        <span className="rounded-full bg-bg px-3 py-1 text-[13px] leading-[18px] text-muted">
-          {modeLabel}
-        </span>
+        <div className="flex flex-wrap justify-end gap-2">
+          <span className="rounded-full bg-bg px-3 py-1 text-[13px] leading-[18px] text-muted">
+            {modeLabel}
+          </span>
+          <span
+            role="timer"
+            aria-label={`Elapsed time ${formatElapsedTime(elapsedSeconds)}`}
+            className="rounded-full bg-bg px-3 py-1 text-[13px] leading-[18px] text-muted tabular-nums"
+          >
+            {formatElapsedTime(elapsedSeconds)}
+          </span>
+        </div>
       </div>
 
       <div
@@ -258,7 +519,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         </span>
         <div className="mt-2 flex flex-wrap gap-2">
           <span className="rounded-full bg-card px-2.5 py-1 text-[13px] font-medium text-muted">
-            Difficulty: {currentQuestion.difficulty}
+            Difficulty: {currentQuestion.difficulty[0].toUpperCase() + currentQuestion.difficulty.slice(1)}
           </span>
           {currentQuestion.tags.map((tag) => (
             <span
@@ -288,6 +549,10 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
                   if (isAnswered) {
                     return
                   }
+                  aiExplanationRequestId.current += 1
+                  setIsAiExplaining(false)
+                  setAiExplanation(null)
+                  setAiExplanationMessage(null)
                   setAnswers((previous) => ({ ...previous, [currentQuestion.id]: optionIndex }))
                 }}
                 className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3 py-3 text-left text-[16px] leading-6 transition-colors ${
@@ -319,10 +584,14 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
                 return
               }
               aiGradingRequestId.current += 1
+              aiExplanationRequestId.current += 1
               setIsAiGrading(false)
+              setIsAiExplaining(false)
               setAnswers((previous) => ({ ...previous, [currentQuestion.id]: event.target.value }))
               setAiGrade(null)
               setAiMessage(null)
+              setAiExplanation(null)
+              setAiExplanationMessage(null)
             }}
             disabled={hasRevealedReference}
             rows={5}
@@ -376,6 +645,30 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
           </p>
         </div>
       )}
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={() => void handleExplainAnswer()}
+          disabled={isAiExplaining}
+          className="min-h-12 w-full rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+        >
+          {isAiExplaining ? 'Explaining…' : 'Explain answer with AI'}
+        </button>
+        {aiExplanationMessage ? (
+          <p role="alert" className="mt-2 text-[13px] leading-[18px] text-bad-fg">
+            {aiExplanationMessage}
+          </p>
+        ) : null}
+        {aiExplanation?.questionId === currentQuestion.id ? (
+          <div className="mt-3 rounded-[14px] bg-bg p-3" aria-live="polite">
+            <p className="text-[13px] font-medium leading-[18px] text-muted">AI explanation</p>
+            <p className="mt-1 whitespace-pre-wrap text-[16px] leading-6 text-fg">
+              {aiExplanation.text}
+            </p>
+          </div>
+        ) : null}
+      </div>
 
       {hasRevealedReference && currentQuestion.type === 'essay' ? (
         <>

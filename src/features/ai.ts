@@ -3,7 +3,12 @@ import {
   getAiProvider,
   type AiProvider,
 } from "../platform/secureStorage";
-import type { EssayQuestion, McqQuestion, QuestionType } from "../types/quiz";
+import type {
+  EssayQuestion,
+  McqQuestion,
+  Question,
+  QuestionType,
+} from "../types/quiz";
 
 const GEMINI_MODEL = "gemini-3.8-flash";
 const OPENAI_MODEL = "gpt-4o-mini";
@@ -19,6 +24,10 @@ export type EssayGradeResult = {
   score: number;
   feedback: string;
   missingPoints: number;
+};
+
+export type AnswerExplanation = {
+  explanation: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -161,7 +170,7 @@ export function validateGeneratedQuestions(
         id: crypto.randomUUID(),
         type: "mcq",
         text,
-        difficulty: "normal",
+        difficulty: "medium",
         tags: [],
         options: [
           cleanOptions[0],
@@ -186,7 +195,7 @@ export function validateGeneratedQuestions(
         id: crypto.randomUUID(),
         type: "essay",
         text,
-        difficulty: "normal",
+        difficulty: "medium",
         tags: [],
         referenceAnswer: referenceAnswer || undefined,
         updatedAt: nowIso(),
@@ -232,6 +241,16 @@ export function validateEssayGradeResult(payload: unknown): EssayGradeResult {
     score,
     feedback,
     missingPoints,
+  };
+}
+
+export function validateAnswerExplanation(payload: unknown): AnswerExplanation {
+  if (!isRecord(payload)) {
+    throw new Error("The AI explanation was malformed.");
+  }
+
+  return {
+    explanation: ensureValidText(payload.explanation, "answer explanation"),
   };
 }
 
@@ -423,6 +442,44 @@ export async function gradeEssayAnswer({
   return callAi<EssayGradeResult>(provider, prompt, (value) =>
     validateEssayGradeResult(value),
   );
+}
+
+export async function explainQuestionAnswer({
+  question,
+  userAnswer,
+  provider = getAiProvider(),
+}: {
+  question: Question;
+  userAnswer?: string | number;
+  provider?: AiProvider;
+}): Promise<string> {
+  const questionDetails =
+    question.type === "mcq"
+      ? [
+          `Options: ${question.options.map((option, index) => `${index + 1}. ${option}`).join(" | ")}`,
+          `Correct answer: ${question.options[question.answerIndex]}`,
+          `Learner selected: ${typeof userAnswer === "number" ? question.options[userAnswer] ?? "No answer selected." : "No answer selected."}`,
+        ]
+      : [
+          `Reference answer: ${question.referenceAnswer?.trim() || "No reference answer was supplied."}`,
+          `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
+        ];
+
+  const prompt = [
+    "Return valid JSON only. Do not add markdown fences or prose.",
+    "Explain the answer to this revision question in clear, concise language.",
+    "For a multiple-choice question, explain why the correct answer is right and address the learner's choice if provided.",
+    "For an essay question, explain the key ideas in the reference answer and any useful feedback on the learner's answer.",
+    `Question: ${question.text}`,
+    ...questionDetails,
+    'Return a top-level object with an "explanation" string.',
+  ].join("\n");
+
+  const result = await callAi<AnswerExplanation>(provider, prompt, (value) =>
+    validateAnswerExplanation(value),
+  );
+
+  return result.explanation;
 }
 
 export function describeError(error: unknown): string {

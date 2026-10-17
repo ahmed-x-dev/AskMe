@@ -31,7 +31,7 @@ if (activeType === 'mcq') {
 
 This saves the record only after validation passes, which keeps bad data out of IndexedDB.
 
-Difficulty uses the `easy`, `normal`, and `hard` values. A selected value and cleaned tags are included on both MCQ and essay records.
+Difficulty uses the `easy`, `medium`, and `hard` values. Schema version 3 renamed the former `normal` label to `medium`. A selected value and cleaned tags are included on both MCQ and essay records.
 
 ## ❌ / ✅ examples
 
@@ -51,7 +51,7 @@ Difficulty uses the `easy`, `normal`, and `hard` values. A selected value and cl
 ## Quick Reference
 
 - `crypto.randomUUID()` gives each question a unique id.
-- Difficulty is one of `easy`, `normal`, or `hard`.
+- Difficulty is one of `easy`, `medium`, or `hard`.
 - Enter one free-form tag per line; `deprecated` is displayed as a label only.
 - Use `trim()` before checking user input.
 - `addQuestion` creates a new record; `updateQuestion` replaces an existing one.

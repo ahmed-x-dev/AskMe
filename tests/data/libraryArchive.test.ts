@@ -6,7 +6,7 @@ import { createLibraryArchive, readLibraryArchive } from '../../src/data/library
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   id: 'set-1',
   title: 'Biology',
   updatedAt: '2026-10-16T00:00:00.000Z',
@@ -16,7 +16,7 @@ const sampleSet: QuizSet = {
       id: 'question-1',
       type: 'essay',
       text: 'Explain photosynthesis.',
-      difficulty: 'normal',
+      difficulty: 'medium',
       tags: ['biology'],
       updatedAt: '2026-10-16T00:00:00.000Z',
       deleted: false,
@@ -25,7 +25,7 @@ const sampleSet: QuizSet = {
       id: 'deleted-question',
       type: 'essay',
       text: 'Deleted question.',
-      difficulty: 'normal',
+      difficulty: 'medium',
       tags: [],
       updatedAt: '2026-10-16T00:00:00.000Z',
       deleted: true,

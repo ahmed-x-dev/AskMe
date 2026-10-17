@@ -45,6 +45,8 @@ A simple, fast revision app for short study sessions on any device. The user bui
 
 **Quiz modes:** random (mixed), MCQ only, essay only.
 
+Quiz setup also filters by question type and difficulty, and includes all matches or a chosen count. The active session shows elapsed time from its start; the learner can request an AI explanation at any time.
+
 **AI (optional)**
 
 - User supplies their own free Gemini API key.
@@ -79,7 +81,7 @@ One JSON file per set; this is also the sync and export format.
 
 ```json
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "id": "set_uuid",
   "title": "Biology Ch.3",
   "updatedAt": "2026-10-06T10:00:00Z",
@@ -89,7 +91,7 @@ One JSON file per set; this is also the sync and export format.
       "id": "q_uuid",
       "type": "mcq",
       "text": "...",
-      "difficulty": "normal",
+      "difficulty": "medium",
       "tags": [],
       "options": ["A", "B", "C", "D"],
       "answerIndex": 2,
@@ -113,8 +115,8 @@ One JSON file per set; this is also the sync and export format.
 **Rules**
 
 - UUID ids, `updatedAt` on every record, soft deletes via `deleted: true`.
-- Questions have an `easy`, `normal`, or `hard` difficulty and optional free-form tags. The `deprecated` tag is informational and does not exclude a question from quizzes.
-- JSON schema version 2 migrates version 1 questions to `difficulty: "normal"` and `tags: []`.
+- Questions have an `easy`, `medium`, or `hard` difficulty and optional free-form tags. The `deprecated` tag is informational and does not exclude a question from quizzes.
+- JSON schema version 2 migrated version 1 questions to `difficulty: "normal"` and `tags: []`; schema version 3 migrates `normal` to `medium` and accepts version 1 and 2 imports.
 - Purge tombstones older than about 30 days (Phase 3).
 - Optional `image` field is added later (Phase 5) without breaking old data.
 
@@ -324,6 +326,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-13** Add difficulty and free-form tags to question records, editing, and JSON import/export.
   - Done when: questions support easy/normal/hard difficulty and tags; deprecated tags remain informational; old local data and version 1 JSON migrate to normal difficulty and no tags; all checks pass.
   - Learn: `docs/learn/06-question-editor.md`, `docs/learn/09-json-import-export.md`.
+- [x] **P5-14** Add quiz setup filters for question type, difficulty, and question count; add an elapsed session timer and on-demand AI answer explanations; migrate normal difficulty to medium.
+  - Done when: users can configure quiz type/difficulty/count before starting; the timer counts up from 00 for the full session; AI explanations can be requested for MCQ and essay questions; version 2 local data and JSON migrate normal difficulty to medium; checks pass.
+  - Learn: `docs/learn/25-quiz-session-options.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -347,6 +352,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-16 | Use fflate for client-side ZIP handling                        | Keeps library backup and restore local without a backend                   |
 | 2026-10-16 | Map the Next.js `@/*` alias to `src/*`                         | Keeps App Router imports stable and readable after moving routes into `src/app` |
 | 2026-10-17 | Store question difficulty and free-form informational tags in schema version 2 | Adds helpful labels without changing quiz eligibility; version 1 data migrates to normal difficulty and no tags |
+| 2026-10-17 | Use a session-level elapsed timer and keep quiz filters in quiz state; rename normal difficulty to medium in schema version 3 | The timer measures the whole run without interrupting answers; filters don't alter saved sets; the schema migration uses the user-facing difficulty label consistently |
 | 2026-10-17 | Defer PWA installation and offline caching for now | Prevent stale service-worker assets during current web development; remove old registrations and cache without touching local quiz data |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
@@ -367,6 +373,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-17: Completed P5-14: added quiz type/difficulty/count setup, a session stopwatch, and on-demand AI explanations; migrated stored and imported `normal` difficulty to `medium` with schema version 3. `typecheck`, `lint`, all 36 tests, and production `build` pass; browser smoke check verified filters, elapsed time, completion time, and missing-key feedback, then removed the test set. `npm outdated` still reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); none upgraded. Next: resume P3-01.
 - 2026-10-17: Removed active PWA installation and offline behavior: deleted the manifest, service worker, and offline fallback route; stopped linking the manifest; and added one-time cleanup of the old worker and cache without touching IndexedDB data. Updated the PWA learning note and deferred P4-09. Next: continue P3-01.
 - 2026-10-17: Completed P5-13: added easy/normal/hard and free-form tags to question editing, set/quiz views, and JSON schema v2; version 1 JSON and local IndexedDB records migrate to normal difficulty with no tags. Browser smoke check confirmed a deprecated-tagged question still appears in a quiz. `typecheck`, `lint`, all 31 tests, and production `build` pass. `npm outdated` reports major updates for `@types/node` and TypeScript; none upgraded. Next: return to P3-01.
 - 2026-10-16: Refreshed the responsive library with ZIP backup/restore and atomic multi-JSON import; fixed relocated App Router imports using Next.js's `@/*` alias mapped to `src/*`; regenerated stale route types with `next typegen`. `typecheck`, `lint`, all 28 tests, and production `build` pass. Next: continue P3-01.

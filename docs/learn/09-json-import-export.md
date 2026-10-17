@@ -8,7 +8,7 @@ A local database is great for app use, but users also need a way to move a set o
 
 ## The concept, simply
 
-A set export is just a snapshot of a valid quiz set. When the app imports it later, it validates the shape before saving the new record. Schema version 2 adds difficulty and tags to each question. When an older version 1 set is imported, the app migrates its questions to normal difficulty with no tags. A library backup is a ZIP file containing one set JSON document per entry. The app can also import several selected JSON files together.
+A set export is just a snapshot of a valid quiz set. When the app imports it later, it validates the shape before saving the new record. Schema version 2 added difficulty and tags to each question. Schema version 3 renames `normal` to `medium`; imports from versions 1 and 2 are still supported. A library backup is a ZIP file containing one set JSON document per entry. The app can also import several selected JSON files together.
 
 This is important because an invalid file should fail clearly instead of silently corrupting the database. The library validates every selected set before writing any of them, then saves the batch in one IndexedDB transaction. A bad file therefore does not leave a half-imported library.
 
@@ -17,14 +17,17 @@ This is important because an invalid file should fail clearly instead of silentl
 `src/data/importExport.ts` validates the structure and converts raw JSON into the app's `QuizSet` type.
 
 ```ts
-if (parsed.schemaVersion !== CURRENT_SCHEMA_VERSION) {
+if (
+  typeof parsed.schemaVersion !== 'number' ||
+  !SUPPORTED_SCHEMA_VERSIONS.includes(parsed.schemaVersion)
+) {
   throw new Error(`Unsupported schema version: ${String(parsed.schemaVersion ?? 'unknown')}.`)
 }
 ```
 
 The repository persists the validated set through `importSetFromJson`, ensuring only valid content is written.
 
-The version 1 migration also runs when Dexie upgrades old local sets. It adds `difficulty: "normal"` and `tags: []`, so existing questions remain valid and eligible for quizzes.
+Version 1 local sets receive a default `difficulty: "medium"` and `tags: []`. The version 3 Dexie migration changes stored `normal` difficulty values to `medium`. JSON import applies the same normalization, so old files remain usable.
 
 `src/data/libraryArchive.ts` uses the small `fflate` library to collect the per-set JSON documents into a ZIP and read JSON documents back out of one. Archive entries are treated as file contents only; their paths are never written to the device. The library action can import one ZIP or multiple JSON files, and asks for confirmation when imported IDs would replace existing sets.
 
@@ -43,7 +46,7 @@ The browser does not create genuine RAR archives. ZIP is used for whole-library 
 - ❌ Saving a set without an `id` or `questions` array.
 - ✅ Blocking unsafe input before it hits Dexie.
 - ❌ Rejecting every older set after adding new question fields.
-- ✅ Migrating version 1 questions to normal difficulty and an empty tag list.
+- ✅ Migrating version 1 questions to medium difficulty and an empty tag list, and version 2 `normal` values to `medium`.
 - ❌ Hiding a parse failure after the user selects a file.
 - ✅ Showing the validation message next to the library actions.
 - ❌ Replacing a destination set when the goal is to add questions.
@@ -55,12 +58,13 @@ The browser does not create genuine RAR archives. ZIP is used for whole-library 
 2. Import several set JSON files together, then try again with one invalid file and confirm none are imported.
 3. Change a set's `schemaVersion` to a wrong value and re-import it.
 4. On a set page, import a single Question object or a full set export; confirm only questions are appended.
-5. Import a version 1 set and confirm its questions become normal difficulty with no tags.
+5. Import a version 1 set and confirm its questions become medium difficulty with no tags; import a version 2 set and confirm `normal` becomes `medium`.
 
 ## Quick Reference
 
 - `schemaVersion` tells the app which data format the file is built for.
-- Version 2 stores `difficulty` and `tags` on each question; version 1 imports are migrated.
+- Version 2 added `difficulty` and `tags`; version 3 renames `normal` to `medium`.
+- `parseSetJson` accepts versions 1, 2, and 3, migrating older question records.
 - `parseSetJson` validates and normalizes raw JSON.
 - `exportSetJson` produces a portable, human-readable file.
 - `createLibraryArchive` and `readLibraryArchive` write and read ZIP backups.

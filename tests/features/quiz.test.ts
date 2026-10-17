@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { buildQuizQueue, shuffle } from '../../src/features/quiz'
+import { buildQuizQueue, formatElapsedTime, shuffle } from '../../src/features/quiz'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   id: 'set-1',
   title: 'Practice set',
   updatedAt: '2026-10-11T00:00:00.000Z',
@@ -14,7 +14,7 @@ const sampleSet: QuizSet = {
       id: 'q-1',
       type: 'mcq',
       text: 'Which planet is known as the Red Planet?',
-      difficulty: 'easy',
+      difficulty: 'medium',
       tags: ['space', 'deprecated'],
       options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
       answerIndex: 1,
@@ -35,7 +35,7 @@ const sampleSet: QuizSet = {
       id: 'q-3',
       type: 'mcq',
       text: 'Hidden question',
-      difficulty: 'normal',
+      difficulty: 'medium',
       tags: [],
       options: ['A', 'B', 'C', 'D'],
       answerIndex: 0,
@@ -68,5 +68,24 @@ describe('quiz features', () => {
     expect(essayQueue.every((question) => question.type === 'essay')).toBe(true)
     expect(randomQueue).toHaveLength(2)
     expect(randomQueue.map((question) => question.id)).toEqual(expect.arrayContaining(['q-1', 'q-2']))
+  })
+
+  it('filters by type and difficulty before applying a question limit', () => {
+    const selected = buildQuizQueue(sampleSet, 'random', {
+      questionType: 'mcq',
+      difficulty: 'medium',
+      limit: 1,
+    })
+
+    expect(selected.map((question) => question.id)).toEqual(['q-1'])
+    expect(buildQuizQueue(sampleSet, 'random', { difficulty: 'hard' })).toHaveLength(1)
+    expect(buildQuizQueue(sampleSet, 'random', { questionType: 'essay' })).toHaveLength(1)
+  })
+
+  it('formats elapsed quiz time with hours when needed', () => {
+    expect(formatElapsedTime(0)).toBe('00:00')
+    expect(formatElapsedTime(65)).toBe('01:05')
+    expect(formatElapsedTime(3661)).toBe('01:01:01')
+    expect(formatElapsedTime(-1)).toBe('00:00')
   })
 })

@@ -55,7 +55,7 @@ describe('import/export helpers', () => {
     expect(() => parseSetJson(invalidJson)).toThrowError(/Unsupported schema version/)
   })
 
-  it('migrates version 1 sets with normal difficulty and no tags', () => {
+  it('migrates version 1 sets with medium difficulty and no tags', () => {
     const oldSet = {
       ...sampleSet,
       schemaVersion: 1,
@@ -71,20 +71,34 @@ describe('import/export helpers', () => {
       ...sampleSet,
       questions: sampleSet.questions.map((question) => ({
         ...question,
-        difficulty: 'normal',
+        difficulty: 'medium',
         tags: [],
       })),
     })
   })
 
-  it('normalizes imported tags and rejects invalid difficulty or tags', () => {
+  it('migrates version 2 normal difficulty and normalizes imported tags', () => {
+    const oldSet = {
+      ...sampleSet,
+      schemaVersion: 2,
+      questions: sampleSet.questions.map((question, index) =>
+        index === 0 ? { ...question, difficulty: 'normal' } : question,
+      ),
+    }
+    const migratedSet = parseSetJson(JSON.stringify(oldSet))
+
+    expect(migratedSet.schemaVersion).toBe(CURRENT_SCHEMA_VERSION)
+    expect(migratedSet.questions[0].difficulty).toBe('medium')
+
     const question = sampleSet.questions[0]
     const normalized = parseQuestionsJson(JSON.stringify({
       ...question,
+      difficulty: 'normal',
       tags: [' deprecated ', '', 'deprecated', ' html '],
     }))
 
     expect(normalized[0].tags).toEqual(['deprecated', 'html'])
+    expect(normalized[0].difficulty).toBe('medium')
     expect(() => parseQuestionsJson(JSON.stringify({ ...question, difficulty: 'trivial' })))
       .toThrowError(/unsupported difficulty/)
     expect(() => parseQuestionsJson(JSON.stringify({ ...question, tags: ['valid', 2] })))

@@ -30,3 +30,7 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 ## Phase 3: Next.js and Google Drive sync
 
 - [18 — Next.js App Router](./18-nextjs-app-router.md): How file-based routes, Server/Client Components, and browser-only data fit together in AskMe.
+
+## Phase 5: Polish and extras
+
+- [25 — Quiz session options](./25-quiz-session-options.md): How quiz filters, an elapsed timer, AI explanations, and a local-data migration work together.
