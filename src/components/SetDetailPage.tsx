@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Settings } from 'lucide-react'
 
 import {
   addQuestion,
@@ -11,14 +12,13 @@ import {
   softDeleteQuestion,
 } from '../data/repository'
 import { describeError, generateQuestions } from '../features/ai'
-import { DEFAULT_AI_PROVIDER, getAiProvider, hasAiApiKey, type AiProvider } from '../platform/secureStorage'
+import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
 import type { Question } from '../types/quiz'
 import { useQuizSet } from '../hooks/useQuizSet'
 
 export function SetDetailPage({ setId }: { setId: string }) {
   const router = useRouter()
   const { set, setSet, isLoading, errorMessage } = useQuizSet(setId)
-  const [activeProvider, setActiveProvider] = useState<AiProvider>(DEFAULT_AI_PROVIDER)
   const [importFeedback, setImportFeedback] = useState<{
     kind: 'error' | 'success'
     message: string
@@ -34,12 +34,6 @@ export function SetDetailPage({ setId }: { setId: string }) {
   const [generationPrompt, setGenerationPrompt] = useState('')
   const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([])
   const importInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      setActiveProvider(getAiProvider())
-    })
-  }, [])
 
   const handleExport = async () => {
     if (!set) {
@@ -183,7 +177,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
     }
 
     return (
-      <section className="rounded-2xl bg-card p-5">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5">
         <h2 className="text-[18px] font-medium leading-7 text-fg">
           {errorMessage ? 'Could not load set' : 'Set not found'}
         </h2>
@@ -203,7 +197,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
   const questionCount = set.questions.filter((question) => !question.deleted).length
 
   return (
-    <>
+    <div className="grid gap-5 lg:grid-cols-2">
       <section className="rounded-2xl bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[13px] leading-[18px] text-muted">Set overview</p>
@@ -276,9 +270,11 @@ export function SetDetailPage({ setId }: { setId: string }) {
           </div>
           <Link
             href="/settings"
-            className="min-h-11 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+            aria-label="Open AI settings"
+            title="Open AI settings"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl bg-bg text-muted transition-colors hover:bg-accent hover:text-on-accent"
           >
-            {hasAiApiKey(activeProvider) ? 'Key ready' : 'Add key'}
+            <Settings aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           </Link>
         </div>
 
@@ -300,10 +296,10 @@ export function SetDetailPage({ setId }: { setId: string }) {
             <input
               type="number"
               min={1}
-              max={5}
+              max={20}
               value={generationCount}
               onChange={(event) =>
-                setGenerationCount(Math.min(5, Math.max(1, Number(event.target.value) || 1)))
+                setGenerationCount(Math.min(20, Math.max(1, Number(event.target.value) || 1)))
               }
               className="mt-1 min-h-12 w-full rounded-2xl bg-bg px-3 text-[16px] text-fg"
             />
@@ -342,7 +338,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
         ) : null}
 
         {generatedQuestions.length > 0 ? (
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
             {generatedQuestions.map((question) => (
               <div key={question.id} className="rounded-2xl bg-bg p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -383,7 +379,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
         ) : null}
       </section>
 
-      <section className="rounded-2xl bg-card p-4">
+      <section className="rounded-2xl bg-card p-4 lg:col-span-2">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h3 className="text-[16px] font-medium leading-6 text-fg">Questions</h3>
@@ -407,7 +403,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
             </p>
           </div>
         ) : (
-          <ul className="mt-4 grid gap-3">
+          <ul className="mt-4 grid gap-3 lg:grid-cols-2">
             {set.questions
               .filter((question) => !question.deleted)
               .map((question) => (
@@ -459,6 +455,6 @@ export function SetDetailPage({ setId }: { setId: string }) {
           </ul>
         )}
       </section>
-    </>
+    </div>
   )
 }

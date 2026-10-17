@@ -242,7 +242,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     }
 
     return (
-      <section className="rounded-2xl bg-card p-5">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5">
         <h2 className="text-[18px] font-medium leading-7 text-fg">
           {errorMessage ? 'Could not load set' : 'Set not found'}
         </h2>
@@ -261,7 +261,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
 
   if (activeQuestionCount === 0) {
     return (
-      <section className="rounded-2xl bg-card p-5 text-center">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5 text-center">
         <h2 className="text-[18px] font-medium leading-7 text-fg">No questions available</h2>
         <p className="mt-2 text-[16px] leading-6 text-muted">
           Add at least one active question before starting a quiz.
@@ -290,87 +290,89 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     ]
 
     return (
-      <section className="rounded-2xl bg-card p-4">
+      <section className="mx-auto w-full max-w-5xl rounded-2xl bg-card p-4">
         <h2 className="text-[22px] font-medium leading-7 text-fg">Set up your quiz</h2>
 
-        <fieldset className="mt-5">
-          <legend className="text-[13px] font-medium leading-[18px] text-muted">Question type</legend>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {questionTypes.map((option) => (
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <fieldset>
+            <legend className="text-[13px] font-medium leading-[18px] text-muted">Question type</legend>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {questionTypes.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={questionType === option.value}
+                  onClick={() => setQuestionType(option.value)}
+                  className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
+                    questionType === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {difficulties.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={difficulty === option.value}
+                  onClick={() => setDifficulty(option.value)}
+                  className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
+                    difficulty === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="lg:col-span-2">
+            <legend className="text-[13px] font-medium leading-[18px] text-muted">Question count</legend>
+            <div className="mt-2 flex gap-2">
               <button
-                key={option.value}
                 type="button"
-                aria-pressed={questionType === option.value}
-                onClick={() => setQuestionType(option.value)}
-                className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
-                  questionType === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                aria-pressed={countMode === 'all'}
+                onClick={() => setCountMode('all')}
+                className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
+                  countMode === 'all' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
                 }`}
               >
-                {option.label}
+                All ({matchingQuestionCount})
               </button>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset className="mt-5">
-          <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
-          <div className="mt-2 grid grid-cols-4 gap-2">
-            {difficulties.map((option) => (
               <button
-                key={option.value}
                 type="button"
-                aria-pressed={difficulty === option.value}
-                onClick={() => setDifficulty(option.value)}
-                className={`min-h-12 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
-                  difficulty === option.value ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
+                aria-pressed={countMode === 'limited'}
+                onClick={() => setCountMode('limited')}
+                className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
+                  countMode === 'limited' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
                 }`}
               >
-                {option.label}
+                Choose a number
               </button>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset className="mt-5">
-          <legend className="text-[13px] font-medium leading-[18px] text-muted">Question count</legend>
-          <div className="mt-2 flex gap-2">
-            <button
-              type="button"
-              aria-pressed={countMode === 'all'}
-              onClick={() => setCountMode('all')}
-              className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
-                countMode === 'all' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
-              }`}
-            >
-              All ({matchingQuestionCount})
-            </button>
-            <button
-              type="button"
-              aria-pressed={countMode === 'limited'}
-              onClick={() => setCountMode('limited')}
-              className={`min-h-12 flex-1 rounded-[14px] px-3 text-[13px] font-medium ${
-                countMode === 'limited' ? 'bg-accent text-on-accent' : 'bg-bg text-muted'
-              }`}
-            >
-              Choose a number
-            </button>
-          </div>
-          {countMode === 'limited' ? (
-            <label className="mt-3 flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 text-[13px] text-muted">
-              Number of questions
-              <input
-                type="number"
-                min={1}
-                value={questionLimit}
-                onChange={(event) => {
-                  const nextLimit = Number(event.target.value)
-                  setQuestionLimit(Number.isFinite(nextLimit) ? Math.max(1, Math.floor(nextLimit)) : 1)
-                }}
-                className="w-20 rounded-[14px] bg-card px-3 py-2 text-center text-[16px] text-fg"
-              />
-            </label>
-          ) : null}
-        </fieldset>
+            </div>
+            {countMode === 'limited' ? (
+              <label className="mt-3 flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 text-[13px] text-muted">
+                Number of questions
+                <input
+                  type="number"
+                  min={1}
+                  value={questionLimit}
+                  onChange={(event) => {
+                    const nextLimit = Number(event.target.value)
+                    setQuestionLimit(Number.isFinite(nextLimit) ? Math.max(1, Math.floor(nextLimit)) : 1)
+                  }}
+                  className="w-20 rounded-[14px] bg-card px-3 py-2 text-center text-[16px] text-fg"
+                />
+              </label>
+            ) : null}
+          </fieldset>
+        </div>
 
         {matchingQuestionCount === 0 ? (
           <p role="status" className="mt-4 text-[13px] leading-[18px] text-muted">
@@ -411,7 +413,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
     const scorePercent = Math.round((endScore / queue.length) * 100)
 
     return (
-      <section className="rounded-2xl bg-card p-5">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5">
         <div className="text-center">
           <p className="text-[13px] leading-[18px] text-muted">Quiz complete</p>
           <h2 className="mt-2 text-[22px] font-medium leading-[28px] text-fg">Your score</h2>
@@ -473,7 +475,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         : 'Essay only'
 
   return (
-    <section className="rounded-2xl bg-card p-4">
+    <section className="mx-auto w-full max-w-5xl rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] leading-[18px] text-muted">Question</p>
@@ -534,7 +536,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
       </div>
 
       {currentQuestion.type === 'mcq' ? (
-        <div className="mt-5 grid gap-3">
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
           {currentQuestion.options.map((option, optionIndex) => {
             const selected = currentAnswer === optionIndex
             const revealRightAnswer = isAnswered && optionIndex === currentQuestion.answerIndex

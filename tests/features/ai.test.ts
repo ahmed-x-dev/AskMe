@@ -101,6 +101,46 @@ describe('AI calls', () => {
     expect(requestOptions.headers).toMatchObject({ 'x-goog-api-key': 'test-key' })
   })
 
+  it('supports generation counts up to 20 and caps larger requests at 20', async () => {
+    saveGeminiApiKey('test-key')
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    questions: [
+                      {
+                        type: 'essay',
+                        text: 'Explain a concept.',
+                        referenceAnswer: 'An explanation.',
+                      },
+                    ],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await generateQuestions({ type: 'essay', count: 20 })
+    await generateQuestions({ type: 'essay', count: 21 })
+
+    for (const [, requestOptions] of fetchMock.mock.calls as [string, RequestInit][]) {
+      const body = JSON.parse(String(requestOptions.body)) as {
+        contents: { parts: { text: string }[] }[]
+      }
+      expect(body.contents[0].parts[0].text).toContain('Create exactly 20 essay questions')
+    }
+  })
+
   it('grades essay answers using the Gemini API', async () => {
     saveGeminiApiKey('test-key')
 

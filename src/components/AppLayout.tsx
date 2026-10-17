@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { ArrowLeft, Moon, Settings, Sun } from "lucide-react";
 
 export type Theme = "light" | "dark";
 
@@ -23,9 +24,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   return (
     <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
       <div
-        className={`mx-auto flex min-h-screen w-full flex-col gap-8 px-4 py-6 ${
-          isHomePage ? "max-w-200" : "max-w-120"
-        }`}
+        className="mx-auto flex min-h-screen w-full max-w-200 flex-col gap-8 px-4 py-6 lg:max-w-7xl 2xl:max-w-screen-2xl"
       >
         <header className="flex items-center justify-between gap-4">
           {isHomePage ? (
@@ -53,20 +52,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               href="/"
               className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
             >
-              <svg
+              <ArrowLeft
                 aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
                 className="h-5 w-5"
-              >
-                <path
-                  d="m15 18-6-6 6-6M9 12h12"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                strokeWidth={1.5}
+              />
               Back to sets
             </Link>
           )}
@@ -78,27 +68,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               aria-label="Open settings"
               title="Open settings"
             >
-              <svg
+              <Settings
                 aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
                 className="h-5 w-5"
-              >
-                <path
-                  d="M19.14 12.94a7.2 7.2 0 0 0 0-1.88l2.03-1.58-2-3.46-2.39.96a7.4 7.4 0 0 0-1.63-.94L14.8 3.5h-4l-.36 2.54a7.4 7.4 0 0 0-1.63.94l-2.39-.96-2 3.46 2.03 1.58a7.2 7.2 0 0 0 0 1.88l-2.03 1.58 2 3.46 2.39-.96c.5.39 1.05.71 1.63.94l.36 2.54h4l.36-2.54c.58-.23 1.13-.55 1.63-.94l2.39.96 2-3.46-2.03-1.58Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="3"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
+                strokeWidth={1.5}
+              />
             </Link>
 
             <button
@@ -114,41 +88,17 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
             >
               {theme === "light" ? (
-                <svg
+                <Moon
                   aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
                   className="h-5 w-5"
-                >
-                  <path
-                    d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                  strokeWidth={1.5}
+                />
               ) : (
-                <svg
+                <Sun
                   aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
                   className="h-5 w-5"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                  strokeWidth={1.5}
+                />
               )}
             </button>
           </div>

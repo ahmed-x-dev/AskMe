@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   createSet,
@@ -30,21 +31,9 @@ function EmptyState({
   onAction: () => void;
 }) {
   return (
-    <section className="rounded-2xl bg-card p-6 text-center">
+    <section className="mx-auto w-full rounded-2xl bg-card p-6 text-center lg:max-w-3xl">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="h-6 w-6"
-        >
-          <path
-            d="M12 5v14M5 12h14"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <h2 className="mt-4 text-[16px] font-medium leading-6 text-fg">
         {title}
@@ -306,7 +295,7 @@ export function SetsPage() {
           <h2 className="mt-2 text-[22px] font-medium leading-7 text-fg">
             Make every study session count.
           </h2>
-          <p className="mt-2 max-w-105 text-[16px] leading-6 text-muted">
+          <p className="mt-2 max-w-105 text-[16px] leading-6 text-muted lg:max-w-150">
             Keep your questions organized and pick up where you left off.
           </p>
         </div>
@@ -422,7 +411,7 @@ export function SetsPage() {
           </button>
         </section>
       ) : (
-        <section className="grid gap-3 md:grid-cols-2">
+        <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {filteredSets.map((set) => {
             const activeQuestionCount = set.questions.filter(
               (question) => !question.deleted,
@@ -457,20 +446,11 @@ export function SetsPage() {
                       title="Rename set"
                       className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-accent hover:text-on-accent"
                     >
-                      <svg
+                      <Pencil
                         aria-hidden="true"
-                        viewBox="0 0 24 24"
-                        fill="none"
                         className="h-5 w-5"
-                      >
-                        <path
-                          d="m14 5 5 5M4 20l4.5-1 10.7-10.7a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                        strokeWidth={1.5}
+                      />
                     </button>
                     <button
                       type="button"
@@ -479,20 +459,11 @@ export function SetsPage() {
                       title="Delete set"
                       className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
                     >
-                      <svg
+                      <Trash2
                         aria-hidden="true"
-                        viewBox="0 0 24 24"
-                        fill="none"
                         className="h-5 w-5"
-                      >
-                        <path
-                          d="M4 7h16m-10 4v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                        strokeWidth={1.5}
+                      />
                     </button>
                   </div>
                 </div>

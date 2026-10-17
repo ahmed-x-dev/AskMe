@@ -394,7 +394,7 @@ export async function generateQuestions({
 }): Promise<GeneratedQuestion[]> {
   const safeCount = Math.max(
     1,
-    Math.min(5, Number.isFinite(count) ? Math.round(count) : 1),
+    Math.min(20, Number.isFinite(count) ? Math.round(count) : 1),
   );
   const basePrompt = [
     "Return valid JSON only. Do not add markdown fences or prose.",

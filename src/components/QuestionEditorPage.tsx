@@ -138,7 +138,7 @@ function QuestionEditorForm({
   }
 
   return (
-    <section className="rounded-2xl bg-card p-4">
+    <section className="mx-auto w-full max-w-5xl rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] leading-[18px] text-muted">
@@ -226,7 +226,7 @@ function QuestionEditorForm({
           <p className="mb-2 text-[13px] leading-[18px] text-muted">
             Select the correct answer from the options.
           </p>
-          <div className="grid gap-3">
+          <div className="grid gap-3 lg:grid-cols-2">
             {['A', 'B', 'C', 'D'].map((option, index) => (
               <div key={option} className="flex min-h-12 items-center gap-3 rounded-[14px] bg-bg px-3 py-2">
                 <button
@@ -320,7 +320,7 @@ export function QuestionEditorPage({ setId, qid }: { setId: string; qid?: string
     }
 
     return (
-      <section className="rounded-2xl bg-card p-4">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-4">
         <h2 className="text-[18px] font-medium leading-7 text-fg">
           {errorMessage ? 'Could not load set' : 'Set not found'}
         </h2>

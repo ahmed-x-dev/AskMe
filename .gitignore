@@ -27,3 +27,6 @@ dist-ssr
 *.sw?
 
 docs/*
+!docs/learn/
+docs/learn/*
+!docs/learn/26-icon-components.md

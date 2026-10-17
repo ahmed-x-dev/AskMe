@@ -6,7 +6,7 @@ Agents: use only the tokens in this file. Do not invent new colors, radii or fon
 ## 1. Principles
 
 - Fast, calm, readable. Short study sessions on a phone.
-- Mobile first. Desktop is the same layout centered in a column.
+- Mobile first. Reading-focused screens stay centered in a column; the library expands on large displays.
 - This describes the responsive layout, not release order: web first, desktop second, and mobile through the PWA.
 - Two themes only: light (white) and dark (black). No third theme.
 - Soft filled cards, no hairline borders, no shadows, no gradients.
@@ -139,7 +139,7 @@ This gives utilities such as `bg-card`, `text-muted`, `bg-accent text-on-accent`
 - Spacing scale: 4, 8, 12, 16, 24, 32 px. Nothing else.
 - Screen side padding: 16px, plus safe-area insets.
 - Minimum tap target: 48px height for buttons and option rows, 44px for icon buttons.
-- On desktop, center the app in a column with `max-width: 480px`. The Sets screen may use 2 columns above 768px.
+- At large widths, the shared app shell grows to `max-width: 1280px` and `1536px` at 2xl. Keep single-column settings and quiz results centered within 768px, and quiz setup, question editing, and active questions within 1024px. The set detail uses a two-column overview and AI helper, with its question cards in two columns. The Sets library uses 2 columns above 768px, 3 above 1024px, and 4 above 1536px; its intro text can grow to 600px and its empty state stays within 768px.
 - No borders on cards. Separation comes from `--card` on `--bg`. The only outlines allowed are the 2px `--accent` selected-state outline and the focus ring.
 - No shadows and no gradients anywhere.
 

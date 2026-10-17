@@ -72,7 +72,7 @@ export function SettingsPage() {
   };
 
   return (
-    <section className="rounded-2xl bg-card p-5">
+    <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] leading-[18px] text-muted">Settings</p>
