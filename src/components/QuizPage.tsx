@@ -395,7 +395,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
           </button>
           <Link
             href={`/set/${set.id}`}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
             Back to set
           </Link>
@@ -451,7 +451,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
           </button>
           <Link
             href={`/set/${setId}`}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
             Back to set
           </Link>
@@ -503,7 +503,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         aria-valuemin={0}
         aria-valuemax={queue.length}
         aria-valuenow={currentIndex + 1}
-        className="mt-3 h-1.5 overflow-hidden rounded-full bg-bg"
+        className="mt-3 h-1.5 overflow-hidden rounded-full bg-card"
       >
         <div
           className="h-full rounded-full bg-accent transition-[width] duration-200"
@@ -563,8 +563,8 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
                     : revealWrongAnswer
                       ? 'bg-bad-bg text-bad-fg'
                       : selected
-                        ? 'border-2 border-accent bg-card text-fg'
-                        : 'bg-card text-fg'
+                        ? 'outline-2 outline-accent bg-card text-fg'
+                        : 'bg-card text-fg hover:bg-card-hover'
                 }`}
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-bg text-[13px] font-medium text-muted">
@@ -598,7 +598,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
             disabled={hasRevealedReference}
             rows={5}
             placeholder="Write your answer here, or think it through…"
-            className="min-h-[120px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className="min-h-[120px] w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
           />
 
           <div className="mt-3 flex gap-2">
@@ -606,7 +606,8 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
               type="button"
               onClick={() => void handleGradeEssay()}
               disabled={isAiGrading || !String(currentAnswer ?? '').trim()}
-              className="min-h-12 flex-1 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+              aria-busy={isAiGrading || undefined}
+              className="min-h-12 flex-1 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover disabled:cursor-wait disabled:opacity-70"
             >
               {isAiGrading ? 'Grading…' : 'AI grade'}
             </button>
@@ -653,7 +654,8 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
           type="button"
           onClick={() => void handleExplainAnswer()}
           disabled={isAiExplaining}
-          className="min-h-12 w-full rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+          aria-busy={isAiExplaining || undefined}
+          className="min-h-12 w-full rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover disabled:cursor-wait disabled:opacity-70"
         >
           {isAiExplaining ? 'Explaining…' : 'Explain answer with AI'}
         </button>
@@ -747,7 +749,7 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         ) : null}
         <Link
           href={`/set/${set.id}`}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
         >
           Exit
         </Link>

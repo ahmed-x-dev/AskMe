@@ -222,7 +222,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
           <button
             type="button"
             onClick={() => void handleExport()}
-            className="min-h-12 flex-1 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card"
+            className="min-h-12 flex-1 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
             Export JSON
           </button>
@@ -230,7 +230,8 @@ export function SetDetailPage({ setId }: { setId: string }) {
             type="button"
             onClick={() => importInputRef.current?.click()}
             disabled={isImporting}
-            className="min-h-12 flex-1 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card disabled:cursor-wait disabled:opacity-70"
+            aria-busy={isImporting || undefined}
+            className="min-h-12 flex-1 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover disabled:cursor-wait disabled:opacity-70"
           >
             Import questions
           </button>
@@ -272,7 +273,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
             href="/settings"
             aria-label="Open AI settings"
             title="Open AI settings"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl bg-bg text-muted transition-colors hover:bg-accent hover:text-on-accent"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-2xl bg-card text-muted transition-colors hover:bg-card-hover"
           >
             <Settings aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           </Link>
@@ -284,7 +285,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
             <select
               value={generationType}
               onChange={(event) => setGenerationType(event.target.value as 'mcq' | 'essay')}
-              className="mt-1 min-h-12 w-full rounded-2xl bg-bg px-3 text-[16px] text-fg"
+              className="mt-1 min-h-12 w-full rounded-[14px] bg-card px-3 text-[16px] text-fg"
             >
               <option value="mcq">MCQ</option>
               <option value="essay">Essay</option>
@@ -301,7 +302,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
               onChange={(event) =>
                 setGenerationCount(Math.min(20, Math.max(1, Number(event.target.value) || 1)))
               }
-              className="mt-1 min-h-12 w-full rounded-2xl bg-bg px-3 text-[16px] text-fg"
+              className="mt-1 min-h-12 w-full rounded-[14px] bg-card px-3 text-[16px] text-fg"
             />
           </label>
         </div>
@@ -313,7 +314,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
             onChange={(event) => setGenerationPrompt(event.target.value)}
             rows={3}
             placeholder="Focus on a topic, difficulty, or recall style."
-            className="mt-1 min-h-[88px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className="mt-1 min-h-[88px] w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
           />
         </label>
 
@@ -321,6 +322,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
           type="button"
           onClick={() => void handleGenerateQuestions()}
           disabled={isGenerating}
+          aria-busy={isGenerating || undefined}
           className="mt-4 min-h-12 w-full rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
         >
           {isGenerating ? 'Generating…' : `Generate ${generationType === 'mcq' ? 'MCQ' : 'essay'} questions`}
@@ -390,7 +392,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
           <button
             type="button"
             onClick={() => router.push(`/set/${set.id}/q/new`)}
-            className="min-h-12 shrink-0 rounded-2xl bg-bg px-4 text-[13px] font-medium text-accent-text transition-colors hover:bg-accent hover:text-on-accent"
+            className="min-h-12 shrink-0 rounded-2xl bg-card px-4 text-[13px] font-medium text-accent-text transition-colors hover:bg-card-hover"
           >
             Add question
           </button>
@@ -438,7 +440,7 @@ export function SetDetailPage({ setId }: { setId: string }) {
                     <button
                       type="button"
                       onClick={() => router.push(`/set/${set.id}/q/${question.id}`)}
-                      className="min-h-11 flex-1 rounded-[14px] bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+                      className="min-h-11 flex-1 rounded-[14px] bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
                     >
                       Edit
                     </button>

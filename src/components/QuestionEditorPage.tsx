@@ -38,6 +38,10 @@ function QuestionEditorForm({
   const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
   const tags = [...new Set(tagsText.split(/\r?\n/).map((tag) => tag.trim()).filter(Boolean))]
+  const questionTextIsInvalid = errorMessage === 'Question text is required.'
+  const optionsAreInvalid =
+    errorMessage === 'All four options must be filled in.' ||
+    errorMessage === 'Options must be unique.'
 
   const handleOptionChange = (index: number, nextValue: string) => {
     setOptions((current) => {
@@ -149,7 +153,7 @@ function QuestionEditorForm({
         <button
           type="button"
           onClick={() => router.push(`/set/${set.id}`)}
-          className="min-h-12 shrink-0 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card"
+          className="min-h-12 shrink-0 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
         >
           Cancel
         </button>
@@ -182,9 +186,11 @@ function QuestionEditorForm({
       <textarea
         id="question-text"
         value={text}
+        aria-invalid={questionTextIsInvalid || undefined}
+        aria-describedby={questionTextIsInvalid ? 'question-editor-error' : undefined}
         onChange={(event) => setText(event.target.value)}
         placeholder="Type the question here…"
-        className="mt-2 min-h-[120px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className="mt-2 min-h-[120px] w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
       />
 
       <fieldset className="mt-5">
@@ -215,7 +221,7 @@ function QuestionEditorForm({
         onChange={(event) => setTagsText(event.target.value)}
         placeholder={'deprecated\nhtml'}
         rows={2}
-        className="mt-2 min-h-[88px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className="mt-2 min-h-[88px] w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
       />
       <p className="mt-1 text-[13px] leading-[18px] text-muted">
         Use “deprecated” to label outdated information. Tags do not change quiz behavior.
@@ -243,6 +249,8 @@ function QuestionEditorForm({
                 <input
                   type="text"
                   aria-label={`Option ${index + 1}`}
+                  aria-invalid={optionsAreInvalid || undefined}
+                  aria-describedby={optionsAreInvalid ? 'question-editor-error' : undefined}
                   value={options[index] ?? ''}
                   onChange={(event) => handleOptionChange(index, event.target.value)}
                   placeholder={`Option ${index + 1}`}
@@ -262,13 +270,13 @@ function QuestionEditorForm({
             value={referenceAnswer}
             onChange={(event) => setReferenceAnswer(event.target.value)}
             placeholder="Add a model answer…"
-            className="mt-2 min-h-[96px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className="mt-2 min-h-[96px] w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
           />
         </div>
       )}
 
       {errorMessage ? (
-        <p role="alert" className="mt-4 flex items-start gap-2 text-[13px] leading-[18px] text-bad-fg">
+        <p id="question-editor-error" role="alert" className="mt-4 flex items-start gap-2 text-[13px] leading-[18px] text-bad-fg">
           <span aria-hidden="true" className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-bad-bg font-medium">
             !
           </span>
@@ -287,7 +295,7 @@ function QuestionEditorForm({
         <button
           type="button"
           onClick={() => router.push(`/set/${set.id}`)}
-          className="min-h-12 flex-1 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+          className="min-h-12 flex-1 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
         >
           Back
         </button>

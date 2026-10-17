@@ -101,7 +101,7 @@ export function SettingsPage() {
         onChange={(event) =>
           handleProviderChange(event.target.value as AiProvider)
         }
-        className="mt-2 min-h-12 w-full rounded-2xl border border-transparent bg-bg px-3 text-[16px] leading-6 text-fg focus:border-accent"
+        className="mt-2 min-h-12 w-full rounded-[14px] bg-card px-3 text-[16px] leading-6 text-fg"
       >
         {providerOptions.map((option) => (
           <option key={option.value} value={option.value}>
@@ -124,12 +124,12 @@ export function SettingsPage() {
           disabled={!isLoaded}
           onChange={(event) => setApiKey(event.target.value)}
           placeholder={`Enter your ${provider === "openai" ? "OpenAI" : "Gemini"} key`}
-          className="min-h-12 flex-1 rounded-2xl border border-transparent bg-bg px-3 text-[16px] leading-6 text-fg placeholder:text-muted focus:border-accent"
+          className="min-h-12 flex-1 rounded-[14px] bg-card px-3 text-[16px] leading-6 text-fg placeholder:text-muted"
         />
         <button
           type="button"
           onClick={() => setIsVisible((current) => !current)}
-          className="min-h-12 rounded-2xl bg-bg px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card"
+          className="min-h-12 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
         >
           {isVisible ? "Hide" : "Show"}
         </button>
@@ -148,7 +148,7 @@ export function SettingsPage() {
           type="button"
           onClick={handleRemove}
           disabled={!isLoaded}
-          className="min-h-12 flex-1 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card"
+          className="min-h-12 flex-1 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
         >
           Remove
         </button>

@@ -332,7 +332,7 @@ export function SetsPage() {
               value={searchText}
               onChange={(event) => setSearchText(event.currentTarget.value)}
               placeholder="Search your sets"
-              className="min-h-12 w-full rounded-2xl bg-bg px-4 text-[16px] leading-6 text-fg placeholder:text-muted"
+              className="min-h-12 w-full rounded-[14px] bg-card px-4 text-[16px] leading-6 text-fg placeholder:text-muted"
             />
           </label>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -340,7 +340,8 @@ export function SetsPage() {
               type="button"
               onClick={() => importInputRef.current?.click()}
               disabled={isImporting || isExporting}
-              className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-wait disabled:opacity-70"
+              aria-busy={isImporting || undefined}
+              className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-wait disabled:opacity-70"
             >
               {isImporting ? "Importing…" : "Import to library"}
             </button>
@@ -348,7 +349,8 @@ export function SetsPage() {
               type="button"
               onClick={() => void handleExportLibrary()}
               disabled={isImporting || isExporting || sets.length === 0}
-              className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-not-allowed disabled:opacity-70"
+              aria-busy={isExporting || undefined}
+              className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isExporting ? "Exporting…" : "Export library"}
             </button>
@@ -405,7 +407,7 @@ export function SetsPage() {
           <button
             type="button"
             onClick={() => setSearchText("")}
-            className="mt-4 min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+            className="mt-4 min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
             Clear search
           </button>
@@ -420,7 +422,7 @@ export function SetsPage() {
             return (
               <article
                 key={set.id}
-                className="relative flex flex-col rounded-2xl bg-card p-4"
+                className="relative flex flex-col rounded-2xl bg-card p-4 transition-colors hover:bg-card-hover"
               >
                 <Link
                   href={`/set/${set.id}`}
@@ -444,7 +446,7 @@ export function SetsPage() {
                       onClick={() => void handleRenameSet(set.id, set.title)}
                       aria-label={`Rename ${set.title}`}
                       title="Rename set"
-                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-accent hover:text-on-accent"
+                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
                     >
                       <Pencil
                         aria-hidden="true"

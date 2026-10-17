@@ -50,7 +50,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
           ) : (
             <Link
               href="/"
-              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
+              className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
             >
               <ArrowLeft
                 aria-hidden="true"
@@ -64,7 +64,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
           <div className="flex items-center gap-2">
             <Link
               href="/settings"
-              className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent"
+              className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-card-hover"
               aria-label="Open settings"
               title="Open settings"
             >
@@ -82,7 +82,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                   currentTheme === "light" ? "dark" : "light",
                 )
               }
-              className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent active:scale-[0.98]"
+              className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-card-hover active:scale-[0.98]"
               aria-label="Toggle color theme"
               aria-pressed={theme === "dark"}
               title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}

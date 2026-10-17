@@ -332,6 +332,15 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-15** Replace the question generator's key link label with a settings gear and raise its question count limit to 20.
   - Done when: the AI helper shows an accessible settings gear link and both its count control and generation request accept 1–20 questions; tests and checks pass.
   - Learn: `docs/learn/14-ai-question-generation.md`.
+- [x] **P5-16** Align the app with the revised soft-cards design system.
+  - Done when: the revised tokens are available to every component, interaction surfaces use `--card-hover`, and the light and dark themes render without raw color values in UI components.
+  - Learn: `docs/learn/02-tailwind-and-themes.md`.
+- [x] **P5-17** Add documented subtle borders to form controls and neutral buttons.
+  - Done when: inputs, text areas, selects, and neutral buttons have a `--card-hover` boundary while cards remain borderless.
+  - Learn: `docs/learn/02-tailwind-and-themes.md`.
+- [x] **P5-18** Complete the design-system interaction-state guidance.
+  - Done when: the spec and shared CSS cover invalid, disabled, loading, overlay, and future choice-control states; route and font guidance match the app.
+  - Learn: `docs/learn/02-tailwind-and-themes.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -359,6 +368,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-17 | Use Lucide React components for interface icons instead of hand-written SVGs | Named icon components are easier to maintain while preserving control labels, sizing, and stroke styles |
 | 2026-10-17 | Defer PWA installation and offline caching for now | Prevent stale service-worker assets during current web development; remove old registrations and cache without touching local quiz data |
 | 2026-10-17 | Expand the app shell and use content-specific layouts at large breakpoints | Use wide desktop space for related panels and cards while retaining readable widths for forms and quiz content |
+| 2026-10-17 | Use ARIA state attributes with shared CSS for control states | Keeps loading and invalid feedback consistent, accessible, and free of per-screen styling drift |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -378,6 +388,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-17: Completed P5-18: added documented overlay, disabled, loading, invalid, and future choice-control states; corrected font and quiz-route guidance; wired `aria-busy` into existing request actions and `aria-invalid` into question-editor validation. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
+- 2026-10-17: Completed P5-17: documented the borderless-card/control-boundary distinction in `DESIGN.md` and added a 1px `--card-hover` boundary to inputs, text areas, selects, and neutral buttons while retaining the accent focus ring. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
+- 2026-10-17: Completed P5-16: aligned the global CSS tokens with the revised soft-cards design, exposed `bg-card-hover` to Tailwind, and applied the neutral hover/input/selected-option rules across the UI. Updated the themes learning guide. `npm outdated` reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Static audit confirms raw hex values appear only in the theme-token stylesheet; `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
 - 2026-10-17: Extended the large-screen responsive treatment to every inner route. Set detail now uses a two-column overview/AI layout and question grid; quiz setup filters and MCQ answers use columns; settings, editors, quiz content, and error states use centered content widths within the expanded shell. Updated `DESIGN.md` and the responsive-layout guide. Browser checks at 390, 768, 1024, 1440, and 1920px found no horizontal overflow; settings and error panels remain readable at 768px. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
 - 2026-10-17: Improved large-screen library layout: widened the shell to 1280px at `lg` and 1536px at `2xl`, expanded the set grid from 2 to 3/4 columns, and balanced the intro and empty state proportions. Updated `DESIGN.md` and the responsive-layout learning guide. `typecheck`, `lint`, all 37 tests, production build, and 1440px/1920px browser checks pass. `npm outdated` still reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); none upgraded. Next: resume P3-01.
 - 2026-10-17: Replaced hand-written UI SVG icons with Lucide React components in the shared header, library, and set-detail settings link; kept existing labels, sizes, and stroke widths. Added and unignored the icon-components learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. `npm outdated` still reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); none upgraded. Next: resume P3-01.

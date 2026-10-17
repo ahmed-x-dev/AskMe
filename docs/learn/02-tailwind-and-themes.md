@@ -40,7 +40,13 @@ useEffect(() => {
 - The effect updates the root element so CSS can respond to the saved theme.
 - A second effect persists later theme changes after the saved value has loaded.
 
-`DESIGN.md` is the source of truth for every color and styling rule. In `app/globals.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card` and `text-muted`. Keep these mappings aligned with the design token table.
+`DESIGN.md` is the source of truth for every color and styling rule. In `app/globals.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card`, `bg-card-hover`, and `text-muted`. Keep these mappings aligned with the design token table.
+
+The soft-cards design uses lightness for depth: `bg-bg` is the page, `bg-card` is a surface, and `bg-card-hover` is the pressed or hovered state. UI components never contain raw hex colors; changing a token updates the whole app in both themes. Primary actions alone use `bg-accent`; secondary controls stay neutral and use `bg-card-hover` for feedback.
+
+Cards deliberately have no border. Controls are different: inputs, text areas, selects, and neutral buttons receive a 1px `--card-hover` boundary. This makes fields and secondary actions easy to find without giving every card a hard outline. The focus ring remains a separate, thicker accent outline, so keyboard focus is always clear.
+
+State belongs in the design system too. A temporary action uses `aria-busy="true"` with a progress label, while an invalid field uses `aria-invalid="true"` and points to its error text with `aria-describedby`. Global CSS can then apply the same cursor, opacity, and error boundary rules everywhere instead of each form inventing them.
 
 In `src/components/AppLayout.tsx`, the theme button shows a moon when it can switch to dark mode and a sun when it can switch to light mode. The SVGs are decorative; the button's `aria-label` communicates the action to assistive technology.
 
@@ -66,16 +72,19 @@ In `src/components/AppLayout.tsx`, the theme button shows a moon when it can swi
 @import 'tailwindcss';
 
 :root {
-  --bg: #ffffff;
-  --card: #f3f4f6;
-  --fg: #111111;
-  --muted: #6b6b6b;
-  --accent: #0b8566;
+  --bg: #fbfcfb;
+  --card: #eff3f1;
+  --card-hover: #e6ece9;
+  --fg: #121715;
+  --muted: #5c6661;
+  --accent: #09785e;
+  --overlay: rgb(0 0 0 / 0.4);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -90,6 +99,9 @@ window.localStorage.setItem("askme-theme", "dark");
 
 - Tailwind classes compose small styling utilities in markup.
 - CSS variables allow values to change by theme without rewriting components.
+- `bg-card-hover` gives neutral controls feedback without giving them primary-action color.
+- A `--card-hover` border distinguishes controls; cards remain borderless.
+- `aria-busy` and `aria-invalid` connect visual states to assistive technology.
 - React state drives the active theme; `localStorage` persists it in this browser.
 - The saved value is validated before it is used.
 - Icon-only controls still need accessible names.
