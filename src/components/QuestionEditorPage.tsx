@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { addQuestion, softDeleteQuestion, updateQuestion } from '../data/repository'
-import type { Question, QuestionType, QuizSet } from '../types/quiz'
+import type { Question, QuestionDifficulty, QuestionType, QuizSet } from '../types/quiz'
 import { useQuizSet } from '../hooks/useQuizSet'
 
 const EMPTY_OPTIONS = ['', '', '', '']
@@ -22,6 +22,10 @@ function QuestionEditorForm({
 }) {
   const [activeType, setActiveType] = useState<QuestionType>(existingQuestion?.type ?? 'mcq')
   const [text, setText] = useState(existingQuestion?.text ?? '')
+  const [difficulty, setDifficulty] = useState<QuestionDifficulty>(
+    existingQuestion?.difficulty ?? 'normal',
+  )
+  const [tagsText, setTagsText] = useState(existingQuestion?.tags.join('\n') ?? '')
   const [options, setOptions] = useState<string[]>(
     existingQuestion?.type === 'mcq' ? existingQuestion.options : EMPTY_OPTIONS,
   )
@@ -33,6 +37,7 @@ function QuestionEditorForm({
   )
   const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
+  const tags = [...new Set(tagsText.split(/\r?\n/).map((tag) => tag.trim()).filter(Boolean))]
 
   const handleOptionChange = (index: number, nextValue: string) => {
     setOptions((current) => {
@@ -73,6 +78,8 @@ function QuestionEditorForm({
         id: existingQuestion?.id ?? crypto.randomUUID(),
         type: 'mcq',
         text: cleanedText,
+        difficulty,
+        tags,
         updatedAt: new Date().toISOString(),
         deleted: false,
         options: [trimmedOptions[0], trimmedOptions[1], trimmedOptions[2], trimmedOptions[3]] as [
@@ -98,6 +105,8 @@ function QuestionEditorForm({
       id: existingQuestion?.id ?? crypto.randomUUID(),
       type: 'essay',
       text: cleanedText,
+      difficulty,
+      tags,
       updatedAt: new Date().toISOString(),
       deleted: false,
       referenceAnswer: sanitizeText(referenceAnswer) || undefined,
@@ -177,6 +186,40 @@ function QuestionEditorForm({
         placeholder="Type the question here…"
         className="mt-2 min-h-[120px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
       />
+
+      <fieldset className="mt-5">
+        <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
+        <div className="mt-2 flex rounded-[14px] bg-bg p-1">
+          {(['easy', 'normal', 'hard'] as const).map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => setDifficulty(level)}
+              aria-pressed={difficulty === level}
+              className={`min-h-12 flex-1 rounded-[14px] px-2 text-[13px] font-medium transition-colors ${
+                difficulty === level ? 'bg-accent text-on-accent' : 'text-muted'
+              }`}
+            >
+              {level[0].toUpperCase() + level.slice(1)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <label htmlFor="question-tags" className="mt-5 block text-[13px] font-medium leading-[18px] text-muted">
+        Tags (one per line)
+      </label>
+      <textarea
+        id="question-tags"
+        value={tagsText}
+        onChange={(event) => setTagsText(event.target.value)}
+        placeholder={'deprecated\nhtml'}
+        rows={2}
+        className="mt-2 min-h-[88px] w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+      />
+      <p className="mt-1 text-[13px] leading-[18px] text-muted">
+        Use “deprecated” to label outdated information. Tags do not change quiz behavior.
+      </p>
 
       {activeType === 'mcq' ? (
         <div className="mt-5">

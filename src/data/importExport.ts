@@ -1,6 +1,13 @@
-import type { Question, QuizSet } from '../types/quiz'
+import type { Question, QuestionDifficulty, QuizSet } from '../types/quiz'
 
-export const CURRENT_SCHEMA_VERSION = 1
+export const CURRENT_SCHEMA_VERSION = 2
+
+const SUPPORTED_SCHEMA_VERSIONS = [1, CURRENT_SCHEMA_VERSION]
+const QUESTION_DIFFICULTIES: QuestionDifficulty[] = ['easy', 'normal', 'hard']
+
+function isQuestionDifficulty(value: unknown): value is QuestionDifficulty {
+  return QUESTION_DIFFICULTIES.some((difficulty) => difficulty === value)
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -11,7 +18,18 @@ function normalizeQuestion(question: unknown, index: number): Question {
     throw new Error(`Question ${index + 1} is not an object.`)
   }
 
-  const { id, type, text, updatedAt, deleted, options, answerIndex, referenceAnswer } = question
+  const {
+    id,
+    type,
+    text,
+    difficulty,
+    tags,
+    updatedAt,
+    deleted,
+    options,
+    answerIndex,
+    referenceAnswer,
+  } = question
 
   if (typeof id !== 'string' || !id.trim()) {
     throw new Error(`Question ${index + 1} is missing a valid id.`)
@@ -29,6 +47,24 @@ function normalizeQuestion(question: unknown, index: number): Question {
   if (typeof updatedAt !== 'string' || !updatedAt.trim()) {
     throw new Error(`Question ${index + 1} is missing an updatedAt value.`)
   }
+
+  if (difficulty !== undefined && !isQuestionDifficulty(difficulty)) {
+    throw new Error(`Question ${index + 1} has an unsupported difficulty.`)
+  }
+
+  if (tags !== undefined && (!Array.isArray(tags) || tags.some((tag) => typeof tag !== 'string'))) {
+    throw new Error(`Question ${index + 1} tags must be an array of strings.`)
+  }
+
+  const normalizedDifficulty = isQuestionDifficulty(difficulty) ? difficulty : 'normal'
+  const normalizedTags = [
+    ...new Set(
+      (Array.isArray(tags) ? tags : [])
+        .filter((tag): tag is string => typeof tag === 'string')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ]
 
   if (type === 'mcq') {
     if (!Array.isArray(options) || options.length !== 4) {
@@ -51,6 +87,8 @@ function normalizeQuestion(question: unknown, index: number): Question {
       id: id.trim(),
       type: 'mcq',
       text: trimmedText,
+      difficulty: normalizedDifficulty,
+      tags: normalizedTags,
       updatedAt,
       deleted: Boolean(deleted),
       options: [
@@ -67,6 +105,8 @@ function normalizeQuestion(question: unknown, index: number): Question {
     id: id.trim(),
     type: 'essay',
     text: trimmedText,
+    difficulty: normalizedDifficulty,
+    tags: normalizedTags,
     updatedAt,
     deleted: Boolean(deleted),
     referenceAnswer: typeof referenceAnswer === 'string' ? referenceAnswer : undefined,
@@ -81,7 +121,10 @@ export function parseSetJson(rawJson: string): QuizSet {
     throw new Error('The exported file must contain a JSON object.')
   }
 
-  if (parsed.schemaVersion !== CURRENT_SCHEMA_VERSION) {
+  if (
+    typeof parsed.schemaVersion !== 'number' ||
+    !SUPPORTED_SCHEMA_VERSIONS.includes(parsed.schemaVersion)
+  ) {
     throw new Error(`Unsupported schema version: ${String(parsed.schemaVersion ?? 'unknown')}.`)
   }
 
@@ -144,6 +187,7 @@ export function exportSetJson(set: QuizSet): string {
   return JSON.stringify(
     {
       ...set,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       questions: set.questions.filter((question) => !question.deleted),
     },
     null,

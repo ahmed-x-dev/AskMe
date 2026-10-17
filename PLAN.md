@@ -7,12 +7,12 @@
 ```yaml
 current_phase: P3
 current_task: P3-01
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
   P3: { name: "Google Drive sync", status: in_progress }
-  P4: { name: "Desktop and mobile PWA", status: not_started }
+  P4: { name: "Desktop and mobile delivery", status: not_started }
   P5: { name: "Polish and extras", status: in_progress }
 ```
 
@@ -25,11 +25,11 @@ Task markers: `[ ]` todo, `[~]` in progress, `[x]` done, `[!]` blocked.
 
 A simple, fast revision app for short study sessions on any device. The user builds question sets (MCQ and essay), practices them in different modes, and gets AI help generating questions and grading essays. Anything added on one device appears on the others, with no backend to run.
 
-**Platform delivery order:** build and stabilize the web app first, package for desktop second, then support phones through the installable mobile PWA. Native Capacitor apps and app-store releases are not part of the current roadmap.
+**Platform delivery order:** build and stabilize the web app first, package for desktop second, then revisit mobile delivery. PWA installation and offline caching are currently deferred. Native Capacitor apps and app-store releases are not part of the current roadmap.
 
 **Principles**
 
-- Web first, desktop second, mobile through the PWA.
+- Web first, desktop second, then revisit mobile delivery.
 - One responsive web app across desktop and mobile browsers.
 - No backend. Local storage plus sync through the user's own Google Drive.
 - Simple UI with two themes only: light (white) and dark (black).
@@ -51,7 +51,7 @@ A simple, fast revision app for short study sessions on any device. The user bui
 - AI generates MCQ or essay questions; the user can add a liked one to the set.
 - The key stays on the device and is never synced.
 
-**Platforms and sync:** web first, then desktop, then mobile through the PWA. Adds, edits and deletes sync across devices.
+**Platforms and sync:** web first, then desktop, then revisit mobile delivery. Adds, edits and deletes sync across devices.
 
 **Later ideas:** images in questions, English UI and content, spaced repetition, daily reminders and streaks, generating sets from notes or photos.
 
@@ -66,8 +66,8 @@ A simple, fast revision app for short study sessions on any device. The user bui
 | State          | React component state (no external state library)          |
 | Local database | Dexie (IndexedDB) behind a repository layer                |
 | Desktop        | Desktop packaging after the web app is stable (approach TBD) |
-| Mobile         | Installable Next.js PWA; no native wrapper planned          |
-| Web            | Next.js-served web app and PWA (installable, offline cache) |
+| Mobile         | Deferred; no native wrapper planned                         |
+| Web            | Next.js-served web app                                       |
 | Sync           | Google Drive `appDataFolder` (OAuth PKCE, client-side)     |
 | AI             | Gemini and OpenAI APIs from the client, structured JSON    |
 | Secrets        | Provider keys in browser `localStorage` (not encrypted)     |
@@ -79,7 +79,7 @@ One JSON file per set; this is also the sync and export format.
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "set_uuid",
   "title": "Biology Ch.3",
   "updatedAt": "2026-10-06T10:00:00Z",
@@ -89,6 +89,8 @@ One JSON file per set; this is also the sync and export format.
       "id": "q_uuid",
       "type": "mcq",
       "text": "...",
+      "difficulty": "normal",
+      "tags": [],
       "options": ["A", "B", "C", "D"],
       "answerIndex": 2,
       "updatedAt": "2026-10-06T10:00:00Z",
@@ -98,6 +100,8 @@ One JSON file per set; this is also the sync and export format.
       "id": "q_uuid2",
       "type": "essay",
       "text": "...",
+      "difficulty": "hard",
+      "tags": ["deprecated", "html"],
       "referenceAnswer": "...",
       "updatedAt": "2026-10-06T10:00:00Z",
       "deleted": false
@@ -109,6 +113,8 @@ One JSON file per set; this is also the sync and export format.
 **Rules**
 
 - UUID ids, `updatedAt` on every record, soft deletes via `deleted: true`.
+- Questions have an `easy`, `normal`, or `hard` difficulty and optional free-form tags. The `deprecated` tag is informational and does not exclude a question from quizzes.
+- JSON schema version 2 migrates version 1 questions to `difficulty: "normal"` and `tags: []`.
 - Purge tombstones older than about 30 days (Phase 3).
 - Optional `image` field is added later (Phase 5) without breaking old data.
 
@@ -147,7 +153,7 @@ src/
   platform/        browser storage and platform adapters
   types/           shared domain models
 tests/              tests grouped by source area
-public/             manifest, icons, and service worker
+public/             browser icon
 docs/              project documentation
   learn/           learning guides and phase recaps (see AGENTS.md)
 ```
@@ -189,7 +195,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P1-09** JSON import and export per set, with `schemaVersion` validation.
   - Done when: an exported set re-imports without loss, and bad files show a clear error.
   - Learn: `docs/learn/09-json-import-export.md`.
-- [x] **P1-10** PWA setup: manifest, icons, service worker for offline use.
+- [x] **P1-10** PWA setup: manifest, icons, service worker for offline use (historical; now disabled).
   - Done when: the app installs and works offline after the first load.
   - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [x] **P1-11** Make the layout mobile-first and responsive (small screens first, safe areas, touch-sized controls).
@@ -198,7 +204,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P1-12** Final learning check: verify that each P1-01 to P1-11 task has its matching lesson, `docs/learn/README.md` indexes them in order, and the Phase 1 recap is complete.
   - Done when: `docs/learn/01-...md` through `docs/learn/11-...md` all exist and are indexed, and `docs/learn/phase-1-recap.md` summarizes Phase 1 with five quiz questions and answers hidden at the bottom.
 
-**Exit criteria:** every P1 task is `[x]`; `typecheck`, `lint`, `test` and `build` pass; the app works offline in the browser; `docs/learn/phase-1-recap.md` exists.
+**Exit criteria:** every P1 task is `[x]`; `typecheck`, `lint`, `test` and `build` pass; the app worked offline at the end of P1 (PWA support was later disabled); `docs/learn/phase-1-recap.md` exists.
 
 ### Phase P2: AI features
 
@@ -227,7 +233,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 **Goal:** changes on one device appear on all others.
 
 - [x] **P3-07** Migrate the web app from Vite and React Router to Next.js App Router without moving Dexie data or AI keys off the browser.
-  - Done when: all existing routes and PWA behavior work under Next.js, checks pass, and Vite/React Router are no longer the app runtime.
+  - Done when: all app routes work under Next.js, checks pass, and Vite/React Router are no longer the app runtime. PWA behavior was subsequently deferred.
   - Learn: `docs/learn/18-nextjs-app-router.md`.
 - [ ] **P3-01** Merge function (per-question newest `updatedAt` wins, tombstones respected) with thorough unit tests.
   - Done when: tests cover add, edit, delete, and concurrent edits from two devices.
@@ -250,35 +256,36 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 **Exit criteria:** every P3 task is `[x]`; manual test with two devices or browsers passes (add, edit, delete, offline edit, reconnect); `docs/learn/phase-3-recap.md` exists.
 
-### Phase P4: Desktop and mobile PWA
+### Phase P4: Desktop and mobile delivery
 
-**Goal:** deliver a desktop app after the web app is stable, then verify a good installable PWA experience on mobile. Do not add a native wrapper or app-store release flow under the current roadmap.
+**Goal:** deliver a desktop app after the web app is stable, then revisit mobile delivery. PWA installation and offline behavior are currently deferred; do not add a native wrapper or app-store release flow under the current roadmap.
 
 - [!] **P4-01** Add Capacitor; create Android and iOS projects; `cap sync` works in the build flow.
-  - Not in current scope: mobile will use the PWA instead of native app packages.
+  - Not in current scope: mobile delivery is deferred; no native app is planned.
 - [!] **P4-02** Replace web OAuth with a native or system-browser flow for Google sign-in.
   - Not in current scope: no native app is planned.
 - [!] **P4-03** Move AI provider keys to native secure storage via the `platform/` layer.
-  - Not in current scope: mobile will use the browser PWA and its browser storage.
+  - Not in current scope: no native app is planned.
 - [!] **P4-04** Add native haptics, share sheet, and local reminder notifications.
   - Not in current scope: no native app is planned.
 - [!] **P4-05** Prepare native app-store assets and privacy policy.
   - Not in current scope: native app-store releases are not planned.
 - [!] **P4-06** Publish a Google Play native app.
-  - Not in current scope: mobile distribution is through the PWA.
+  - Not in current scope: native app-store releases are not planned.
 - [!] **P4-07** Publish an iOS App Store native app.
-  - Not in current scope: mobile distribution is through the PWA.
+  - Not in current scope: native app-store releases are not planned.
 - [ ] **P4-08** Package the stable web app for desktop; choose a desktop wrapper only if browser installation is insufficient.
-  - Done when: the desktop delivery approach is documented and the app launches with its routes, local data, and offline behavior working.
+  - Done when: the desktop delivery approach is documented and the app launches with its routes and local data working.
   - Learn: `docs/learn/37-tauri-desktop-wrapper.md`.
-- [ ] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
+- [!] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
+  - Deferred at the owner's request: install and offline PWA behavior are not currently needed.
   - Done when: users can install/open the PWA, use core quiz flows, retain local data, and load the app offline after a successful visit.
   - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [ ] **P4-10** Revisit desktop and mobile delivery after testing real devices and browsers.
   - Done when: supported platforms, known PWA limitations, and any future native-app need are documented.
   - Learn: `docs/learn/10-pwa-and-offline.md`, `docs/learn/37-tauri-desktop-wrapper.md`.
 
-**Exit criteria:** P4-08 to P4-10 are `[x]`; desktop delivery and mobile PWA behavior are verified; `docs/learn/phase-4-recap.md` exists.
+**Exit criteria:** P4-08 and P4-10 are `[x]`; P4-09 remains deferred unless mobile PWA support is re-scoped; `docs/learn/phase-4-recap.md` exists.
 
 ### Phase P5: Polish and extras
 
@@ -314,6 +321,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-12** Refresh the library home page and add whole-library ZIP export/import and multi-JSON import; repair relocated App Router imports.
   - Done when: the library is responsive and easier to navigate; active sets can be exported to one ZIP; ZIP archives and multiple JSON files are validated before any sets are saved; success and failure feedback is visible.
   - Learn: `docs/learn/09-json-import-export.md`, `docs/learn/11-responsive-layout.md`, `docs/learn/18-nextjs-app-router.md`.
+- [x] **P5-13** Add difficulty and free-form tags to question records, editing, and JSON import/export.
+  - Done when: questions support easy/normal/hard difficulty and tags; deprecated tags remain informational; old local data and version 1 JSON migrate to normal difficulty and no tags; all checks pass.
+  - Learn: `docs/learn/06-question-editor.md`, `docs/learn/09-json-import-export.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -329,13 +339,15 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-06 | Soft deletes with tombstones                                 | Required so deletes sync correctly                                           |
 | 2026-10-06 | Gemini key never synced                                      | Per-device secret                                                            |
 | 2026-10-07 | React Router v7, library mode, `react-router` only           | Most documented; no server needed; avoids the old `react-router-dom` habit   |
-| 2026-10-07 | Start with browser routing                                   | The app is delivered through the web and installable PWA                     |
+| 2026-10-07 | Start with browser routing                                   | The initial web release was also installable; PWA support is now deferred   |
 | 2026-10-12 | Next.js App Router for the web app; browser remains data owner | Requested migration; Dexie and keys stay client-side; hosting needs Next.js |
 | 2026-10-12 | Web first, desktop second, mobile through PWA                 | Avoid native wrappers and store releases; reuse the responsive web app        |
-| 2026-10-12 | Native Capacitor work is out of scope for now                 | Mobile access will use the installable PWA; reconsider native only if needed |
+| 2026-10-12 | Native Capacitor work is out of scope for now                 | Avoid native-app complexity; mobile delivery is currently deferred          |
 | 2026-10-16 | Use ZIP for whole-library export and import                    | Browsers can create and read ZIP archives locally; genuine RAR creation is not built in and would require a different toolchain |
 | 2026-10-16 | Use fflate for client-side ZIP handling                        | Keeps library backup and restore local without a backend                   |
 | 2026-10-16 | Map the Next.js `@/*` alias to `src/*`                         | Keeps App Router imports stable and readable after moving routes into `src/app` |
+| 2026-10-17 | Store question difficulty and free-form informational tags in schema version 2 | Adds helpful labels without changing quiz eligibility; version 1 data migrates to normal difficulty and no tags |
+| 2026-10-17 | Defer PWA installation and offline caching for now | Prevent stale service-worker assets during current web development; remove old registrations and cache without touching local quiz data |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -349,12 +361,14 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - Is a desktop wrapper needed, or is installing the web app sufficient?
 - Which mobile browsers and PWA capabilities should be supported?
 - Should essay questions require a reference answer?
-- Which Next.js-compatible host should serve the PWA in production?
+- Which Next.js-compatible host should serve the web app in production?
 
 ## 10. Changelog
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-17: Removed active PWA installation and offline behavior: deleted the manifest, service worker, and offline fallback route; stopped linking the manifest; and added one-time cleanup of the old worker and cache without touching IndexedDB data. Updated the PWA learning note and deferred P4-09. Next: continue P3-01.
+- 2026-10-17: Completed P5-13: added easy/normal/hard and free-form tags to question editing, set/quiz views, and JSON schema v2; version 1 JSON and local IndexedDB records migrate to normal difficulty with no tags. Browser smoke check confirmed a deprecated-tagged question still appears in a quiz. `typecheck`, `lint`, all 31 tests, and production `build` pass. `npm outdated` reports major updates for `@types/node` and TypeScript; none upgraded. Next: return to P3-01.
 - 2026-10-16: Refreshed the responsive library with ZIP backup/restore and atomic multi-JSON import; fixed relocated App Router imports using Next.js's `@/*` alias mapped to `src/*`; regenerated stale route types with `next typegen`. `typecheck`, `lint`, all 28 tests, and production `build` pass. Next: continue P3-01.
 - 2026-10-12: Moved the learning guides into `docs/learn/`, preserving other docs directory contents and updating links and contributor guidance. Next: continue P3-01.
 - 2026-10-12: Set platform direction to web first, desktop second, and mobile through the installable PWA; marked native Capacitor and store-release tasks out of scope, promoted desktop packaging, and added mobile PWA verification. Next: continue P3-01, then desktop delivery before mobile PWA validation.

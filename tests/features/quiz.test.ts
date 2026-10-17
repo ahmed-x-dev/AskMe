@@ -4,7 +4,7 @@ import { buildQuizQueue, shuffle } from '../../src/features/quiz'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   id: 'set-1',
   title: 'Practice set',
   updatedAt: '2026-10-11T00:00:00.000Z',
@@ -14,6 +14,8 @@ const sampleSet: QuizSet = {
       id: 'q-1',
       type: 'mcq',
       text: 'Which planet is known as the Red Planet?',
+      difficulty: 'easy',
+      tags: ['space', 'deprecated'],
       options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
       answerIndex: 1,
       updatedAt: '2026-10-11T00:00:00.000Z',
@@ -23,6 +25,8 @@ const sampleSet: QuizSet = {
       id: 'q-2',
       type: 'essay',
       text: 'Explain photosynthesis.',
+      difficulty: 'hard',
+      tags: ['biology'],
       referenceAnswer: 'Plants turn sunlight into chemical energy.',
       updatedAt: '2026-10-11T00:00:00.000Z',
       deleted: false,
@@ -31,6 +35,8 @@ const sampleSet: QuizSet = {
       id: 'q-3',
       type: 'mcq',
       text: 'Hidden question',
+      difficulty: 'normal',
+      tags: [],
       options: ['A', 'B', 'C', 'D'],
       answerIndex: 0,
       updatedAt: '2026-10-11T00:00:00.000Z',

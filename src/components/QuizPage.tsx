@@ -256,6 +256,19 @@ export function QuizPage({ setId, mode }: { setId: string; mode: QuizMode }) {
         >
           {currentQuestion.type === 'mcq' ? 'MCQ' : 'Essay'}
         </span>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="rounded-full bg-card px-2.5 py-1 text-[13px] font-medium text-muted">
+            Difficulty: {currentQuestion.difficulty}
+          </span>
+          {currentQuestion.tags.map((tag) => (
+            <span
+              key={`${currentQuestion.id}-${tag}`}
+              className="rounded-full bg-card px-2.5 py-1 text-[13px] font-medium text-muted"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
         <p className="mt-3 break-words text-[18px] font-medium leading-7 text-fg">{currentQuestion.text}</p>
       </div>
 

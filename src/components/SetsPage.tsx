@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import {
   createSet,
@@ -10,10 +10,13 @@ import {
   listSets,
   softDeleteSet,
   updateSetTitle,
-} from '../data/repository'
-import { parseSetJson } from '../data/importExport'
-import { createLibraryArchive, readLibraryArchive } from '../data/libraryArchive'
-import type { QuizSet } from '../types/quiz'
+} from "../data/repository";
+import { parseSetJson } from "../data/importExport";
+import {
+  createLibraryArchive,
+  readLibraryArchive,
+} from "../data/libraryArchive";
+import type { QuizSet } from "../types/quiz";
 
 function EmptyState({
   title,
@@ -21,20 +24,34 @@ function EmptyState({
   actionLabel,
   onAction,
 }: {
-  title: string
-  description: string
-  actionLabel: string
-  onAction: () => void
+  title: string;
+  description: string;
+  actionLabel: string;
+  onAction: () => void;
 }) {
   return (
     <section className="rounded-2xl bg-card p-6 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-6 w-6">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          className="h-6 w-6"
+        >
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       </div>
-      <h2 className="mt-4 text-[16px] font-medium leading-6 text-fg">{title}</h2>
-      <p className="mx-auto mt-2 max-w-[280px] text-[16px] leading-6 text-muted">{description}</p>
+      <h2 className="mt-4 text-[16px] font-medium leading-6 text-fg">
+        {title}
+      </h2>
+      <p className="mx-auto mt-2 max-w-70 text-[16px] leading-6 text-muted">
+        {description}
+      </p>
       <button
         type="button"
         onClick={onAction}
@@ -43,215 +60,253 @@ function EmptyState({
         {actionLabel}
       </button>
     </section>
-  )
+  );
 }
 
 export function SetsPage() {
-  const router = useRouter()
-  const [sets, setSets] = useState<QuizSet[] | null>(null)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [isImporting, setIsImporting] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
-  const [searchText, setSearchText] = useState('')
+  const router = useRouter();
+  const [sets, setSets] = useState<QuizSet[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const [importFeedback, setImportFeedback] = useState<{
-    kind: 'error' | 'success'
-    message: string
-  } | null>(null)
-  const importInputRef = useRef<HTMLInputElement>(null)
+    kind: "error" | "success";
+    message: string;
+  } | null>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    let isCurrent = true
+    let isCurrent = true;
 
     listSets()
       .then((nextSets) => {
         if (isCurrent) {
-          setSets(nextSets)
+          setSets(nextSets);
         }
       })
       .catch((error: unknown) => {
         if (isCurrent) {
-          setLoadError(error instanceof Error ? error.message : 'Could not load your sets.')
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Could not load your sets.",
+          );
         }
-      })
+      });
 
     return () => {
-      isCurrent = false
-    }
-  }, [])
+      isCurrent = false;
+    };
+  }, []);
 
   const refreshSets = async () => {
     try {
-      const nextSets = await listSets()
-      setSets(nextSets)
-      setLoadError(null)
+      const nextSets = await listSets();
+      setSets(nextSets);
+      setLoadError(null);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'Could not refresh your sets.')
+      setLoadError(
+        error instanceof Error ? error.message : "Could not refresh your sets.",
+      );
     }
-  }
+  };
 
   const handleCreateSet = async () => {
-    const created = await createSet(`Set ${(sets?.length ?? 0) + 1}`)
-    await refreshSets()
-    router.push(`/set/${created.id}`)
-  }
+    const created = await createSet(`Set ${(sets?.length ?? 0) + 1}`);
+    await refreshSets();
+    router.push(`/set/${created.id}`);
+  };
 
   const handleImportLibrary = async (files: File[]) => {
-    setIsImporting(true)
-    setImportFeedback(null)
+    setIsImporting(true);
+    setImportFeedback(null);
 
     try {
-      const rawJsonFiles: string[] = []
+      const rawJsonFiles: string[] = [];
 
       for (const file of files) {
-        const extension = file.name.toLowerCase().split('.').pop()
+        const extension = file.name.toLowerCase().split(".").pop();
 
-        if (extension === 'zip') {
-          rawJsonFiles.push(...readLibraryArchive(new Uint8Array(await file.arrayBuffer())))
-        } else if (extension === 'json') {
-          rawJsonFiles.push(await file.text())
+        if (extension === "zip") {
+          rawJsonFiles.push(
+            ...readLibraryArchive(new Uint8Array(await file.arrayBuffer())),
+          );
+        } else if (extension === "json") {
+          rawJsonFiles.push(await file.text());
         } else {
-          throw new Error(`“${file.name}” is not a ZIP archive or JSON file.`)
+          throw new Error(`“${file.name}” is not a ZIP archive or JSON file.`);
         }
       }
 
-      const incomingSets = rawJsonFiles.map(parseSetJson)
-      const existingIds = new Set(sets?.map((set) => set.id) ?? [])
-      const replacementCount = incomingSets.filter((set) => existingIds.has(set.id)).length
+      const incomingSets = rawJsonFiles.map(parseSetJson);
+      const existingIds = new Set(sets?.map((set) => set.id) ?? []);
+      const replacementCount = incomingSets.filter((set) =>
+        existingIds.has(set.id),
+      ).length;
 
       if (
         replacementCount > 0 &&
         !window.confirm(
-          `${replacementCount} imported set${replacementCount === 1 ? '' : 's'} ${
-            replacementCount === 1 ? 'matches' : 'match'
+          `${replacementCount} imported set${replacementCount === 1 ? "" : "s"} ${
+            replacementCount === 1 ? "matches" : "match"
           } existing IDs and will replace their current contents. Continue?`,
         )
       ) {
-        return
+        return;
       }
 
-      const result = await importSetsFromJson(rawJsonFiles)
-      await refreshSets()
+      const result = await importSetsFromJson(rawJsonFiles);
+      await refreshSets();
       setImportFeedback({
-        kind: 'success',
-        message: `Imported ${result.sets.length} set${result.sets.length === 1 ? '' : 's'}${
-          result.updatedCount > 0 ? `; updated ${result.updatedCount} existing` : ''
+        kind: "success",
+        message: `Imported ${result.sets.length} set${result.sets.length === 1 ? "" : "s"}${
+          result.updatedCount > 0
+            ? `; updated ${result.updatedCount} existing`
+            : ""
         }.`,
-      })
+      });
     } catch (error) {
       setImportFeedback({
-        kind: 'error',
-        message: error instanceof Error ? error.message : 'The library could not be imported.',
-      })
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The library could not be imported.",
+      });
     } finally {
-      setIsImporting(false)
+      setIsImporting(false);
     }
-  }
+  };
 
   const handleExportLibrary = async () => {
-    setIsExporting(true)
-    setImportFeedback(null)
+    setIsExporting(true);
+    setImportFeedback(null);
 
     try {
-      const activeSets = await listSets()
+      const activeSets = await listSets();
       if (activeSets.length === 0) {
-        throw new Error('Create or import a set before exporting your library.')
+        throw new Error(
+          "Create or import a set before exporting your library.",
+        );
       }
 
-      const archive = createLibraryArchive(activeSets)
+      const archive = createLibraryArchive(activeSets);
       const downloadUrl = URL.createObjectURL(
-        new Blob([archive], { type: 'application/zip' }),
-      )
-      const downloadLink = document.createElement('a')
-      downloadLink.href = downloadUrl
-      downloadLink.download = `askme-library-${new Date().toISOString().slice(0, 10)}.zip`
-      document.body.append(downloadLink)
-      downloadLink.click()
-      downloadLink.remove()
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+        new Blob([archive], { type: "application/zip" }),
+      );
+      const downloadLink = document.createElement("a");
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `askme-library-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.append(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
 
       setImportFeedback({
-        kind: 'success',
-        message: `Exported ${activeSets.length} set${activeSets.length === 1 ? '' : 's'} to a ZIP archive.`,
-      })
+        kind: "success",
+        message: `Exported ${activeSets.length} set${activeSets.length === 1 ? "" : "s"} to a ZIP archive.`,
+      });
     } catch (error) {
       setImportFeedback({
-        kind: 'error',
-        message: error instanceof Error ? error.message : 'The library could not be exported.',
-      })
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The library could not be exported.",
+      });
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   const handleRenameSet = async (setId: string, currentTitle: string) => {
-    const nextTitle = window.prompt('Rename set', currentTitle)
+    const nextTitle = window.prompt("Rename set", currentTitle);
 
     if (nextTitle === null) {
-      return
+      return;
     }
 
-    const trimmedTitle = nextTitle.trim()
+    const trimmedTitle = nextTitle.trim();
 
     if (!trimmedTitle) {
-      return
+      return;
     }
 
-    const updated = await updateSetTitle(setId, trimmedTitle)
+    const updated = await updateSetTitle(setId, trimmedTitle);
 
     if (updated) {
-      await refreshSets()
+      await refreshSets();
     }
-  }
+  };
 
   const handleDeleteSet = async (setId: string, title: string) => {
-    const confirmed = window.confirm(`Delete “${title}”? This hides it from the app.`)
+    const confirmed = window.confirm(
+      `Delete “${title}”? This hides it from the app.`,
+    );
 
     if (!confirmed) {
-      return
+      return;
     }
 
-    const deleted = await softDeleteSet(setId)
+    const deleted = await softDeleteSet(setId);
 
     if (deleted) {
-      await refreshSets()
+      await refreshSets();
     }
-  }
+  };
 
   if (sets === null) {
     return (
       <section className="rounded-2xl bg-card p-5">
         {loadError ? (
           <>
-            <h2 className="text-[18px] font-medium leading-7 text-fg">Could not load sets</h2>
-            <p role="alert" className="mt-2 text-[13px] leading-[18px] text-bad-fg">{loadError}</p>
+            <h2 className="text-[18px] font-medium leading-7 text-fg">
+              Could not load sets
+            </h2>
+            <p
+              role="alert"
+              className="mt-2 text-[13px] leading-4.5 text-bad-fg"
+            >
+              {loadError}
+            </p>
           </>
         ) : (
-          <p role="status" className="text-[16px] leading-6 text-muted">Loading your sets…</p>
+          <p role="status" className="text-[16px] leading-6 text-muted">
+            Loading your sets…
+          </p>
         )}
       </section>
-    )
+    );
   }
 
   const activeQuestionCount = sets.reduce(
-    (total, set) => total + set.questions.filter((question) => !question.deleted).length,
+    (total, set) =>
+      total + set.questions.filter((question) => !question.deleted).length,
     0,
-  )
+  );
   const filteredSets = sets.filter((set) =>
-    set.title.toLocaleLowerCase().includes(searchText.trim().toLocaleLowerCase()),
-  )
+    set.title
+      .toLocaleLowerCase()
+      .includes(searchText.trim().toLocaleLowerCase()),
+  );
 
   return (
     <>
       {loadError ? (
-        <p role="alert" className="text-[13px] leading-[18px] text-bad-fg">{loadError}</p>
+        <p role="alert" className="text-[13px] leading-4.5 text-bad-fg">
+          {loadError}
+        </p>
       ) : null}
       <section className="flex flex-col gap-5 rounded-2xl bg-card p-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] leading-[18px] text-accent-text">Your study library</p>
-          <h2 className="mt-2 text-[22px] font-medium leading-[28px] text-fg">
+          <p className="text-[13px] leading-4.5 text-accent-text">
+            Your study library
+          </p>
+          <h2 className="mt-2 text-[22px] font-medium leading-7 text-fg">
             Make every study session count.
           </h2>
-          <p className="mt-2 max-w-[420px] text-[16px] leading-6 text-muted">
+          <p className="mt-2 max-w-105 text-[16px] leading-6 text-muted">
             Keep your questions organized and pick up where you left off.
           </p>
         </div>
@@ -266,14 +321,14 @@ export function SetsPage() {
 
       <section aria-label="Library overview" className="grid grid-cols-2 gap-3">
         <article className="rounded-2xl bg-card p-4">
-          <p className="text-[13px] leading-[18px] text-muted">Study sets</p>
-          <p className="mt-1 text-[22px] font-medium leading-[28px] text-fg tabular-nums">
+          <p className="text-[13px] leading-4.5 text-muted">Study sets</p>
+          <p className="mt-1 text-[22px] font-medium leading-7 text-fg tabular-nums">
             {sets.length}
           </p>
         </article>
         <article className="rounded-2xl bg-card p-4">
-          <p className="text-[13px] leading-[18px] text-muted">Questions ready</p>
-          <p className="mt-1 text-[22px] font-medium leading-[28px] text-fg tabular-nums">
+          <p className="text-[13px] leading-4.5 text-muted">Questions ready</p>
+          <p className="mt-1 text-[22px] font-medium leading-7 text-fg tabular-nums">
             {activeQuestionCount}
           </p>
         </article>
@@ -298,7 +353,7 @@ export function SetsPage() {
               disabled={isImporting || isExporting}
               className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-wait disabled:opacity-70"
             >
-              {isImporting ? 'Importing…' : 'Import library'}
+              {isImporting ? "Importing…" : "Import to library"}
             </button>
             <button
               type="button"
@@ -306,12 +361,13 @@ export function SetsPage() {
               disabled={isImporting || isExporting || sets.length === 0}
               className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-accent hover:text-on-accent disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isExporting ? 'Exporting…' : 'Export library'}
+              {isExporting ? "Exporting…" : "Export library"}
             </button>
           </div>
         </div>
-        <p className="mt-3 text-[13px] leading-[18px] text-muted">
-          Import a ZIP backup or select multiple set JSON files. Export saves all active sets in one ZIP.
+        <p className="mt-3 text-[13px] leading-4.5 text-muted">
+          Import a ZIP backup or select multiple set JSON files. Export saves
+          all active sets in one ZIP.
         </p>
         <input
           ref={importInputRef}
@@ -321,11 +377,11 @@ export function SetsPage() {
           className="hidden"
           aria-label="Choose a ZIP archive or multiple set JSON files"
           onChange={(event) => {
-            const files = Array.from(event.currentTarget.files ?? [])
-            event.currentTarget.value = ''
+            const files = Array.from(event.currentTarget.files ?? []);
+            event.currentTarget.value = "";
 
             if (files.length > 0) {
-              void handleImportLibrary(files)
+              void handleImportLibrary(files);
             }
           }}
         />
@@ -333,9 +389,9 @@ export function SetsPage() {
 
       {importFeedback ? (
         <p
-          role={importFeedback.kind === 'error' ? 'alert' : 'status'}
-          className={`text-[13px] leading-[18px] ${
-            importFeedback.kind === 'error' ? 'text-bad-fg' : 'text-accent-text'
+          role={importFeedback.kind === "error" ? "alert" : "status"}
+          className={`text-[13px] leading-4.5 ${
+            importFeedback.kind === "error" ? "text-bad-fg" : "text-accent-text"
           }`}
         >
           {importFeedback.message}
@@ -351,13 +407,15 @@ export function SetsPage() {
         />
       ) : filteredSets.length === 0 ? (
         <section className="rounded-2xl bg-card p-5 text-center">
-          <h2 className="text-[16px] font-medium leading-6 text-fg">No matching sets</h2>
+          <h2 className="text-[16px] font-medium leading-6 text-fg">
+            No matching sets
+          </h2>
           <p className="mt-2 text-[16px] leading-6 text-muted">
             Try another search or clear the search field.
           </p>
           <button
             type="button"
-            onClick={() => setSearchText('')}
+            onClick={() => setSearchText("")}
             className="mt-4 min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg transition-colors hover:bg-accent hover:text-on-accent"
           >
             Clear search
@@ -366,10 +424,15 @@ export function SetsPage() {
       ) : (
         <section className="grid gap-3 md:grid-cols-2">
           {filteredSets.map((set) => {
-            const activeQuestionCount = set.questions.filter((question) => !question.deleted).length
+            const activeQuestionCount = set.questions.filter(
+              (question) => !question.deleted,
+            ).length;
 
             return (
-              <article key={set.id} className="relative flex flex-col rounded-2xl bg-card p-4">
+              <article
+                key={set.id}
+                className="relative flex flex-col rounded-2xl bg-card p-4"
+              >
                 <Link
                   href={`/set/${set.id}`}
                   aria-label={`Open ${set.title}`}
@@ -377,10 +440,11 @@ export function SetsPage() {
                 />
                 <div className="relative z-20 flex flex-col gap-3 pointer-events-none sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0 flex-1">
-                    <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-[18px] text-muted tabular-nums">
-                      {activeQuestionCount} question{activeQuestionCount === 1 ? '' : 's'}
+                    <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-4.5 text-muted tabular-nums">
+                      {activeQuestionCount} question
+                      {activeQuestionCount === 1 ? "" : "s"}
                     </span>
-                    <h3 className="mt-3 break-words text-[16px] font-medium leading-6 text-fg">
+                    <h3 className="mt-3 wrap-break-word text-[16px] font-medium leading-6 text-fg">
                       {set.title}
                     </h3>
                   </div>
@@ -393,7 +457,12 @@ export function SetsPage() {
                       title="Rename set"
                       className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-accent hover:text-on-accent"
                     >
-                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="h-5 w-5"
+                      >
                         <path
                           d="m14 5 5 5M4 20l4.5-1 10.7-10.7a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"
                           stroke="currentColor"
@@ -410,7 +479,12 @@ export function SetsPage() {
                       title="Delete set"
                       className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
                     >
-                      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="h-5 w-5"
+                      >
                         <path
                           d="M4 7h16m-10 4v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"
                           stroke="currentColor"
@@ -424,15 +498,15 @@ export function SetsPage() {
                 </div>
 
                 <div className="relative z-20 mt-4 flex items-center gap-2 pointer-events-none">
-                  <span className="text-[13px] leading-[18px] text-muted">
+                  <span className="text-[13px] leading-4.5 text-muted">
                     Updated {new Date(set.updatedAt).toLocaleDateString()}
                   </span>
                 </div>
               </article>
-            )
+            );
           })}
         </section>
       )}
     </>
-  )
+  );
 }

@@ -7,7 +7,6 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AskMe",
   description: "Your revision space",
-  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
   },

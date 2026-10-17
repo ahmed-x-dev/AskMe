@@ -161,6 +161,8 @@ export function validateGeneratedQuestions(
         id: crypto.randomUUID(),
         type: "mcq",
         text,
+        difficulty: "normal",
+        tags: [],
         options: [
           cleanOptions[0],
           cleanOptions[1],
@@ -184,6 +186,8 @@ export function validateGeneratedQuestions(
         id: crypto.randomUUID(),
         type: "essay",
         text,
+        difficulty: "normal",
+        tags: [],
         referenceAnswer: referenceAnswer || undefined,
         updatedAt: nowIso(),
         deleted: false,

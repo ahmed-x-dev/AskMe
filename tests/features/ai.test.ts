@@ -27,6 +27,8 @@ describe('AI schema validation', () => {
       throw new Error('Expected the generated question to be a multiple-choice question.')
     }
     expect(result[0].options).toEqual(['Venus', 'Mars', 'Jupiter', 'Mercury'])
+    expect(result[0].difficulty).toBe('normal')
+    expect(result[0].tags).toEqual([])
   })
 
   it('rejects malformed essay grading payloads', () => {

@@ -26,7 +26,6 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'AskMe',
-  manifest: '/manifest.webmanifest',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

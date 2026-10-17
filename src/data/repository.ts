@@ -1,8 +1,6 @@
 import { db } from './db'
-import { parseQuestionsJson, parseSetJson } from './importExport'
+import { CURRENT_SCHEMA_VERSION, exportSetJson, parseQuestionsJson, parseSetJson } from './importExport'
 import type { Question, QuizSet } from '../types/quiz'
-
-const SCHEMA_VERSION = 1
 
 function nowIso(): string {
   return new Date().toISOString()
@@ -34,7 +32,7 @@ export async function getSet(id: string): Promise<QuizSet | null> {
 export async function createSet(title: string): Promise<QuizSet> {
   const now = nowIso()
   const set: QuizSet = {
-    schemaVersion: SCHEMA_VERSION,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
     id: crypto.randomUUID(),
     title: sanitizeTitle(title),
     updatedAt: now,
@@ -109,14 +107,7 @@ export async function exportSetAsJson(setId: string): Promise<string | null> {
     return null
   }
 
-  return JSON.stringify(
-    {
-      ...set,
-      questions: set.questions.filter((question) => !question.deleted),
-    },
-    null,
-    2,
-  )
+  return exportSetJson(set)
 }
 
 /** Validates and imports multiple sets atomically; matching IDs replace their local sets. */

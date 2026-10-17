@@ -10,7 +10,7 @@ The app is meant to be used on a phone, but the same layout should still feel co
 
 CSS should start from the narrowest view and add layout improvements as the screen gets wider. This keeps content readable and touch-friendly everywhere.
 
-This phone-first layout approach is separate from release order: AskMe ships as a web app first, desktop second, and mobile through the installable PWA.
+This phone-first layout approach is separate from release order: AskMe ships as a web app first and desktop second. Mobile delivery is deferred, and PWA install/offline support is currently disabled.
 
 In this project, the shell uses a centered column with safe-area padding. The library can widen for a two-column set grid, while question and quiz screens stay in a narrower reading column.
 

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { exportSetJson, parseQuestionsJson, parseSetJson } from '../../src/data/importExport'
+import { CURRENT_SCHEMA_VERSION, exportSetJson, parseQuestionsJson, parseSetJson } from '../../src/data/importExport'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
-  schemaVersion: 1,
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   id: 'set-1',
   title: 'Import export set',
   updatedAt: '2026-10-11T00:00:00.000Z',
@@ -14,6 +14,8 @@ const sampleSet: QuizSet = {
       id: 'q-1',
       type: 'mcq',
       text: 'Which planet is known as the Red Planet?',
+      difficulty: 'easy',
+      tags: ['space'],
       options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
       answerIndex: 1,
       updatedAt: '2026-10-11T00:00:00.000Z',
@@ -23,6 +25,8 @@ const sampleSet: QuizSet = {
       id: 'q-2',
       type: 'essay',
       text: 'Explain photosynthesis.',
+      difficulty: 'hard',
+      tags: ['biology', 'deprecated'],
       referenceAnswer: 'Plants turn sunlight into chemical energy.',
       updatedAt: '2026-10-11T00:00:00.000Z',
       deleted: false,
@@ -49,6 +53,42 @@ describe('import/export helpers', () => {
     })
 
     expect(() => parseSetJson(invalidJson)).toThrowError(/Unsupported schema version/)
+  })
+
+  it('migrates version 1 sets with normal difficulty and no tags', () => {
+    const oldSet = {
+      ...sampleSet,
+      schemaVersion: 1,
+      questions: sampleSet.questions.map((question) => {
+        const legacyQuestion: Record<string, unknown> = { ...question }
+        delete legacyQuestion.difficulty
+        delete legacyQuestion.tags
+        return legacyQuestion
+      }),
+    }
+
+    expect(parseSetJson(JSON.stringify(oldSet))).toEqual({
+      ...sampleSet,
+      questions: sampleSet.questions.map((question) => ({
+        ...question,
+        difficulty: 'normal',
+        tags: [],
+      })),
+    })
+  })
+
+  it('normalizes imported tags and rejects invalid difficulty or tags', () => {
+    const question = sampleSet.questions[0]
+    const normalized = parseQuestionsJson(JSON.stringify({
+      ...question,
+      tags: [' deprecated ', '', 'deprecated', ' html '],
+    }))
+
+    expect(normalized[0].tags).toEqual(['deprecated', 'html'])
+    expect(() => parseQuestionsJson(JSON.stringify({ ...question, difficulty: 'trivial' })))
+      .toThrowError(/unsupported difficulty/)
+    expect(() => parseQuestionsJson(JSON.stringify({ ...question, tags: ['valid', 2] })))
+      .toThrowError(/tags must be an array of strings/)
   })
 
   it('parses one Question object and arrays using the Question shape', () => {

@@ -425,6 +425,19 @@ export function SetDetailPage({ setId }: { setId: string }) {
                     </span>
                   </div>
                   <p className="mt-3 break-words text-[16px] leading-6 text-fg">{question.text}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-card px-2.5 py-1 text-[13px] font-medium text-muted">
+                      Difficulty: {question.difficulty}
+                    </span>
+                    {question.tags.map((tag) => (
+                      <span
+                        key={`${question.id}-${tag}`}
+                        className="rounded-full bg-card px-2.5 py-1 text-[13px] font-medium text-muted"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                   <div className="mt-4 flex gap-2">
                     <button
                       type="button"

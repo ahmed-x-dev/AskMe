@@ -1,6 +1,9 @@
 /** Discriminator for the supported question variants. */
 export type QuestionType = 'mcq' | 'essay'
 
+/** Difficulty label saved with each question. */
+export type QuestionDifficulty = 'easy' | 'normal' | 'hard'
+
 /** Union of all question records stored in a quiz set. */
 export type Question = McqQuestion | EssayQuestion
 
@@ -9,6 +12,8 @@ export interface BaseQuestion {
   id: string
   type: QuestionType
   text: string
+  difficulty: QuestionDifficulty
+  tags: string[]
   updatedAt: string
   deleted: boolean
 }
