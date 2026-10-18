@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { ArrowLeft, Moon, Settings, Sun } from "lucide-react";
+import { ArrowLeft, Moon, Sun } from "lucide-react";
 
 export type Theme = "light" | "dark";
 
@@ -26,27 +26,39 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
       <div
         className="mx-auto flex min-h-screen w-full max-w-200 flex-col gap-8 px-4 py-6 lg:max-w-7xl 2xl:max-w-screen-2xl"
       >
-        <header className="flex items-center justify-between gap-4">
+        <header className={`flex items-center justify-between gap-4 ${isHomePage ? "border-b border-card-hover pb-5" : ""}`}>
           {isHomePage ? (
-            <Link
-              href="/"
-              className="flex min-w-0 items-center gap-3 rounded-2xl"
-            >
-              <span
-                aria-hidden="true"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[18px] font-medium text-on-accent"
+            <div className="flex min-w-0 items-center gap-4">
+              <Link
+                href="/"
+                className="flex min-w-0 items-center gap-3 rounded-2xl"
               >
-                A
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[16px] font-medium leading-6 text-fg">
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[18px] font-medium text-on-accent"
+                >
+                  A
+                </span>
+                <span className="min-w-0 text-[16px] font-medium leading-6 text-fg">
                   AskMe
                 </span>
-                <span className="block text-[13px] leading-4.5 text-muted">
-                  Your revision space
-                </span>
-              </span>
-            </Link>
+              </Link>
+              <nav aria-label="Primary navigation" className="hidden items-center gap-2 sm:flex">
+                <Link
+                  href="/"
+                  aria-current="page"
+                  className="min-h-12 rounded-2xl bg-card px-4 py-3 text-[16px] font-medium leading-6 text-fg"
+                >
+                  Library
+                </Link>
+                <Link
+                  href="/settings"
+                  className="min-h-12 rounded-2xl px-3 py-3 text-[16px] leading-6 text-muted transition-colors hover:bg-card hover:text-fg"
+                >
+                  Settings
+                </Link>
+              </nav>
+            </div>
           ) : (
             <Link
               href="/"
@@ -62,19 +74,6 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
           )}
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/settings"
-              className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-card text-fg transition duration-200 ease-out hover:bg-card-hover"
-              aria-label="Open settings"
-              title="Open settings"
-            >
-              <Settings
-                aria-hidden="true"
-                className="h-5 w-5"
-                strokeWidth={1.5}
-              />
-            </Link>
-
             <button
               type="button"
               onClick={() =>

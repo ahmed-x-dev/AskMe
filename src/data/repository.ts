@@ -25,16 +25,8 @@ async function updateGroupMemberships(
       ...set,
       group: assignments.has(set.id) ? assignments.get(set.id) : set.group,
     }))
-    const memberCounts = new Map<string, number>()
-
-    preliminary.forEach((set) => {
-      if (set.group) {
-        memberCounts.set(set.group.id, (memberCounts.get(set.group.id) ?? 0) + 1)
-      }
-    })
-
     const updated = preliminary.map((set) => {
-      const group = set.group && (memberCounts.get(set.group.id) ?? 0) < 2 ? undefined : set.group
+      const group = set.group
       const original = activeSets.find((candidate) => candidate.id === set.id)
       const groupChanged = original?.group?.id !== group?.id || original?.group?.name !== group?.name
 
@@ -102,12 +94,12 @@ export async function updateSetTitle(id: string, title: string): Promise<QuizSet
   return updated
 }
 
-/** Creates one named group for at least two active sets, replacing any prior memberships. */
+/** Creates one named group for one or more active sets, replacing any prior memberships. */
 export async function createSetGroup(setIds: readonly string[], name: string): Promise<QuizSet[]> {
   const uniqueIds = [...new Set(setIds)]
 
-  if (uniqueIds.length < 2) {
-    throw new Error('Choose at least two sets to create a group.')
+  if (uniqueIds.length === 0) {
+    throw new Error('Choose at least one set to create a group.')
   }
 
   const selectedSets = await db.sets.bulkGet(uniqueIds)
@@ -117,6 +109,31 @@ export async function createSetGroup(setIds: readonly string[], name: string): P
   }
 
   const group: SetGroup = { id: crypto.randomUUID(), name: sanitizeGroupName(name) }
+  return updateGroupMemberships(new Map(uniqueIds.map((id) => [id, group])))
+}
+
+/** Adds active sets to an existing group; the group must already have an active member. */
+export async function addSetsToGroup(groupId: string, setIds: readonly string[]): Promise<QuizSet[]> {
+  const uniqueIds = [...new Set(setIds)]
+
+  if (uniqueIds.length === 0) {
+    throw new Error('Choose at least one set to add to the group.')
+  }
+
+  const [members, selectedSets] = await Promise.all([
+    db.sets.filter((set) => !set.deleted && set.group?.id === groupId).toArray(),
+    db.sets.bulkGet(uniqueIds),
+  ])
+  const group = members[0]?.group
+
+  if (!group) {
+    throw new Error('That group is no longer available.')
+  }
+
+  if (selectedSets.some((set) => !set || set.deleted || set.group)) {
+    throw new Error('Only ungrouped sets can be added to this group.')
+  }
+
   return updateGroupMemberships(new Map(uniqueIds.map((id) => [id, group])))
 }
 

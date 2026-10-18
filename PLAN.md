@@ -316,7 +316,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
   - Done when: the front page retains its AskMe logo, and every inner route has an accessible back link to the library with the theme control preserved.
   - Learn: `docs/learn/11-responsive-layout.md`.
 - [x] **P5-10** Make library set cards open on click and replace rename/delete labels with icon buttons.
-  - Done when: the card navigates to its set, separate open button is gone, and rename/delete remain accessible 44px icon actions.
+  - Done when: the card navigates to its set and its 44px ellipsis menu keeps rename/delete as accessible separate actions.
   - Learn: `docs/learn/05-routing-and-sets.md`.
 - [x] **P5-11** Add reference-answer reveal and self-assessment controls for essay quiz questions.
   - Done when: essay questions reveal their optional reference answer, let users mark themselves right or wrong, and count that mark in the final score without changing MCQ scoring.
@@ -343,8 +343,11 @@ This tree describes the current app. Add future sync or desktop-platform modules
   - Done when: the spec and shared CSS cover invalid, disabled, loading, overlay, and future choice-control states; route and font guidance match the app.
   - Learn: `docs/learn/02-tailwind-and-themes.md`.
 - [x] **P5-19** Organize sets into editable groups with manual creation, editable names, removal controls, and a groups-only library view.
-  - Done when: a set belongs to at most one persistent group; users can manually create, rename, remove groups without deleting their sets, remove a set from a group, and toggle between normal and groups-only views; version 1–3 imports migrate without a group; checks pass.
+  - Done when: a set belongs to at most one persistent group; users can manually create one-set or multi-set groups, rename, remove groups without deleting their sets, remove a set from a group, and toggle between normal and groups-only views; version 1–3 imports migrate without a group; checks pass.
   - Learn: `docs/learn/27-set-groups-and-touch-dragging.md`.
+- [x] **P5-20** Refresh the library layout to match the supplied compact desktop reference.
+  - Done when: the library has its summary heading, inline tools, group filter chips, and two-column set cards with clear quiz and open actions; ungrouped sets can be added to an existing group; checks pass.
+  - Learn: `docs/learn/11-responsive-layout.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -393,6 +396,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-18: Completed P5-20: refreshed the library and home header to match the supplied compact desktop reference, retaining import, export, grouping, rename, delete, and navigation flows. Group chips filter the library directly; the compact add-group control sits alongside them; one-set groups are valid, and ungrouped sets can be selected and added to an existing group. Group-selection mode shows Apply and Cancel controls and excludes already grouped sets. Each group's Add, Rename, and Delete controls, and each set's management controls, are now in accessible ellipsis menus. Roomy two-column cards provide Start quiz and Open actions. Updated the responsive-layout, routing, and set-groups guides. `npm outdated` reports major updates for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. `typecheck`, `lint`, all 42 tests, and production build pass. Next: resume P3-01.
 - 2026-10-18: Completed P5-19: added schema-version-4 set groups with manual selection, editable names, non-destructive whole-group and per-set removal, and a groups-only library view with an explicit Ungrouped section. Version 1–3 imports migrate as ungrouped; groups persist in exports. Removed the long-press/drag interaction at the owner's request and updated the set-groups learning guide. `typecheck`, `lint`, all 40 tests, and production build pass. `npm outdated` reports major updates for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Next: resume P3-01.
 - 2026-10-17: Completed P5-18: added documented overlay, disabled, loading, invalid, and future choice-control states; corrected font and quiz-route guidance; wired `aria-busy` into existing request actions and `aria-invalid` into question-editor validation. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
 - 2026-10-17: Completed P5-17: documented the borderless-card/control-boundary distinction in `DESIGN.md` and added a 1px `--card-hover` boundary to inputs, text areas, selects, and neutral buttons while retaining the accent focus ring. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.

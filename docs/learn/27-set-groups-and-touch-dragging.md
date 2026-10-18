@@ -10,7 +10,7 @@ A library can become hard to scan when it has many sets. A group gives related s
 
 Grouping is metadata: it describes where a set appears in the library, not the set's questions. A set has either no group or exactly one group.
 
-Each member stores the same small `group` value. It contains a UUID and a name. This means exporting or syncing a set also preserves its group membership. Renaming, removing a member, or removing the whole group updates every affected member together. Removing a group never deletes its sets.
+Each member stores the same small `group` value. It contains a UUID and a name. This means exporting or syncing a set also preserves its group membership. Renaming, adding a member, removing a member, or removing the whole group updates every affected member together. Removing a group never deletes its sets.
 
 ## In our code
 
@@ -27,6 +27,7 @@ export async function createSetGroup(setIds: readonly string[], name: string): P
 - `crypto.randomUUID()` creates a stable group identity.
 - A Dexie transaction saves every changed member together.
 - UI components call the repository; they never write to Dexie directly.
+- `addSetsToGroup(groupId, setIds)` first looks up the existing group, then gives selected ungrouped sets that exact `{ id, name }` value.
 
 ## ❌ / ✅ examples
 
@@ -44,16 +45,17 @@ export async function createSetGroup(setIds: readonly string[], name: string): P
 
 ## Try it yourself
 
-1. Create three sets, then manually select two and name their group.
-2. Remove one set from the group, then remove the group itself. Check that the sets remain.
-3. Turn on **Groups only** and confirm that ungrouped sets are hidden.
+1. Create a set, select it, and give its new group a name.
+2. Use the folder-plus button on a group, choose an ungrouped set, then add it to that group.
+3. Remove one set from the group, then remove the group itself. Check that the sets remain.
 
 ## Quick Reference
 
-- **Create group** opens manual selection mode.
-- A group's trash button removes the group but keeps every set.
+- **Create group** opens manual selection mode and shows only ungrouped sets; **Apply** saves the new group and **Cancel** abandons the selection.
+- A group's ellipsis button opens its Add sets, Rename, and Delete group actions.
+- **Add sets** selects ungrouped sets to add to that existing group; **Apply** confirms the addition.
+- **Delete group** removes the group but keeps every set.
 - A set's folder-with-X button removes only that set from its group.
-- **Groups only** hides the **Ungrouped sets** section; **Show all sets** restores it.
 - `group: { id, name }` is optional; a missing value means ungrouped.
 - `npm run test` checks persistence and import migrations.
 

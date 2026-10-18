@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../src/data/db'
 import {
   addQuestion,
+  addSetsToGroup,
   createSetGroup,
   createSet,
   importQuestionsFromJson,
@@ -82,6 +83,30 @@ describe('repository', () => {
     await renameSetGroup(groupId ?? '', 'STEM revision')
     const renamed = await listSets()
     expect(renamed.every((set) => set.group?.name === 'STEM revision')).toBe(true)
+  })
+
+  it('keeps a one-set group after it is created', async () => {
+    const set = await createSet('Biology')
+
+    const grouped = await createSetGroup([set.id], 'Science')
+
+    expect(grouped).toHaveLength(1)
+    expect(grouped[0]?.group?.name).toBe('Science')
+    expect((await listSets())[0]?.group?.name).toBe('Science')
+  })
+
+  it('adds ungrouped sets to an existing group', async () => {
+    const first = await createSet('Biology')
+    const second = await createSet('Chemistry')
+    const third = await createSet('Physics')
+    const grouped = await createSetGroup([first.id, second.id], 'Science')
+    const groupId = grouped[0]?.group?.id ?? ''
+
+    const added = await addSetsToGroup(groupId, [third.id])
+
+    expect(added).toHaveLength(1)
+    expect(added[0]?.group).toEqual(grouped[0]?.group)
+    expect((await listSets()).filter((set) => set.group?.id === groupId)).toHaveLength(3)
   })
 
   it('removes either one member or a whole group without deleting its sets', async () => {

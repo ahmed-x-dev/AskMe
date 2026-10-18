@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
 The route files stay small. Interactive behavior and browser-only data access live in client-side screen components, while `src/data/repository.ts` remains the persistence boundary. The library refreshes from that repository after writes so it displays the stored state.
 
-Each set card uses a full-card `Link` to open its set. Rename and delete controls sit above that link and retain their own button semantics, accessible names, and 44px tap targets. This lets the card act as one large navigation target without nesting buttons inside a link.
+Each set card uses a full-card `Link` to open its set. A 44px ellipsis button sits above that link and opens separate Rename, Remove from group, and Delete actions. This lets the card act as one large navigation target without nesting buttons inside a link.
 
 ## ❌ / ✅ examples
 
@@ -51,7 +51,7 @@ Each set card uses a full-card `Link` to open its set. Rename and delete control
 1. Open the app and create a couple of sets.
 2. Rename one of them and reload the page.
 3. Delete a set and confirm it is hidden from the set list after the reload.
-4. Click a card's title area to open it; use the separate icon buttons to rename or delete.
+4. Click a card's title area to open it; use its ellipsis menu to rename or delete.
 
 ## Quick Reference
 
@@ -61,7 +61,7 @@ Each set card uses a full-card `Link` to open its set. Rename and delete control
 - `useRouter()` from `next/navigation` supports programmatic navigation in client components.
 - `listSets()` is the read path for the set library.
 - `updateSetTitle()` and `softDeleteSet()` are the write paths for rename and delete.
-- Each card link opens its set; icon actions remain separate accessible buttons.
+- Each card link opens its set; its ellipsis menu keeps management actions separate and accessible.
 
 ## Key Takeaways
 

@@ -14,7 +14,7 @@ This phone-first layout approach is separate from release order: AskMe ships as 
 
 In this project, the shell uses safe-area padding and expands on large displays. Each screen then uses the space that fits its task: set details place the overview beside the AI helper and show questions in a two-column grid; quiz setup places filters side by side; settings, editors, and active quiz content remain in centered, readable panels.
 
-The library home page uses a stacked introduction, compact set/question totals, a search field, and library import/export actions. These controls stack on phones and share a row when the available width allows. The library intro text gets more room on wide screens, while the empty state stays centered instead of stretching across the full desktop width. Set-card actions also move below the title on narrow screens, giving long set names more room.
+The library home page uses a compact heading with set/question totals, a search field, import/export actions, and group filter chips. These controls stack on phones and share a row when the available width allows. On wide screens, the set cards deliberately stay in two columns so each one can keep a clear primary **Start quiz** action beside an **Open** link instead of becoming a dense tile.
 
 The shared header keeps the AskMe brand on the library page. On inner pages it replaces that brand with a 48px-tall **Back to sets** link, leaving the theme control in the same place.
 
@@ -60,7 +60,7 @@ The page does not need a Vite `#root` element: Next.js renders the route under t
 - `lg:max-w-3xl` keeps an empty-state card from becoming too wide.
 - `lg:grid-cols-2` lets related content share desktop space while keeping each card readable.
 - `max-w-[480px]` keeps question and quiz screens readable at a desktop width.
-- `md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4` expands the set library grid gradually.
+- `md:grid-cols-2` expands the library into roomy action cards.
 - `sm:flex-row` can move stacked controls into a row when there is room.
 - `Link href="/"` provides a reliable return to the library from any inner route.
 - `env(safe-area-inset-*)` keeps the app from being clipped on modern phones.

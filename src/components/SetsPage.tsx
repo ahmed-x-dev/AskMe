@@ -3,11 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Folder, FolderPlus, FolderX, Folders, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Check,
+  Ellipsis,
+  Folder,
+  FolderPlus,
+  FolderX,
+  Pencil,
+  Play,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import {
   createSet,
   createSetGroup,
+  addSetsToGroup,
   importSetsFromJson,
   listSets,
   renameSetGroup,
@@ -64,8 +75,14 @@ export function SetsPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isChoosingGroupMembers, setIsChoosingGroupMembers] = useState(false);
+  const [targetGroup, setTargetGroup] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [selectedSetIds, setSelectedSetIds] = useState<Set<string>>(new Set());
-  const [showGroupsOnly, setShowGroupsOnly] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [openGroupMenuId, setOpenGroupMenuId] = useState<string | null>(null);
+  const [openSetMenuId, setOpenSetMenuId] = useState<string | null>(null);
   const [importFeedback, setImportFeedback] = useState<{
     kind: "error" | "success";
     message: string;
@@ -264,30 +281,70 @@ export function SetsPage() {
   };
 
   const handleRemoveGroup = async (groupId: string, name: string) => {
-    if (!window.confirm(`Remove the group “${name}”? Its sets will stay in your library.`)) {
+    if (
+      !window.confirm(
+        `Remove the group “${name}”? Its sets will stay in your library.`,
+      )
+    ) {
       return;
     }
 
     await removeSetGroup(groupId);
     await refreshSets();
-    setImportFeedback({ kind: "success", message: "Group removed; its sets are now ungrouped." });
+    setImportFeedback({
+      kind: "success",
+      message: "Group removed; its sets are now ungrouped.",
+    });
   };
 
   const handleRemoveSetFromGroup = async (setId: string, title: string) => {
     await removeSetFromGroup(setId);
     await refreshSets();
-    setImportFeedback({ kind: "success", message: `“${title}” is now ungrouped.` });
+    setImportFeedback({
+      kind: "success",
+      message: `“${title}” is now ungrouped.`,
+    });
   };
 
   const handleCreateGroup = async () => {
     if (!isChoosingGroupMembers) {
       setIsChoosingGroupMembers(true);
+      setTargetGroup(null);
       setSelectedSetIds(new Set());
+      setSelectedGroupId(null);
       return;
     }
 
-    if (selectedSetIds.size < 2) {
-      setImportFeedback({ kind: "error", message: "Choose at least two sets for a group." });
+    if (selectedSetIds.size === 0) {
+      setImportFeedback({
+        kind: "error",
+        message: targetGroup
+          ? "Choose at least one ungrouped set to add."
+          : "Choose at least one set for a group.",
+      });
+      return;
+    }
+
+    if (targetGroup) {
+      try {
+        await addSetsToGroup(targetGroup.id, [...selectedSetIds]);
+        await refreshSets();
+        setIsChoosingGroupMembers(false);
+        setTargetGroup(null);
+        setSelectedSetIds(new Set());
+        setImportFeedback({
+          kind: "success",
+          message: `Sets added to ${targetGroup.name}.`,
+        });
+      } catch (error) {
+        setImportFeedback({
+          kind: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "The sets could not be added to the group.",
+        });
+      }
       return;
     }
 
@@ -306,9 +363,26 @@ export function SetsPage() {
     } catch (error) {
       setImportFeedback({
         kind: "error",
-        message: error instanceof Error ? error.message : "The group could not be created.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The group could not be created.",
       });
     }
+  };
+
+  const handleAddSetsToGroup = (group: { id: string; name: string }) => {
+    setTargetGroup(group);
+    setIsChoosingGroupMembers(true);
+    setSelectedSetIds(new Set());
+    setSelectedGroupId(null);
+    setOpenGroupMenuId(null);
+  };
+
+  const cancelGroupSelection = () => {
+    setIsChoosingGroupMembers(false);
+    setTargetGroup(null);
+    setSelectedSetIds(new Set());
   };
 
   const toggleSelectedSet = (setId: string) => {
@@ -352,10 +426,13 @@ export function SetsPage() {
       total + set.questions.filter((question) => !question.deleted).length,
     0,
   );
-  const filteredSets = sets.filter((set) =>
-    set.title
-      .toLocaleLowerCase()
-      .includes(searchText.trim().toLocaleLowerCase()),
+  const filteredSets = sets.filter(
+    (set) =>
+      set.title
+        .toLocaleLowerCase()
+        .includes(searchText.trim().toLocaleLowerCase()) &&
+      (selectedGroupId === null || set.group?.id === selectedGroupId) &&
+      (!isChoosingGroupMembers || !set.group),
   );
   const groupedSets = new Map<string, { name: string; sets: QuizSet[] }>();
   const ungroupedSets: QuizSet[] = [];
@@ -373,19 +450,25 @@ export function SetsPage() {
       groupedSets.set(set.group.id, { name: set.group.name, sets: [set] });
     }
   });
-  const noVisibleSets = filteredSets.length === 0 || (showGroupsOnly && groupedSets.size === 0);
+  const noVisibleSets = filteredSets.length === 0;
+  const groups = [
+    ...new Map(
+      sets.filter((set) => set.group).map((set) => [set.group!.id, set.group!]),
+    ).values(),
+  ];
 
   const renderSetCard = (set: QuizSet) => {
     const activeQuestionCount = set.questions.filter(
       (question) => !question.deleted,
     ).length;
     const isSelected = selectedSetIds.has(set.id);
+    const canSelect = !targetGroup || !set.group;
 
     return (
       <article
         key={set.id}
         onClick={() => {
-          if (isChoosingGroupMembers) {
+          if (isChoosingGroupMembers && canSelect) {
             toggleSelectedSet(set.id);
           }
         }}
@@ -397,71 +480,141 @@ export function SetsPage() {
           href={`/set/${set.id}`}
           aria-label={`Open ${set.title}`}
           onClick={(event) => {
-            if (isChoosingGroupMembers) {
+            if (isChoosingGroupMembers && canSelect) {
               event.preventDefault();
             }
           }}
           className="absolute inset-0 z-10 rounded-2xl"
         />
-        <div className="pointer-events-none relative z-20 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="pointer-events-none relative z-20 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-4.5 text-muted tabular-nums">
-              {activeQuestionCount} question
-              {activeQuestionCount === 1 ? "" : "s"}
-            </span>
-            <h3 className="mt-3 wrap-break-word text-[16px] font-medium leading-6 text-fg">
+            <h3 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">
               {set.title}
             </h3>
+            <p className="mt-1 text-[16px] leading-6 text-muted tabular-nums">
+              {activeQuestionCount} question
+              {activeQuestionCount === 1 ? "" : "s"} · Updated{" "}
+              {new Date(set.updatedAt).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
           </div>
 
-          {isChoosingGroupMembers ? (
+          {isChoosingGroupMembers && canSelect ? (
             <span
-              aria-label={isSelected ? `${set.title} selected` : `${set.title} not selected`}
+              aria-label={
+                isSelected
+                  ? `${set.title} selected`
+                  : `${set.title} not selected`
+              }
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${
                 isSelected ? "bg-accent text-on-accent" : "bg-bg text-muted"
               }`}
             >
-              {isSelected ? <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} /> : null}
+              {isSelected ? (
+                <Check
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.5}
+                />
+              ) : null}
             </span>
           ) : (
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="pointer-events-auto relative shrink-0">
               <button
                 type="button"
-                onClick={() => void handleRenameSet(set.id, set.title)}
-                aria-label={`Rename ${set.title}`}
-                title="Rename set"
+                onClick={() =>
+                  setOpenSetMenuId((current) =>
+                    current === set.id ? null : set.id,
+                  )
+                }
+                aria-label={`Open actions for ${set.title}`}
+                aria-expanded={openSetMenuId === set.id}
+                aria-controls={`set-actions-${set.id}`}
                 className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
               >
-                <Pencil aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                <Ellipsis
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.5}
+                />
               </button>
-              {set.group ? (
-                <button
-                  type="button"
-                  onClick={() => void handleRemoveSetFromGroup(set.id, set.title)}
-                  aria-label={`Remove ${set.title} from ${set.group.name}`}
-                  title="Remove from group"
-                  className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
+              {openSetMenuId === set.id ? (
+                <div
+                  id={`set-actions-${set.id}`}
+                  className="absolute inset-e-0 top-full z-50 mb-2 flex w-44 flex-col gap-1 rounded-2xl bg-card p-2"
                 >
-                  <FolderX aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenSetMenuId(null);
+                      void handleRenameSet(set.id, set.title);
+                    }}
+                    className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-fg transition-colors hover:bg-card-hover"
+                  >
+                    <Pencil
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                      strokeWidth={1.5}
+                    />
+                    Rename
+                  </button>
+                  {set.group ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpenSetMenuId(null);
+                        void handleRemoveSetFromGroup(set.id, set.title);
+                      }}
+                      className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-fg transition-colors hover:bg-card-hover"
+                    >
+                      <FolderX
+                        aria-hidden="true"
+                        className="h-5 w-5"
+                        strokeWidth={1.5}
+                      />
+                      Remove from group
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenSetMenuId(null);
+                      void handleDeleteSet(set.id, set.title);
+                    }}
+                    className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-bad-fg transition-colors hover:bg-bad-bg"
+                  >
+                    <Trash2
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                      strokeWidth={1.5}
+                    />
+                    Delete set
+                  </button>
+                </div>
               ) : null}
-              <button
-                type="button"
-                onClick={() => void handleDeleteSet(set.id, set.title)}
-                aria-label={`Delete ${set.title}`}
-                title="Delete set"
-                className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
-              >
-                <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              </button>
             </div>
           )}
         </div>
 
-        <div className="pointer-events-none relative z-20 mt-4 flex items-center gap-2">
-          <span className="text-[13px] leading-4.5 text-muted">
-            Updated {new Date(set.updatedAt).toLocaleDateString()}
-          </span>
+        <div className="pointer-events-none relative z-20 mt-6 grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+          <Link
+            href={`/set/${set.id}/quiz`}
+            onClick={(event) => {
+              if (isChoosingGroupMembers) event.preventDefault();
+            }}
+            className="pointer-events-auto flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          >
+            <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+            Start quiz
+          </Link>
+          <Link
+            href={`/set/${set.id}`}
+            className="pointer-events-auto flex min-h-12 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+          >
+            Open
+          </Link>
         </div>
       </article>
     );
@@ -474,16 +627,14 @@ export function SetsPage() {
           {loadError}
         </p>
       ) : null}
-      <section className="flex flex-col gap-5 rounded-2xl bg-card p-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[13px] leading-4.5 text-accent-text">
-            Your study library
-          </p>
-          <h2 className="mt-2 text-[22px] font-medium leading-7 text-fg">
-            Make every study session count.
-          </h2>
-          <p className="mt-2 max-w-105 text-[16px] leading-6 text-muted lg:max-w-150">
-            Keep your questions organized and pick up where you left off.
+      <section className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[40px] font-medium leading-11 text-fg">
+            Library
+          </h1>
+          <p className="mt-2 text-[16px] leading-6 text-muted tabular-nums">
+            {sets.length} set{sets.length === 1 ? "" : "s"} ·{" "}
+            {activeQuestionCount} question{activeQuestionCount === 1 ? "" : "s"}
           </p>
         </div>
         <button
@@ -491,26 +642,11 @@ export function SetsPage() {
           onClick={() => void handleCreateSet()}
           className="min-h-12 shrink-0 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
         >
-          Create a set
+          + New set
         </button>
       </section>
 
-      <section aria-label="Library overview" className="grid grid-cols-2 gap-3">
-        <article className="rounded-2xl bg-card p-4">
-          <p className="text-[13px] leading-4.5 text-muted">Study sets</p>
-          <p className="mt-1 text-[22px] font-medium leading-7 text-fg tabular-nums">
-            {sets.length}
-          </p>
-        </article>
-        <article className="rounded-2xl bg-card p-4">
-          <p className="text-[13px] leading-4.5 text-muted">Questions ready</p>
-          <p className="mt-1 text-[22px] font-medium leading-7 text-fg tabular-nums">
-            {activeQuestionCount}
-          </p>
-        </article>
-      </section>
-
-      <section aria-label="Library tools" className="rounded-2xl bg-card p-4">
+      <section aria-label="Library tools">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <label className="min-w-0 flex-1">
             <span className="sr-only">Search your sets</span>
@@ -525,32 +661,12 @@ export function SetsPage() {
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-              onClick={() => setShowGroupsOnly((current) => !current)}
-              aria-pressed={showGroupsOnly}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-card-hover bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover"
-            >
-              <Folders aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              {showGroupsOnly ? "Show all sets" : "Groups only"}
-            </button>
-            <button
-              type="button"
-              onClick={() => void handleCreateGroup()}
-              disabled={isImporting || isExporting}
-              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-card-hover bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <FolderPlus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              {isChoosingGroupMembers
-                ? `Create group (${selectedSetIds.size})`
-                : "Create group"}
-            </button>
-            <button
-              type="button"
               onClick={() => importInputRef.current?.click()}
               disabled={isImporting || isExporting}
               aria-busy={isImporting || undefined}
               className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-wait disabled:opacity-70"
             >
-              {isImporting ? "Importing…" : "Import to library"}
+              {isImporting ? "Importing…" : "Import"}
             </button>
             <button
               type="button"
@@ -559,13 +675,15 @@ export function SetsPage() {
               aria-busy={isExporting || undefined}
               className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isExporting ? "Exporting…" : "Export library"}
+              {isExporting ? "Exporting…" : "Export"}
             </button>
           </div>
         </div>
         <p className="mt-3 text-[13px] leading-4.5 text-muted">
           {isChoosingGroupMembers
-            ? "Select at least two set cards, then create the group."
+            ? targetGroup
+              ? `Select ungrouped sets to add to ${targetGroup.name}, then use the group button.`
+              : "Select at least one set card, then create the group."
             : "Create a group manually to organize related sets."}
         </p>
         <input
@@ -585,6 +703,65 @@ export function SetsPage() {
           }}
         />
       </section>
+
+      {sets.length > 0 ? (
+        <nav aria-label="Filter sets by group" className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedGroupId(null)}
+            aria-pressed={selectedGroupId === null}
+            className={`min-h-12 rounded-full px-4 text-[16px] font-medium transition-colors ${selectedGroupId === null ? "bg-accent text-on-accent" : "bg-card text-muted hover:bg-card-hover"}`}
+          >
+            All
+          </button>
+          {groups.map((group) => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => setSelectedGroupId(group.id)}
+              aria-pressed={selectedGroupId === group.id}
+              className={`min-h-12 rounded-full px-4 text-[16px] transition-colors ${selectedGroupId === group.id ? "bg-accent text-on-accent" : "bg-card text-muted hover:bg-card-hover"}`}
+            >
+              {group.name} ·{" "}
+              {sets.filter((set) => set.group?.id === group.id).length}
+            </button>
+          ))}
+          {isChoosingGroupMembers ? (
+            <>
+              <button
+                type="button"
+                onClick={() => void handleCreateGroup()}
+                disabled={isImporting || isExporting}
+                className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Apply ({selectedSetIds.size})
+              </button>
+              <button
+                type="button"
+                onClick={cancelGroupSelection}
+                className="min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void handleCreateGroup()}
+              disabled={isImporting || isExporting}
+              aria-label="Create a group"
+              title="Create a group"
+              className="flex min-h-12 min-w-12 items-center justify-center rounded-full border border-card-hover bg-card text-fg transition-colors hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FolderPlus
+                aria-hidden="true"
+                className="h-5 w-5"
+                strokeWidth={1.5}
+              />
+            </button>
+          )}
+        </nav>
+      ) : null}
 
       {importFeedback ? (
         <p
@@ -607,64 +784,128 @@ export function SetsPage() {
       ) : noVisibleSets ? (
         <section className="rounded-2xl bg-card p-5 text-center">
           <h2 className="text-[16px] font-medium leading-6 text-fg">
-            {showGroupsOnly ? "No matching groups" : "No matching sets"}
+            No matching sets
           </h2>
           <p className="mt-2 text-[16px] leading-6 text-muted">
-            {showGroupsOnly
-              ? "Switch to all sets or create a group to see it here."
-              : "Try another search or clear the search field."}
+            Try another search or choose a different group.
           </p>
           <button
             type="button"
             onClick={() => {
-              if (showGroupsOnly) {
-                setShowGroupsOnly(false);
-              } else {
-                setSearchText("");
-              }
+              setSearchText("");
+              setSelectedGroupId(null);
             }}
             className="mt-4 min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
-            {showGroupsOnly ? "Show all sets" : "Clear search"}
+            Clear filters
           </button>
         </section>
       ) : (
         <section className="space-y-6">
           {[...groupedSets.entries()].map(([groupId, group]) => (
             <section key={groupId} aria-label={group.name}>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="relative mb-3 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2 text-fg">
-                  <Folder aria-hidden="true" className="h-5 w-5 shrink-0 text-accent-text" strokeWidth={1.5} />
-                  <h2 className="truncate text-[16px] font-medium leading-6">{group.name}</h2>
-                  <span className="text-[13px] leading-4.5 text-muted tabular-nums">{group.sets.length}</span>
+                  <Folder
+                    aria-hidden="true"
+                    className="h-5 w-5 shrink-0 text-accent-text"
+                    strokeWidth={1.5}
+                  />
+                  <h2 className="truncate text-[16px] font-medium leading-6">
+                    {group.name}
+                  </h2>
+                  <span className="text-[13px] leading-4.5 text-muted tabular-nums">
+                    {group.sets.length}
+                  </span>
                 </div>
-                <div className="flex shrink-0 gap-2">
+                <div className="relative shrink-0">
                   <button
                     type="button"
-                    onClick={() => void handleRenameGroup(groupId, group.name)}
-                    aria-label={`Rename ${group.name}`}
+                    onClick={() =>
+                      setOpenGroupMenuId((current) =>
+                        current === groupId ? null : groupId,
+                      )
+                    }
+                    aria-label={`Open actions for ${group.name}`}
+                    aria-expanded={openGroupMenuId === groupId}
+                    aria-controls={`group-actions-${groupId}`}
                     className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-fg transition-colors hover:bg-card-hover"
                   >
-                    <Pencil aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                    <Ellipsis
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                      strokeWidth={1.5}
+                    />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleRemoveGroup(groupId, group.name)}
-                    aria-label={`Remove ${group.name}`}
-                    title="Remove group"
-                    className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-bad-fg transition-colors hover:bg-bad-bg"
-                  >
-                    <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-                  </button>
+                  {openGroupMenuId === groupId ? (
+                    <div
+                      id={`group-actions-${groupId}`}
+                      className="absolute end-0 top-13 z-30 flex w-44 flex-col gap-1 rounded-2xl bg-card p-2"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleAddSetsToGroup({
+                            id: groupId,
+                            name: group.name,
+                          })
+                        }
+                        className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-fg transition-colors hover:bg-card-hover"
+                      >
+                        <FolderPlus
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          strokeWidth={1.5}
+                        />
+                        Add sets
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpenGroupMenuId(null);
+                          void handleRenameGroup(groupId, group.name);
+                        }}
+                        className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-fg transition-colors hover:bg-card-hover"
+                      >
+                        <Pencil
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          strokeWidth={1.5}
+                        />
+                        Rename
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpenGroupMenuId(null);
+                          void handleRemoveGroup(groupId, group.name);
+                        }}
+                        className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-bad-fg transition-colors hover:bg-bad-bg"
+                      >
+                        <Trash2
+                          aria-hidden="true"
+                          className="h-5 w-5"
+                          strokeWidth={1.5}
+                        />
+                        Delete group
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.sets.map(renderSetCard)}</div>
+              <div className="grid max-w-7xl gap-4 md:grid-cols-2">
+                {group.sets.map(renderSetCard)}
+              </div>
             </section>
           ))}
-          {!showGroupsOnly && ungroupedSets.length > 0 ? (
+          {ungroupedSets.length > 0 ? (
             <section aria-label="Ungrouped sets">
-              <h2 className="mb-3 text-[16px] font-medium leading-6 text-fg">Ungrouped sets</h2>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{ungroupedSets.map(renderSetCard)}</div>
+              <h2 className="mb-3 text-[16px] font-medium leading-6 text-fg">
+                Ungrouped sets
+              </h2>
+              <div className="grid max-w-7xl gap-4 md:grid-cols-2">
+                {ungroupedSets.map(renderSetCard)}
+              </div>
             </section>
           ) : null}
         </section>

@@ -187,7 +187,7 @@ This gives utilities such as `bg-card`, `bg-card-hover`, `text-muted`, `bg-accen
 - Spacing scale: 4, 8, 12, 16, 24, 32 px. Nothing else.
 - Screen side padding: 16px, plus safe-area insets.
 - Minimum tap target: 48px height for buttons and option rows, 44px for icon buttons.
-- At large widths, the shared app shell grows to `max-width: 1280px` and `1536px` at 2xl. Keep single-column settings and quiz results centered within 768px, and quiz setup, question editing, and active questions within 1024px. The set detail uses a two-column overview and AI helper, with its question cards in two columns. The Sets library uses 2 columns above 768px, 3 above 1024px, and 4 above 1536px; its intro text can grow to 600px and its empty state stays within 768px.
+- At large widths, the shared app shell grows to `max-width: 1280px` and `1536px` at 2xl. Keep single-column settings and quiz results centered within 768px, and quiz setup, question editing, and active questions within 1024px. The set detail uses a two-column overview and AI helper, with its question cards in two columns. The Sets library keeps its action cards in a two-column, `max-width: 1280px` grid above 768px so each card has room for its quiz and open actions; its empty state stays within 768px.
 - Cards have no borders. Inputs, text areas, selects, and neutral buttons have a 1px solid `--card-hover` boundary. Separation for cards still comes from `--card` on `--bg`; the 2px `--accent` selected-state outline and focus ring remain distinct from this control boundary.
 - No shadows and no gradients anywhere.
 
@@ -198,6 +198,7 @@ This gives utilities such as `bg-card`, `bg-card-hover`, `text-muted`, `bg-accen
 
 | Role | Size / line height | Weight |
 |---|---|---|
+| Library title | 40px / 44px | 500 |
 | Screen title | 22px / 28px | 500 |
 | Question text (quiz) | 18px / 28px | 500 |
 | Body, option text | 16px / 24px | 400 |
