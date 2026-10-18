@@ -15,12 +15,12 @@ import {
   removeSetGroup,
   softDeleteSet,
   updateSetTitle,
-} from "../data/repository";
-import { parseSetJson } from "../data/importExport";
+} from "@/lib/repository";
+import { parseSetJson } from "@/lib/importExport";
 import {
   createLibraryArchive,
   readLibraryArchive,
-} from "../data/libraryArchive";
+} from "@/lib/libraryArchive";
 import type { QuizSet } from "../types/quiz";
 import { EmptyState } from "./EmptyState";
 import { SetCard } from "./SetCard";

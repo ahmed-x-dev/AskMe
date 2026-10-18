@@ -10,7 +10,7 @@ import {
   exportSetAsJson,
   importQuestionsFromJson,
   softDeleteQuestion,
-} from '../data/repository'
+} from '@/lib/repository'
 import { describeError, generateQuestions } from '../features/ai'
 import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
 import type { Question } from '../types/quiz'

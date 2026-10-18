@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { CURRENT_SCHEMA_VERSION, exportSetJson, parseQuestionsJson, parseSetJson } from '../../src/data/importExport'
+import { CURRENT_SCHEMA_VERSION, exportSetJson, parseQuestionsJson, parseSetJson } from '../../src/lib/importExport'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {

@@ -1,8 +1,8 @@
 import { strToU8, unzipSync, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
 
-import { CURRENT_SCHEMA_VERSION, exportSetJson, parseSetJson } from '../../src/data/importExport'
-import { createLibraryArchive, readLibraryArchive } from '../../src/data/libraryArchive'
+import { CURRENT_SCHEMA_VERSION, exportSetJson, parseSetJson } from '../../src/lib/importExport'
+import { createLibraryArchive, readLibraryArchive } from '../../src/lib/libraryArchive'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {

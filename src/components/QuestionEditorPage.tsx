@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { addQuestion, softDeleteQuestion, updateQuestion } from '../data/repository'
+import { addQuestion, softDeleteQuestion, updateQuestion } from '@/lib/repository'
 import type { Question, QuestionDifficulty, QuestionType, QuizSet } from '../types/quiz'
 import { useQuizSet } from '../hooks/useQuizSet'
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { getSet } from '../data/repository'
+import { getSet } from '@/lib/repository'
 import type { QuizSet } from '../types/quiz'
 
 type QuizSetState = {

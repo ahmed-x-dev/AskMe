@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { db } from '../../src/data/db'
+import { db } from '../../src/lib/db'
 import {
   addQuestion,
   addSetsToGroup,
@@ -16,7 +16,7 @@ import {
   removeSetGroup,
   updateQuestion,
   updateSetTitle,
-} from '../../src/data/repository'
+} from '../../src/lib/repository'
 import type { EssayQuestion, McqQuestion } from '../../src/types/quiz'
 
 beforeEach(async () => {

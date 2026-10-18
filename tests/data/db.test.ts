@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import Dexie from 'dexie'
 
-import { db } from '../../src/data/db'
-import { CURRENT_SCHEMA_VERSION } from '../../src/data/importExport'
+import { db } from '../../src/lib/db'
+import { CURRENT_SCHEMA_VERSION } from '../../src/lib/importExport'
 
 afterEach(async () => {
   if (db.isOpen()) {
