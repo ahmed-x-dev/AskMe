@@ -1,4 +1,4 @@
-import { QuestionEditorPage } from '@/components/QuestionEditorPage'
+import { QuestionEditorPage } from '@/features/questions/components/QuestionEditorPage'
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
