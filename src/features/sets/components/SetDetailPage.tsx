@@ -11,10 +11,10 @@ import {
   importQuestionsFromJson,
   softDeleteQuestion,
 } from '@/lib/repository'
-import { describeError, generateQuestions } from '../features/ai'
-import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
-import type { Question } from '../types/quiz'
-import { useQuizSet } from '../hooks/useQuizSet'
+import { describeError, generateQuestions } from '@/features/ai'
+import { getAiProvider, hasAiApiKey } from '@/platform/secureStorage'
+import type { Question } from '@/types/quiz'
+import { useQuizSet } from '@/hooks/useQuizSet'
 
 export function SetDetailPage({ setId }: { setId: string }) {
   const router = useRouter()

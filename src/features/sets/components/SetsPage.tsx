@@ -21,8 +21,8 @@ import {
   createLibraryArchive,
   readLibraryArchive,
 } from "@/lib/libraryArchive";
-import type { QuizSet } from "../types/quiz";
-import { EmptyState } from "./ui/EmptyState";
+import type { QuizSet } from "@/types/quiz";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SetCard } from "./SetCard";
 
 export function SetsPage() {
