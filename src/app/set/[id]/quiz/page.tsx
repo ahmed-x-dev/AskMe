@@ -1,4 +1,4 @@
-import { QuizPage } from '@/components/QuizPage'
+import { QuizPage } from '@/features/quiz/components/QuizPage'
 import type { QuizMode } from '@/features/quiz'
 
 type PageProps = {

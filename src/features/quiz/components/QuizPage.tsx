@@ -7,16 +7,16 @@ import {
   describeError,
   explainQuestionAnswer,
   gradeEssayAnswer,
-} from '../features/ai'
+} from '@/features/ai'
 import {
   buildQuizQueue,
   formatElapsedTime,
   type QuizMode,
   type QuizQuestionType,
-} from '../features/quiz'
-import { getAiProvider, hasAiApiKey } from '../platform/secureStorage'
-import type { Question, QuestionDifficulty } from '../types/quiz'
-import { useQuizSet } from '../hooks/useQuizSet'
+} from '@/features/quiz'
+import { getAiProvider, hasAiApiKey } from '@/platform/secureStorage'
+import type { Question, QuestionDifficulty } from '@/types/quiz'
+import { useQuizSet } from '@/hooks/useQuizSet'
 
 function hasAnswered(
   question: Question,
