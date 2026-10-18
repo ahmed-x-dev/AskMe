@@ -1,4 +1,4 @@
-import type { Question, QuestionDifficulty, QuizSet } from '../types/quiz'
+import type { Question, QuestionDifficulty, QuizSet } from '@/types/quiz'
 
 export type QuizMode = 'random' | 'mcq' | 'essay'
 export type QuizQuestionType = 'all' | 'mcq' | 'essay'

@@ -2,13 +2,13 @@ import {
   getAiApiKey,
   getAiProvider,
   type AiProvider,
-} from "../platform/secureStorage";
+} from "@/platform/secureStorage";
 import type {
   EssayQuestion,
   McqQuestion,
   Question,
   QuestionType,
-} from "../types/quiz";
+} from "@/types/quiz";
 
 const GEMINI_MODEL = "gemini-3.8-flash";
 const OPENAI_MODEL = "gpt-4o-mini";

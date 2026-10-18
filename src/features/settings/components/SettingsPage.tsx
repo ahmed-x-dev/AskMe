@@ -10,7 +10,7 @@ import {
   saveAiApiKey,
   setAiProvider,
   type AiProvider,
-} from "../platform/secureStorage";
+} from "@/platform/secureStorage";
 
 const providerOptions: { value: AiProvider; label: string }[] = [
   { value: "gemini", label: "Gemini" },
