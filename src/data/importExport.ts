@@ -1,8 +1,8 @@
-import type { Question, QuestionDifficulty, QuizSet } from '../types/quiz'
+import type { Question, QuestionDifficulty, QuizSet, SetGroup } from '../types/quiz'
 
-export const CURRENT_SCHEMA_VERSION = 3
+export const CURRENT_SCHEMA_VERSION = 4
 
-const SUPPORTED_SCHEMA_VERSIONS = [1, 2, CURRENT_SCHEMA_VERSION]
+const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3, CURRENT_SCHEMA_VERSION]
 const QUESTION_DIFFICULTIES: QuestionDifficulty[] = ['easy', 'medium', 'hard']
 
 function isQuestionDifficulty(value: unknown): value is QuestionDifficulty {
@@ -11,6 +11,18 @@ function isQuestionDifficulty(value: unknown): value is QuestionDifficulty {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function normalizeGroup(value: unknown): SetGroup | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  if (!isRecord(value) || typeof value.id !== 'string' || !value.id.trim() || typeof value.name !== 'string' || !value.name.trim()) {
+    throw new Error('The set group must have a valid id and name.')
+  }
+
+  return { id: value.id.trim(), name: value.name.trim() }
 }
 
 function normalizeQuestion(question: unknown, index: number): Question {
@@ -118,7 +130,7 @@ function normalizeQuestion(question: unknown, index: number): Question {
     tags: normalizedTags,
     updatedAt,
     deleted: Boolean(deleted),
-    referenceAnswer: typeof referenceAnswer === 'string' ? referenceAnswer : undefined,
+    ...(typeof referenceAnswer === 'string' ? { referenceAnswer } : {}),
   }
 }
 
@@ -137,7 +149,7 @@ export function parseSetJson(rawJson: string): QuizSet {
     throw new Error(`Unsupported schema version: ${String(parsed.schemaVersion ?? 'unknown')}.`)
   }
 
-  const { id, title, updatedAt, deleted, questions } = parsed
+  const { id, title, updatedAt, deleted, group, questions } = parsed
 
   if (typeof id !== 'string' || !id.trim()) {
     throw new Error('The set is missing a valid id.')
@@ -157,12 +169,15 @@ export function parseSetJson(rawJson: string): QuizSet {
 
   const normalizedQuestions = questions.map((question, index) => normalizeQuestion(question, index))
 
+  const normalizedGroup = normalizeGroup(group)
+
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     id: id.trim(),
     title: title.trim(),
     updatedAt,
     deleted: Boolean(deleted),
+    ...(normalizedGroup ? { group: normalizedGroup } : {}),
     questions: normalizedQuestions,
   }
 }

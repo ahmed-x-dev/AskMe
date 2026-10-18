@@ -7,7 +7,7 @@
 ```yaml
 current_phase: P3
 current_task: P3-01
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
@@ -81,11 +81,12 @@ One JSON file per set; this is also the sync and export format.
 
 ```json
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "id": "set_uuid",
   "title": "Biology Ch.3",
   "updatedAt": "2026-10-06T10:00:00Z",
   "deleted": false,
+  "group": { "id": "group_uuid", "name": "Biology revision" },
   "questions": [
     {
       "id": "q_uuid",
@@ -116,7 +117,7 @@ One JSON file per set; this is also the sync and export format.
 
 - UUID ids, `updatedAt` on every record, soft deletes via `deleted: true`.
 - Questions have an `easy`, `medium`, or `hard` difficulty and optional free-form tags. The `deprecated` tag is informational and does not exclude a question from quizzes.
-- JSON schema version 2 migrated version 1 questions to `difficulty: "normal"` and `tags: []`; schema version 3 migrates `normal` to `medium` and accepts version 1 and 2 imports.
+- JSON schema version 2 migrated version 1 questions to `difficulty: "normal"` and `tags: []`; schema version 3 migrates `normal` to `medium`; schema version 4 adds optional `{ id, name }` set-group metadata and accepts version 1–3 imports as ungrouped.
 - Purge tombstones older than about 30 days (Phase 3).
 - Optional `image` field is added later (Phase 5) without breaking old data.
 
@@ -341,6 +342,9 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-18** Complete the design-system interaction-state guidance.
   - Done when: the spec and shared CSS cover invalid, disabled, loading, overlay, and future choice-control states; route and font guidance match the app.
   - Learn: `docs/learn/02-tailwind-and-themes.md`.
+- [x] **P5-19** Organize sets into editable groups with manual creation, editable names, removal controls, and a groups-only library view.
+  - Done when: a set belongs to at most one persistent group; users can manually create, rename, remove groups without deleting their sets, remove a set from a group, and toggle between normal and groups-only views; version 1–3 imports migrate without a group; checks pass.
+  - Learn: `docs/learn/27-set-groups-and-touch-dragging.md`.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -369,6 +373,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-17 | Defer PWA installation and offline caching for now | Prevent stale service-worker assets during current web development; remove old registrations and cache without touching local quiz data |
 | 2026-10-17 | Expand the app shell and use content-specific layouts at large breakpoints | Use wide desktop space for related panels and cards while retaining readable widths for forms and quiz content |
 | 2026-10-17 | Use ARIA state attributes with shared CSS for control states | Keeps loading and invalid feedback consistent, accessible, and free of per-screen styling drift |
+| 2026-10-18 | Store optional group metadata in each set's schema-version-4 JSON record | One set can belong to one editable group, and membership survives export and future per-set sync without a separate library file |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -388,6 +393,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-18: Completed P5-19: added schema-version-4 set groups with manual selection, editable names, non-destructive whole-group and per-set removal, and a groups-only library view with an explicit Ungrouped section. Version 1–3 imports migrate as ungrouped; groups persist in exports. Removed the long-press/drag interaction at the owner's request and updated the set-groups learning guide. `typecheck`, `lint`, all 40 tests, and production build pass. `npm outdated` reports major updates for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Next: resume P3-01.
 - 2026-10-17: Completed P5-18: added documented overlay, disabled, loading, invalid, and future choice-control states; corrected font and quiz-route guidance; wired `aria-busy` into existing request actions and `aria-invalid` into question-editor validation. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
 - 2026-10-17: Completed P5-17: documented the borderless-card/control-boundary distinction in `DESIGN.md` and added a 1px `--card-hover` boundary to inputs, text areas, selects, and neutral buttons while retaining the accent focus ring. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.
 - 2026-10-17: Completed P5-16: aligned the global CSS tokens with the revised soft-cards design, exposed `bg-card-hover` to Tailwind, and applied the neutral hover/input/selected-option rules across the UI. Updated the themes learning guide. `npm outdated` reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Static audit confirms raw hex values appear only in the theme-token stylesheet; `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.

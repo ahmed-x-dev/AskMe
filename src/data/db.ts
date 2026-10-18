@@ -54,6 +54,16 @@ class AskMeDatabase extends Dexie {
           }))
         }),
       )
+
+    this.version(4)
+      .stores({
+        sets: '&id, title, updatedAt, deleted, schemaVersion',
+      })
+      .upgrade((transaction) =>
+        transaction.table('sets').toCollection().modify((set: QuizSet) => {
+          set.schemaVersion = CURRENT_SCHEMA_VERSION
+        }),
+      )
   }
 }
 

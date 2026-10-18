@@ -1,6 +1,6 @@
 import { db } from './db'
 import { CURRENT_SCHEMA_VERSION, exportSetJson, parseQuestionsJson, parseSetJson } from './importExport'
-import type { Question, QuizSet } from '../types/quiz'
+import type { Question, QuizSet, SetGroup } from '../types/quiz'
 
 function nowIso(): string {
   return new Date().toISOString()
@@ -8,6 +8,46 @@ function nowIso(): string {
 
 function sanitizeTitle(input: string): string {
   return input.trim() || 'Untitled set'
+}
+
+function sanitizeGroupName(input: string): string {
+  return input.trim() || 'Untitled group'
+}
+
+async function updateGroupMemberships(
+  assignments: ReadonlyMap<string, SetGroup | undefined>,
+): Promise<QuizSet[]> {
+  const timestamp = nowIso()
+
+  return db.transaction('rw', db.sets, async () => {
+    const activeSets = await db.sets.filter((set) => !set.deleted).toArray()
+    const preliminary = activeSets.map((set) => ({
+      ...set,
+      group: assignments.has(set.id) ? assignments.get(set.id) : set.group,
+    }))
+    const memberCounts = new Map<string, number>()
+
+    preliminary.forEach((set) => {
+      if (set.group) {
+        memberCounts.set(set.group.id, (memberCounts.get(set.group.id) ?? 0) + 1)
+      }
+    })
+
+    const updated = preliminary.map((set) => {
+      const group = set.group && (memberCounts.get(set.group.id) ?? 0) < 2 ? undefined : set.group
+      const original = activeSets.find((candidate) => candidate.id === set.id)
+      const groupChanged = original?.group?.id !== group?.id || original?.group?.name !== group?.name
+
+      return groupChanged ? { ...set, group, updatedAt: timestamp } : set
+    })
+    const changed = updated.filter((set, index) => set !== activeSets[index])
+
+    if (changed.length > 0) {
+      await db.sets.bulkPut(changed)
+    }
+
+    return updated.filter((set) => assignments.has(set.id))
+  })
 }
 
 /** Lists non-deleted sets, most recently updated first. */
@@ -60,6 +100,51 @@ export async function updateSetTitle(id: string, title: string): Promise<QuizSet
 
   await db.sets.put(updated)
   return updated
+}
+
+/** Creates one named group for at least two active sets, replacing any prior memberships. */
+export async function createSetGroup(setIds: readonly string[], name: string): Promise<QuizSet[]> {
+  const uniqueIds = [...new Set(setIds)]
+
+  if (uniqueIds.length < 2) {
+    throw new Error('Choose at least two sets to create a group.')
+  }
+
+  const selectedSets = await db.sets.bulkGet(uniqueIds)
+
+  if (selectedSets.some((set) => !set || set.deleted)) {
+    throw new Error('Every selected set must still be available.')
+  }
+
+  const group: SetGroup = { id: crypto.randomUUID(), name: sanitizeGroupName(name) }
+  return updateGroupMemberships(new Map(uniqueIds.map((id) => [id, group])))
+}
+
+/** Renames every active member of a group; returns an empty array if it no longer exists. */
+export async function renameSetGroup(groupId: string, name: string): Promise<QuizSet[]> {
+  const members = await db.sets.filter((set) => !set.deleted && set.group?.id === groupId).toArray()
+  const nextName = sanitizeGroupName(name)
+  return updateGroupMemberships(
+    new Map(members.map((set) => [set.id, { id: groupId, name: nextName }])),
+  )
+}
+
+/** Removes a group while keeping every member set active and ungrouped. */
+export async function removeSetGroup(groupId: string): Promise<QuizSet[]> {
+  const members = await db.sets.filter((set) => !set.deleted && set.group?.id === groupId).toArray()
+  return updateGroupMemberships(new Map(members.map((set) => [set.id, undefined])))
+}
+
+/** Removes one active set from its group without deleting the set. */
+export async function removeSetFromGroup(setId: string): Promise<QuizSet | null> {
+  const set = await getSet(setId)
+
+  if (!set?.group) {
+    return null
+  }
+
+  const updated = await updateGroupMemberships(new Map([[setId, undefined]]))
+  return updated[0] ?? null
 }
 
 /** Marks an active set deleted without removing it from storage. */

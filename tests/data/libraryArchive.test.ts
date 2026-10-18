@@ -1,12 +1,12 @@
 import { strToU8, unzipSync, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
 
-import { exportSetJson, parseSetJson } from '../../src/data/importExport'
+import { CURRENT_SCHEMA_VERSION, exportSetJson, parseSetJson } from '../../src/data/importExport'
 import { createLibraryArchive, readLibraryArchive } from '../../src/data/libraryArchive'
 import type { QuizSet } from '../../src/types/quiz'
 
 const sampleSet: QuizSet = {
-  schemaVersion: 3,
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   id: 'set-1',
   title: 'Biology',
   updatedAt: '2026-10-16T00:00:00.000Z',

@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, Folder, FolderPlus, FolderX, Folders, Pencil, Plus, Trash2 } from "lucide-react";
 
 import {
   createSet,
+  createSetGroup,
   importSetsFromJson,
   listSets,
+  renameSetGroup,
+  removeSetFromGroup,
+  removeSetGroup,
   softDeleteSet,
   updateSetTitle,
 } from "../data/repository";
@@ -59,6 +63,9 @@ export function SetsPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [isChoosingGroupMembers, setIsChoosingGroupMembers] = useState(false);
+  const [selectedSetIds, setSelectedSetIds] = useState<Set<string>>(new Set());
+  const [showGroupsOnly, setShowGroupsOnly] = useState(false);
   const [importFeedback, setImportFeedback] = useState<{
     kind: "error" | "success";
     message: string;
@@ -245,6 +252,77 @@ export function SetsPage() {
     }
   };
 
+  const handleRenameGroup = async (groupId: string, currentName: string) => {
+    const nextName = window.prompt("Rename group", currentName);
+
+    if (nextName === null || !nextName.trim()) {
+      return;
+    }
+
+    await renameSetGroup(groupId, nextName);
+    await refreshSets();
+  };
+
+  const handleRemoveGroup = async (groupId: string, name: string) => {
+    if (!window.confirm(`Remove the group “${name}”? Its sets will stay in your library.`)) {
+      return;
+    }
+
+    await removeSetGroup(groupId);
+    await refreshSets();
+    setImportFeedback({ kind: "success", message: "Group removed; its sets are now ungrouped." });
+  };
+
+  const handleRemoveSetFromGroup = async (setId: string, title: string) => {
+    await removeSetFromGroup(setId);
+    await refreshSets();
+    setImportFeedback({ kind: "success", message: `“${title}” is now ungrouped.` });
+  };
+
+  const handleCreateGroup = async () => {
+    if (!isChoosingGroupMembers) {
+      setIsChoosingGroupMembers(true);
+      setSelectedSetIds(new Set());
+      return;
+    }
+
+    if (selectedSetIds.size < 2) {
+      setImportFeedback({ kind: "error", message: "Choose at least two sets for a group." });
+      return;
+    }
+
+    const name = window.prompt("Name this group", "Untitled group");
+
+    if (name === null) {
+      return;
+    }
+
+    try {
+      await createSetGroup([...selectedSetIds], name);
+      await refreshSets();
+      setIsChoosingGroupMembers(false);
+      setSelectedSetIds(new Set());
+      setImportFeedback({ kind: "success", message: "Group created." });
+    } catch (error) {
+      setImportFeedback({
+        kind: "error",
+        message: error instanceof Error ? error.message : "The group could not be created.",
+      });
+    }
+  };
+
+  const toggleSelectedSet = (setId: string) => {
+    setSelectedSetIds((current) => {
+      const next = new Set(current);
+      if (next.has(setId)) {
+        next.delete(setId);
+      } else {
+        next.add(setId);
+      }
+      return next;
+    });
+  };
+
   if (sets === null) {
     return (
       <section className="rounded-2xl bg-card p-5">
@@ -279,6 +357,115 @@ export function SetsPage() {
       .toLocaleLowerCase()
       .includes(searchText.trim().toLocaleLowerCase()),
   );
+  const groupedSets = new Map<string, { name: string; sets: QuizSet[] }>();
+  const ungroupedSets: QuizSet[] = [];
+
+  filteredSets.forEach((set) => {
+    if (!set.group) {
+      ungroupedSets.push(set);
+      return;
+    }
+
+    const existing = groupedSets.get(set.group.id);
+    if (existing) {
+      existing.sets.push(set);
+    } else {
+      groupedSets.set(set.group.id, { name: set.group.name, sets: [set] });
+    }
+  });
+  const noVisibleSets = filteredSets.length === 0 || (showGroupsOnly && groupedSets.size === 0);
+
+  const renderSetCard = (set: QuizSet) => {
+    const activeQuestionCount = set.questions.filter(
+      (question) => !question.deleted,
+    ).length;
+    const isSelected = selectedSetIds.has(set.id);
+
+    return (
+      <article
+        key={set.id}
+        onClick={() => {
+          if (isChoosingGroupMembers) {
+            toggleSelectedSet(set.id);
+          }
+        }}
+        className={`relative flex flex-col rounded-2xl bg-card p-4 transition-colors hover:bg-card-hover ${
+          isSelected ? "ring-2 ring-accent ring-offset-2 ring-offset-bg" : ""
+        }`}
+      >
+        <Link
+          href={`/set/${set.id}`}
+          aria-label={`Open ${set.title}`}
+          onClick={(event) => {
+            if (isChoosingGroupMembers) {
+              event.preventDefault();
+            }
+          }}
+          className="absolute inset-0 z-10 rounded-2xl"
+        />
+        <div className="pointer-events-none relative z-20 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-4.5 text-muted tabular-nums">
+              {activeQuestionCount} question
+              {activeQuestionCount === 1 ? "" : "s"}
+            </span>
+            <h3 className="mt-3 wrap-break-word text-[16px] font-medium leading-6 text-fg">
+              {set.title}
+            </h3>
+          </div>
+
+          {isChoosingGroupMembers ? (
+            <span
+              aria-label={isSelected ? `${set.title} selected` : `${set.title} not selected`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${
+                isSelected ? "bg-accent text-on-accent" : "bg-bg text-muted"
+              }`}
+            >
+              {isSelected ? <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} /> : null}
+            </span>
+          ) : (
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void handleRenameSet(set.id, set.title)}
+                aria-label={`Rename ${set.title}`}
+                title="Rename set"
+                className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
+              >
+                <Pencil aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              </button>
+              {set.group ? (
+                <button
+                  type="button"
+                  onClick={() => void handleRemoveSetFromGroup(set.id, set.title)}
+                  aria-label={`Remove ${set.title} from ${set.group.name}`}
+                  title="Remove from group"
+                  className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
+                >
+                  <FolderX aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => void handleDeleteSet(set.id, set.title)}
+                aria-label={`Delete ${set.title}`}
+                title="Delete set"
+                className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
+              >
+                <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="pointer-events-none relative z-20 mt-4 flex items-center gap-2">
+          <span className="text-[13px] leading-4.5 text-muted">
+            Updated {new Date(set.updatedAt).toLocaleDateString()}
+          </span>
+        </div>
+      </article>
+    );
+  };
 
   return (
     <>
@@ -338,6 +525,26 @@ export function SetsPage() {
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
+              onClick={() => setShowGroupsOnly((current) => !current)}
+              aria-pressed={showGroupsOnly}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-card-hover bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover"
+            >
+              <Folders aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              {showGroupsOnly ? "Show all sets" : "Groups only"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleCreateGroup()}
+              disabled={isImporting || isExporting}
+              className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-card-hover bg-card px-4 text-[16px] font-medium text-fg transition duration-200 ease-out hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <FolderPlus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              {isChoosingGroupMembers
+                ? `Create group (${selectedSetIds.size})`
+                : "Create group"}
+            </button>
+            <button
+              type="button"
               onClick={() => importInputRef.current?.click()}
               disabled={isImporting || isExporting}
               aria-busy={isImporting || undefined}
@@ -357,8 +564,9 @@ export function SetsPage() {
           </div>
         </div>
         <p className="mt-3 text-[13px] leading-4.5 text-muted">
-          Import a ZIP backup or select multiple set JSON files. Export saves
-          all active sets in one ZIP.
+          {isChoosingGroupMembers
+            ? "Select at least two set cards, then create the group."
+            : "Create a group manually to organize related sets."}
         </p>
         <input
           ref={importInputRef}
@@ -396,88 +604,69 @@ export function SetsPage() {
           actionLabel="Create set"
           onAction={() => void handleCreateSet()}
         />
-      ) : filteredSets.length === 0 ? (
+      ) : noVisibleSets ? (
         <section className="rounded-2xl bg-card p-5 text-center">
           <h2 className="text-[16px] font-medium leading-6 text-fg">
-            No matching sets
+            {showGroupsOnly ? "No matching groups" : "No matching sets"}
           </h2>
           <p className="mt-2 text-[16px] leading-6 text-muted">
-            Try another search or clear the search field.
+            {showGroupsOnly
+              ? "Switch to all sets or create a group to see it here."
+              : "Try another search or clear the search field."}
           </p>
           <button
             type="button"
-            onClick={() => setSearchText("")}
+            onClick={() => {
+              if (showGroupsOnly) {
+                setShowGroupsOnly(false);
+              } else {
+                setSearchText("");
+              }
+            }}
             className="mt-4 min-h-12 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
-            Clear search
+            {showGroupsOnly ? "Show all sets" : "Clear search"}
           </button>
         </section>
       ) : (
-        <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {filteredSets.map((set) => {
-            const activeQuestionCount = set.questions.filter(
-              (question) => !question.deleted,
-            ).length;
-
-            return (
-              <article
-                key={set.id}
-                className="relative flex flex-col rounded-2xl bg-card p-4 transition-colors hover:bg-card-hover"
-              >
-                <Link
-                  href={`/set/${set.id}`}
-                  aria-label={`Open ${set.title}`}
-                  className="absolute inset-0 z-10 rounded-2xl"
-                />
-                <div className="relative z-20 flex flex-col gap-3 pointer-events-none sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <span className="inline-flex rounded-full bg-bg px-3 py-1 text-[13px] leading-4.5 text-muted tabular-nums">
-                      {activeQuestionCount} question
-                      {activeQuestionCount === 1 ? "" : "s"}
-                    </span>
-                    <h3 className="mt-3 wrap-break-word text-[16px] font-medium leading-6 text-fg">
-                      {set.title}
-                    </h3>
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void handleRenameSet(set.id, set.title)}
-                      aria-label={`Rename ${set.title}`}
-                      title="Rename set"
-                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
-                    >
-                      <Pencil
-                        aria-hidden="true"
-                        className="h-5 w-5"
-                        strokeWidth={1.5}
-                      />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleDeleteSet(set.id, set.title)}
-                      aria-label={`Delete ${set.title}`}
-                      title="Delete set"
-                      className="pointer-events-auto flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-bad-fg transition-colors hover:bg-bad-bg"
-                    >
-                      <Trash2
-                        aria-hidden="true"
-                        className="h-5 w-5"
-                        strokeWidth={1.5}
-                      />
-                    </button>
-                  </div>
+        <section className="space-y-6">
+          {[...groupedSets.entries()].map(([groupId, group]) => (
+            <section key={groupId} aria-label={group.name}>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2 text-fg">
+                  <Folder aria-hidden="true" className="h-5 w-5 shrink-0 text-accent-text" strokeWidth={1.5} />
+                  <h2 className="truncate text-[16px] font-medium leading-6">{group.name}</h2>
+                  <span className="text-[13px] leading-4.5 text-muted tabular-nums">{group.sets.length}</span>
                 </div>
-
-                <div className="relative z-20 mt-4 flex items-center gap-2 pointer-events-none">
-                  <span className="text-[13px] leading-4.5 text-muted">
-                    Updated {new Date(set.updatedAt).toLocaleDateString()}
-                  </span>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleRenameGroup(groupId, group.name)}
+                    aria-label={`Rename ${group.name}`}
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-fg transition-colors hover:bg-card-hover"
+                  >
+                    <Pencil aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleRemoveGroup(groupId, group.name)}
+                    aria-label={`Remove ${group.name}`}
+                    title="Remove group"
+                    className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-bad-fg transition-colors hover:bg-bad-bg"
+                  >
+                    <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                  </button>
                 </div>
-              </article>
-            );
-          })}
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{group.sets.map(renderSetCard)}</div>
+            </section>
+          ))}
+          {!showGroupsOnly && ungroupedSets.length > 0 ? (
+            <section aria-label="Ungrouped sets">
+              <h2 className="mb-3 text-[16px] font-medium leading-6 text-fg">Ungrouped sets</h2>
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{ungroupedSets.map(renderSetCard)}</div>
+            </section>
+          ) : null}
         </section>
       )}
     </>

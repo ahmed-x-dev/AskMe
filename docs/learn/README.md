@@ -35,3 +35,4 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 
 - [25 — Quiz session options](./25-quiz-session-options.md): How quiz filters, an elapsed timer, AI explanations, and a local-data migration work together.
 - [26 — Icon components](./26-icon-components.md): How Lucide React replaces hand-written UI SVGs with accessible, tree-shakeable icon components.
+- [27 — Set groups](./27-set-groups-and-touch-dragging.md): How persistent one-group-per-set metadata supports manual grouping.

@@ -3,12 +3,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../src/data/db'
 import {
   addQuestion,
+  createSetGroup,
   createSet,
   importQuestionsFromJson,
   importSetsFromJson,
   listSets,
   softDeleteQuestion,
   softDeleteSet,
+  renameSetGroup,
+  removeSetFromGroup,
+  removeSetGroup,
   updateQuestion,
   updateSetTitle,
 } from '../../src/data/repository'
@@ -63,6 +67,40 @@ describe('repository', () => {
 
     const sets = await listSets()
     expect(sets.map((set) => set.id)).toEqual([first.id])
+  })
+
+  it('creates and renames a group without letting a set join two groups', async () => {
+    const first = await createSet('Biology')
+    const second = await createSet('Chemistry')
+    const grouped = await createSetGroup([first.id, second.id], 'Science')
+    const groupId = grouped[0]?.group?.id
+
+    expect(grouped).toHaveLength(2)
+    expect(grouped.every((set) => set.group?.id === groupId)).toBe(true)
+    expect(grouped.every((set) => set.group?.name === 'Science')).toBe(true)
+
+    await renameSetGroup(groupId ?? '', 'STEM revision')
+    const renamed = await listSets()
+    expect(renamed.every((set) => set.group?.name === 'STEM revision')).toBe(true)
+  })
+
+  it('removes either one member or a whole group without deleting its sets', async () => {
+    const first = await createSet('Biology')
+    const second = await createSet('Chemistry')
+    const third = await createSet('Physics')
+    const grouped = await createSetGroup([first.id, second.id, third.id], 'Science')
+    const groupId = grouped[0]?.group?.id ?? ''
+
+    const removedMember = await removeSetFromGroup(first.id)
+    expect(removedMember?.deleted).toBe(false)
+    expect(removedMember?.group).toBeUndefined()
+    expect((await listSets()).filter((set) => set.group?.id === groupId)).toHaveLength(2)
+
+    const removedGroup = await removeSetGroup(groupId)
+    expect(removedGroup).toHaveLength(2)
+    const remainingSets = await listSets()
+    expect(remainingSets).toHaveLength(3)
+    expect(remainingSets.every((set) => !set.deleted && set.group === undefined)).toBe(true)
   })
 
   it('adds, updates, and soft deletes questions within a set', async () => {

@@ -31,6 +31,12 @@ export interface EssayQuestion extends BaseQuestion {
   referenceAnswer?: string
 }
 
+/** Shared library metadata that places a set in one named group. */
+export interface SetGroup {
+  id: string
+  name: string
+}
+
 /** A set's portable data record; `schemaVersion` versions this JSON format. */
 export interface QuizSet {
   schemaVersion: number
@@ -38,5 +44,6 @@ export interface QuizSet {
   title: string
   updatedAt: string
   deleted: boolean
+  group?: SetGroup
   questions: Question[]
 }

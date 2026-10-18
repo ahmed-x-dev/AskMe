@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import Dexie from 'dexie'
 
 import { db } from '../../src/data/db'
+import { CURRENT_SCHEMA_VERSION } from '../../src/data/importExport'
 
 afterEach(async () => {
   if (db.isOpen()) {
@@ -46,7 +47,7 @@ describe('AskMeDatabase', () => {
     await db.open()
 
     expect(await db.sets.get('legacy-set')).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       questions: [{ difficulty: 'medium', tags: [] }],
     })
   })
@@ -83,7 +84,7 @@ describe('AskMeDatabase', () => {
     await db.open()
 
     expect(await db.sets.get('version-two-set')).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       questions: [{ difficulty: 'medium', tags: [] }],
     })
   })

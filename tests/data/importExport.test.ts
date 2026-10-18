@@ -105,6 +105,23 @@ describe('import/export helpers', () => {
       .toThrowError(/tags must be an array of strings/)
   })
 
+  it('preserves valid group metadata and leaves older imports ungrouped', () => {
+    const grouped = {
+      ...sampleSet,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      group: { id: 'science-group', name: 'Science' },
+    }
+    expect(parseSetJson(JSON.stringify(grouped))).toEqual(grouped)
+
+    const oldSet = { ...sampleSet, schemaVersion: 3 }
+    expect(parseSetJson(JSON.stringify(oldSet))).toEqual({
+      ...sampleSet,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+    })
+    expect(() => parseSetJson(JSON.stringify({ ...grouped, group: { id: '', name: 'Science' } })))
+      .toThrowError(/group must have a valid id and name/)
+  })
+
   it('parses one Question object and arrays using the Question shape', () => {
     expect(parseQuestionsJson(JSON.stringify(sampleSet.questions[0]))).toEqual([
       sampleSet.questions[0],
