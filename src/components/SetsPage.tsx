@@ -22,7 +22,7 @@ import {
   readLibraryArchive,
 } from "@/lib/libraryArchive";
 import type { QuizSet } from "../types/quiz";
-import { EmptyState } from "./EmptyState";
+import { EmptyState } from "./ui/EmptyState";
 import { SetCard } from "./SetCard";
 
 export function SetsPage() {
