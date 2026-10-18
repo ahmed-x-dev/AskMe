@@ -1,4 +1,4 @@
-import { SetsPage } from "@/features/sets/components/SetsPage";
+import { SetsPage } from "@/components/sets/SetsPage";
 
 export default function Page() {
   return <SetsPage />;
