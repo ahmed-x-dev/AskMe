@@ -65,7 +65,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
       {isOpen ? (
         <div
           id={menuId}
-          className={`absolute inset-e-0 top-full z-50 mt-2 w-48 max-w-[calc(100vw-2rem)] ${menuSurface}`}
+          className={`absolute right-0 top-full z-50 mt-2 w-48 max-w-[calc(100vw-2rem)] ${menuSurface}`}
         >
           {items.map(({ label: itemLabel, icon: Icon, onSelect, danger, disabled }) => (
             <button

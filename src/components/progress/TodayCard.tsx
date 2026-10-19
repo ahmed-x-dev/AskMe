@@ -5,6 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowRight, CalendarCheck, Flame, TrendingDown } from "lucide-react";
 import { getProgressSummary } from "@/lib/data";
 import { plural } from "@/lib/format";
+import { focusRing } from "@/components/ui/styles";
 
 /** The "Today" block on the home page: reviews due, study streak and the topics that need work. */
 export function TodayCard() {
@@ -21,7 +22,7 @@ export function TodayCard() {
       <div className={`grid gap-4 sm:grid-cols-2 ${weakTopics.length > 0 ? "xl:grid-cols-3" : ""}`}>
         <Link
           href="/review"
-          className="flex items-center gap-4 rounded-2xl bg-card p-4 transition-colors duration-150 hover:bg-card-hover"
+          className={`flex items-center gap-4 rounded-2xl bg-card p-4 transition-all duration-150 hover:bg-card-hover active:scale-[0.99] ${focusRing}`}
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg text-accent-text">
             <CalendarCheck aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
@@ -67,7 +68,7 @@ export function TodayCard() {
                 <li key={topic.id}>
                   <Link
                     href={`/topic/${topic.id}`}
-                    className="flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-2 transition-colors duration-150 hover:bg-card-hover"
+                    className={`flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-2 transition-all duration-150 hover:bg-card-hover active:scale-[0.99] ${focusRing}`}
                   >
                     <span className="min-w-0">
                       <span className="block wrap-break-word text-[16px] leading-6 text-fg">{topic.title}</span>

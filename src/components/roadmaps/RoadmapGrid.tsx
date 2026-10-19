@@ -23,14 +23,14 @@ import { RoadmapDialog, type RoadmapFormValues } from "./RoadmapDialog";
 type DialogState = { mode: "create" } | { mode: "edit"; overview: RoadmapOverview };
 
 /**
- * Column count for the roadmap grid, given the number of tiles (roadmap cards plus the
- * "New roadmap" tile). Following the item count keeps a short list from leaving empty
- * columns at a breakpoint, while a long list still reaches four columns on wide screens.
+ * Column count for the roadmap grid. Responsive to viewport width:
+ * - 1 column on mobile (< 640px)
+ * - 2 columns on small screens (640px - 1024px)
+ * - 3 columns on laptops (1024px - 1280px)
+ * - 4 columns on wide screens (1280px+)
  */
-function gridClassName(tileCount: number): string {
-  if (tileCount <= 2) return "grid grid-cols-1 gap-4 sm:grid-cols-2";
-  if (tileCount === 3) return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
-  return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+function gridClassName(): string {
+  return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 }
 
 export function RoadmapGrid() {
@@ -83,13 +83,13 @@ export function RoadmapGrid() {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <h1 className="text-[clamp(1.75rem,3.5vw,2.125rem)] font-medium leading-tight text-fg">
-            Roadmaps
+            Your roadmaps
           </h1>
-          <p className="mt-1 text-[16px] leading-6 text-muted">
-            Pick a subject to study, review and test yourself.
+          <p className="mt-2 text-[16px] leading-6 text-muted">
+            Create roadmaps for each subject, add topics, and track your progress as you study.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -127,7 +127,7 @@ export function RoadmapGrid() {
         <div
           aria-busy="true"
           aria-label="Loading roadmaps"
-          className={gridClassName(3)}
+          className={gridClassName()}
         >
           {[0, 1, 2].map((index) => (
             <div key={index} className="h-40 animate-pulse rounded-2xl bg-card" />
@@ -135,13 +135,13 @@ export function RoadmapGrid() {
         </div>
       ) : overviews.length === 0 ? (
         <EmptyState
-          title="No roadmaps yet"
-          description="Create one for each subject you study, like React, English or Electronics."
+          title="Create your first roadmap"
+          description="Start by adding a roadmap for a subject you're studying. Inside each roadmap, you'll add topics and questions to practice."
           actionLabel="Create roadmap"
           onAction={() => setDialog({ mode: "create" })}
         />
       ) : (
-        <div className={gridClassName(overviews.length + 1)}>
+        <div className={gridClassName()}>
           {overviews.map((overview) => (
             <RoadmapCard
               key={overview.roadmap.id}
@@ -154,7 +154,7 @@ export function RoadmapGrid() {
           <button
             type="button"
             onClick={() => setDialog({ mode: "create" })}
-            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg"
+            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
             <span className="text-[16px] font-medium">New roadmap</span>
