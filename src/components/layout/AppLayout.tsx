@@ -75,7 +75,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
     setTheme((currentTheme) => (currentTheme === "light" ? "dark" : "light"));
 
   return (
-    <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
+    <div className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
       <header className="sticky top-0 z-30 border-b border-line bg-bg">
         <div className={`${pageContainer} flex items-center gap-2 py-3 md:gap-4`}>
           {!isHomePage && !hasOwnBackLink ? (
@@ -88,10 +88,10 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
             </Link>
           ) : null}
 
-          <Link href="/" className="flex min-w-0 items-center gap-3 rounded-2xl">
+          <Link href="/" className="flex min-h-12 min-w-0 items-center gap-3 rounded-2xl">
             <span
               aria-hidden="true"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-[16px] font-medium text-on-accent"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[16px] font-medium text-on-accent"
             >
               A
             </span>
@@ -109,7 +109,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 key={href}
                 href={href}
                 aria-current={currentNavigation(href)}
-                className={`inline-flex min-h-11 items-center gap-2 rounded-2xl px-3 text-[16px] font-medium leading-6 transition-colors duration-150 ${
+                className={`inline-flex min-h-12 items-center gap-2 rounded-2xl px-3 text-[16px] font-medium leading-6 transition-colors duration-150 ${
                   isActive(href)
                     ? "bg-card text-fg"
                     : "text-muted hover:bg-card hover:text-fg"
@@ -148,9 +148,9 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
       </header>
 
       <AppThemeContext value={{ theme, setTheme }}>
-        <div className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
+        <main className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
           {children}
-        </div>
+        </main>
       </AppThemeContext>
 
       <nav
@@ -185,6 +185,6 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
           ))}
         </div>
       </nav>
-    </main>
+    </div>
   );
 }

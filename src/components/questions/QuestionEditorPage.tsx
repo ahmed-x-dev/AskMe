@@ -16,7 +16,7 @@ type QuestionEditorPageProps = {
 function NotFound({ title, href, label }: { title: string; href: string; label: string }) {
   return (
     <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
-      <h2 className="text-[18px] font-medium leading-[26px] text-fg">{title}</h2>
+      <h1 className="text-[22px] font-medium leading-7 text-fg">{title}</h1>
       <Link href={href} className={`mt-6 ${buttonPrimary}`}>
         {label}
       </Link>
@@ -30,6 +30,7 @@ export function QuestionEditorPage({ topicId, qid }: QuestionEditorPageProps) {
   if (data === undefined) {
     return (
       <div
+        role="status"
         aria-busy="true"
         aria-label="Loading question"
         className="mx-auto flex w-full flex-col gap-5 rounded-2xl bg-card p-4"

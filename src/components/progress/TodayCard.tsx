@@ -12,7 +12,7 @@ export function TodayCard() {
   const summary = useLiveQuery(() => getProgressSummary(), []);
 
   if (summary === undefined) {
-    return <div aria-busy="true" aria-label="Loading progress" className="h-28 animate-pulse rounded-2xl bg-card" />;
+    return <div role="status" aria-busy="true" aria-label="Loading progress" className="h-28 animate-pulse rounded-2xl bg-card" />;
   }
 
   const { dueCount, streak, answeredToday, weakTopics } = summary;

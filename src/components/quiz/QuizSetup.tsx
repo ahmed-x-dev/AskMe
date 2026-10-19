@@ -100,7 +100,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
               Practice scope
             </h3>
             {source.mistakeIds.length > 0 ? (
-              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg">
+              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-control-line bg-bg px-3 text-[16px] leading-6 text-fg">
                 <input
                   type="checkbox"
                   checked={mistakesOnly}

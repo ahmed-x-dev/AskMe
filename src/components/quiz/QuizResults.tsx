@@ -62,7 +62,7 @@ export function QuizResults({
       ) : null}
 
       <div className="rounded-2xl bg-card p-6 text-center">
-        <p className="text-[13px] leading-[18px] text-muted">Quiz complete</p>
+        <h1 className="text-[22px] font-medium leading-7 text-fg">Quiz complete</h1>
         <p aria-label={`${correct} of ${queue.length} correct`} className="mt-2 text-[40px] font-medium leading-[44px] text-accent-text tabular-nums">
           {correct} / {queue.length}
         </p>

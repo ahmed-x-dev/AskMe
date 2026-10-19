@@ -98,7 +98,7 @@ export function RoadmapGrid() {
             onImported={() => setActionError(null)}
             onError={setActionError}
           >
-            <span className="hidden sm:inline">Import</span>
+            Import
           </ImportRoadmapButton>
           {overviews && overviews.length > 0 ? (
             <button
@@ -125,6 +125,7 @@ export function RoadmapGrid() {
 
       {overviews === undefined ? (
         <div
+          role="status"
           aria-busy="true"
           aria-label="Loading roadmaps"
           className={gridClassName()}
@@ -154,7 +155,7 @@ export function RoadmapGrid() {
           <button
             type="button"
             onClick={() => setDialog({ mode: "create" })}
-            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-control-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
             <span className="text-[16px] font-medium">New roadmap</span>

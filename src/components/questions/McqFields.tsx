@@ -27,7 +27,7 @@ export function McqFields({
         {['A', 'B', 'C', 'D'].map((letter, index) => (
           <div
             key={letter}
-            className="flex min-h-12 items-center gap-3 rounded-[14px] border border-line bg-bg px-3 py-2"
+            className="flex min-h-12 items-center gap-3 rounded-[14px] border border-control-line bg-bg px-3 py-2"
           >
             <button
               type="button"
@@ -35,7 +35,7 @@ export function McqFields({
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md border text-[13px] font-medium transition-colors duration-150 ${
                 answerIndex === index
                   ? 'border-transparent bg-accent text-on-accent'
-                  : 'border-line bg-card text-muted hover:bg-card-hover hover:text-fg'
+                  : 'border-control-line bg-card text-muted hover:bg-card-hover hover:text-fg'
               }`}
               aria-label={`Mark option ${index + 1} as correct answer`}
               aria-pressed={answerIndex === index}

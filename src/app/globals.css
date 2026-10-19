@@ -8,6 +8,7 @@
   --card-elevated: #ffffff;
   --card-hover: #dfe6e2;
   --line: #c4d0c9;
+  --control-line: #7d8982;
   --fg: #121715;
   --muted: #545e59;
   --accent: #09785e;
@@ -33,6 +34,7 @@
   --card-elevated: #2e3a34;
   --card-hover: #39463f;
   --line: #44524b;
+  --control-line: #77847c;
   --fg: #edf3ef;
   --muted: #aab5ae;
   --accent: #3dd6a5;
@@ -55,6 +57,7 @@
   --color-card-elevated: var(--card-elevated);
   --color-card-hover: var(--card-hover);
   --color-line: var(--line);
+  --color-control-line: var(--control-line);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -107,13 +110,13 @@ button {
 
 /*
  * Form controls carry the shared control boundary. Buttons opt in explicitly with
- * `border border-line` (see `src/components/ui/styles.ts`) so ghost, menu, and
- * segmented-control items stay borderless and quiet.
+ * `border border-control-line` (see `src/components/ui/styles.ts`) so ghost buttons,
+ * menu items, and segmented-control segments stay borderless and quiet.
  */
 input:not([type='file']),
 textarea,
 select {
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
 }
 
 :disabled {
@@ -126,6 +129,12 @@ select {
 }
 
 [aria-invalid='true'] {
+  border-color: var(--bad-fg);
+}
+
+input:not([type='file'])[aria-invalid='true'],
+textarea[aria-invalid='true'],
+select[aria-invalid='true'] {
   border-color: var(--bad-fg);
 }
 

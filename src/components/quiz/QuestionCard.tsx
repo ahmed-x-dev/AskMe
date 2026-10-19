@@ -75,7 +75,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
                   setSelected(optionIndex);
                   onAnswer(optionIndex === question.answerIndex);
                 }}
-                className={`flex min-h-12 w-full items-start gap-3 rounded-[14px] border border-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
+                className={`flex min-h-12 w-full items-start gap-3 rounded-[14px] border border-control-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
                   isRight
                     ? "bg-ok-bg text-ok-fg"
                     : isWrong

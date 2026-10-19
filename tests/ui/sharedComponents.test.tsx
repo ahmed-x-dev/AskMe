@@ -193,6 +193,9 @@ describe("AppLayout navigation", () => {
     const roadmaps = primaryNavigation.querySelector<HTMLAnchorElement>('a[href="/"]')
     expect(roadmaps?.getAttribute("aria-current")).toBe("location")
     expect(primaryNavigation.querySelector('a[href="/review"]')?.hasAttribute("aria-current")).toBe(false)
+    expect(container.querySelectorAll("main")).toHaveLength(1)
+    expect(container.querySelector("main header, main nav")).toBeNull()
+    expect(container.querySelector('header a[href="/"]:not([aria-label])')?.className).toContain("min-h-12")
   })
 })
 
@@ -329,9 +332,30 @@ describe("dialog submission states", () => {
     )
 
     const dialog = container.querySelector("dialog")!
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })
+    dialog.dispatchEvent(escape)
+    expect(escape.defaultPrevented).toBe(true)
+    expect(onClose).not.toHaveBeenCalled()
+
     const cancel = new Event("cancel", { cancelable: true })
     dialog.dispatchEvent(cancel)
     expect(cancel.defaultPrevented).toBe(true)
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  it("dismisses a modal on Escape when it is not busy", () => {
+    const onClose = vi.fn()
+    render(
+      <Modal titleId="escape-title" onClose={onClose}>
+        <h2 id="escape-title">Close me</h2>
+      </Modal>,
+    )
+
+    const dialog = container.querySelector("dialog")!
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })
+    dialog.dispatchEvent(escape)
+
+    expect(escape.defaultPrevented).toBe(true)
+    expect(onClose).toHaveBeenCalledOnce()
   })
 })

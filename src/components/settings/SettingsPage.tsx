@@ -256,7 +256,7 @@ function AppearanceSection() {
           <label
             key={option.value}
             className={`flex min-h-12 cursor-pointer items-start gap-3 rounded-[14px] border px-3 py-3 transition-colors ${
-              theme === option.value ? "border-accent bg-bg" : "border-line bg-bg hover:bg-card-hover"
+              theme === option.value ? "border-accent bg-bg" : "border-control-line bg-bg hover:bg-card-hover"
             }`}
           >
             <input

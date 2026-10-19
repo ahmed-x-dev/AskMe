@@ -42,7 +42,7 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 
   if (source === undefined) {
     return (
-      <div aria-busy="true" aria-label="Loading quiz" className="mx-auto flex w-full flex-col gap-4">
+      <div role="status" aria-busy="true" aria-label="Loading quiz" className="mx-auto flex w-full flex-col gap-4">
         <div className="h-12 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-48 animate-pulse rounded-2xl bg-card" />
       </div>
@@ -156,7 +156,7 @@ function RoadmapQuizContent() {
 /** The quiz for `/roadmap/[id]/quiz`, or one group of it with `?group=<id>`. */
 export function RoadmapQuizPage() {
   return (
-    <Suspense fallback={<div aria-busy="true" aria-label="Loading quiz" className="h-48 animate-pulse rounded-2xl bg-card" />}>
+    <Suspense fallback={<div role="status" aria-busy="true" aria-label="Loading quiz" className="h-48 animate-pulse rounded-2xl bg-card" />}>
       <RoadmapQuizContent />
     </Suspense>
   );

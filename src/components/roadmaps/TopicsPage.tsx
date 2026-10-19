@@ -130,6 +130,7 @@ export function TopicsPage() {
   if (page === undefined) {
     return (
       <div
+        role="status"
         aria-busy="true"
         aria-label="Loading roadmap"
         className="flex w-full flex-col gap-4"

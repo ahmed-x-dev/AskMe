@@ -34,6 +34,7 @@ export const ROADMAP_COLORS = [
 
 export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [title, setTitle] = useState(roadmap?.title ?? "");
   const [icon, setIcon] = useState(roadmap?.icon ?? "");
   const [color, setColor] = useState(roadmap?.color ?? "");
@@ -42,10 +43,21 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
 
   useEffect(() => {
     const dialog = dialogRef.current;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
+
+    return () => {
+      if (dialog?.open) {
+        dialog.close();
+      }
+      if (previousFocusRef.current?.isConnected) {
+        previousFocusRef.current.focus();
+      }
+    };
   }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -69,6 +81,11 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
     <dialog
       ref={dialogRef}
       aria-labelledby="roadmap-dialog-title"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        if (!isSaving) onClose();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         if (!isSaving) onClose();
@@ -76,7 +93,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
       onClick={(event) => {
         if (event.target === dialogRef.current && !isSaving) onClose();
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card-elevated p-0 text-fg backdrop:bg-overlay"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-control-line bg-card-elevated p-0 text-fg backdrop:bg-overlay"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <h2

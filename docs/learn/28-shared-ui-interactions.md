@@ -33,6 +33,10 @@ In `src/components/ui/ActionMenu.tsx`:
 
 `src/components/ui/Modal.tsx` uses the browser's native `<dialog>` and `showModal()`. The browser provides modal focus behavior; the component keeps Escape and backdrop dismissal from interrupting a save.
 
+The app shell keeps its header and navigation outside one `<main>` landmark. Every route gives its main task an `<h1>`, then nests section headings in order. For example, `src/components/questions/QuestionEditorForm.tsx` uses “New question” or “Edit question” as the page heading and treats the topic name as supporting context.
+
+Control and floating-surface borders also have their own `--control-line` token. Unlike low-emphasis separators, it reaches at least 3:1 against the surfaces it outlines, so controls and dialogs remain identifiable before keyboard focus moves inside.
+
 ## ❌ / ✅ examples
 
 ❌ Put a menu inside a card with `overflow-hidden` and rely on a larger `z-index`.
@@ -56,6 +60,8 @@ In `src/components/ui/ActionMenu.tsx`:
 - Pending action: disable only the initiating control and set `aria-busy`.
 - Dialog: native `<dialog>.showModal()`; keep its content scrollable within the viewport.
 - Recovery action: use a short visible label such as “Try again”.
+- Page structure: one `<main>` landmark and one `<h1>` for each route.
+- Control boundary: use `border-control-line`; reserve `border-line` for low-emphasis dividers.
 
 ## Key Takeaways
 

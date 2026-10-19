@@ -120,10 +120,10 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
     <section className="mx-auto flex w-full flex-col gap-5 rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[13px] leading-[18px] text-muted">
+          <h1 className="text-[22px] font-medium leading-7 text-fg">
             {existingQuestion ? 'Edit question' : 'New question'}
-          </p>
-          <h2 className="mt-1 break-words text-[18px] font-medium leading-[26px] text-fg">{topic.title}</h2>
+          </h1>
+          <p className="mt-1 break-words text-[16px] leading-6 text-muted">{topic.title}</p>
         </div>
         <button
           type="button"

@@ -228,6 +228,7 @@ describe('QuizResults', () => {
     )
 
     expect(html).toContain('1 / 1')
+    expect(html).toContain('<h1')
     expect(html).toContain('IndexedDB unavailable')
     expect(html).toContain('Topic could not be updated.')
     expect(html).toContain('Back')

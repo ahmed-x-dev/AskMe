@@ -114,7 +114,7 @@ export function TopicRow({ topic, number, questionCount, actions }: TopicRowProp
       <div className="min-w-0 flex-1">
         <Link
           href={`/topic/${topic.id}`}
-          className="block wrap-break-word text-[16px] font-medium leading-6 text-fg hover:underline"
+          className="flex min-h-12 w-full items-center py-2 wrap-break-word text-[16px] font-medium leading-6 text-fg hover:underline"
         >
           {topic.title}
         </Link>

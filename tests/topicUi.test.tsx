@@ -3,6 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NotesSection } from "../src/components/topics/NotesSection";
 import { TopicPage } from "../src/components/topics/TopicPage";
+import { QuestionEditorForm } from "../src/components/questions/QuestionEditorForm";
 import {
   addQuestion,
   addResource,
@@ -60,6 +61,19 @@ async function click(button: HTMLButtonElement | undefined) {
 }
 
 describe("topic learning page", () => {
+  it("gives the question editor a page heading and keeps the topic as context", async () => {
+    const roadmap = await createRoadmap({ title: "Frontend development" });
+    const topic = await createTopic({
+      roadmapId: roadmap.id,
+      title: "Understanding component state",
+    });
+
+    act(() => root.render(<QuestionEditorForm topic={topic} />));
+
+    expect(container.querySelector("h1")?.textContent).toBe("New question");
+    expect(container.querySelector("h1 + p")?.textContent).toBe(topic.title);
+  });
+
   it("summarizes existing topic data and puts practice actions before the learning sections", async () => {
     const roadmap = await createRoadmap({ title: "Frontend development" });
     const group = await createGroup(roadmap.id, "React basics");

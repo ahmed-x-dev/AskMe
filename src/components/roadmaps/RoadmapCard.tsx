@@ -31,9 +31,9 @@ export function RoadmapCard({ overview, onEdit, onExport, onDelete }: RoadmapCar
         <RoadmapIcon roadmap={roadmap} />
 
         <div className="min-w-0 flex-1">
-          <h3 className="wrap-break-word text-[18px] font-medium leading-6 text-fg group-hover:text-fg">
+          <h2 className="wrap-break-word text-[18px] font-medium leading-6 text-fg group-hover:text-fg">
             {roadmap.title}
-          </h3>
+          </h2>
           <p className="mt-1 text-[13px] leading-[18px] text-muted tabular-nums">
             {plural(topicCount, "topic")} · {plural(questionCount, "question")}
           </p>
