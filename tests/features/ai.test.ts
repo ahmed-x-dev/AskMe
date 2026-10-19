@@ -7,6 +7,7 @@ import {
   validateAnswerExplanation,
   validateEssayGradeResult,
   validateGeneratedQuestions,
+  buildGenerationPrompt,
 } from '../../src/features/ai'
 import { saveAiApiKey, saveGeminiApiKey, setAiProvider } from '../../src/platform/secureStorage'
 
@@ -33,6 +34,44 @@ describe('AI schema validation', () => {
     expect(result[0].tags).toEqual([])
   })
 
+  it('skips unusable questions and keeps the good ones', () => {
+    const result = validateGeneratedQuestions({
+      questions: [
+        { type: 'mcq', text: 'Repeated options?', options: ['a', 'a', 'b', 'c'], answerIndex: 0 },
+        { type: 'mcq', text: 'Bad answer index?', options: ['a', 'b', 'c', 'd'], answerIndex: 7 },
+        { type: 'essay', text: 'Explain it.', referenceAnswer: ' Because. ', difficulty: 'hard' },
+      ],
+    })
+
+    expect(result).toEqual([
+      { type: 'essay', text: 'Explain it.', referenceAnswer: 'Because.', difficulty: 'hard', tags: [] },
+    ])
+  })
+
+  it('throws the first problem when no question is usable', () => {
+    expect(() =>
+      validateGeneratedQuestions({
+        questions: [{ type: 'mcq', text: 'Only three?', options: ['a', 'b', 'c'], answerIndex: 0 }],
+      }),
+    ).toThrow('must include four options')
+    expect(() => validateGeneratedQuestions({ questions: [] })).toThrow('did not include any questions')
+  })
+
+  it('uses the requested difficulty unless the AI sets a valid one', () => {
+    const [first, second] = validateGeneratedQuestions(
+      {
+        questions: [
+          { type: 'essay', text: 'One?' },
+          { type: 'essay', text: 'Two?', difficulty: 'nonsense' },
+        ],
+      },
+      'easy',
+    )
+
+    expect(first.difficulty).toBe('easy')
+    expect(second.difficulty).toBe('easy')
+  })
+
   it('rejects malformed essay grading payloads', () => {
     expect(() =>
       validateEssayGradeResult({
@@ -48,6 +87,39 @@ describe('AI schema validation', () => {
       explanation: 'Because it is correct.',
     })
     expect(() => validateAnswerExplanation({ explanation: '' })).toThrow(/answer explanation/)
+  })
+})
+
+describe('generation prompt', () => {
+  it('tells the AI about the topic, notes and existing questions', () => {
+    const prompt = buildGenerationPrompt({
+      type: 'mcq',
+      count: 5,
+      topicTitle: 'useEffect',
+      groupTitle: 'Hooks',
+      roadmapTitle: 'React',
+      notes: 'Runs after render.',
+      existingQuestions: ['What is the dependency array?'],
+      difficulty: 'hard',
+      prompt: 'Focus on cleanup.',
+    })
+
+    expect(prompt).toContain('Create exactly 5 multiple-choice questions')
+    expect(prompt).toContain('Topic: useEffect')
+    expect(prompt).toContain('Part of the group: Hooks')
+    expect(prompt).toContain('In the subject: React')
+    expect(prompt).toContain('Runs after render.')
+    expect(prompt).toContain('- What is the dependency array?')
+    expect(prompt).toContain('Make every question hard difficulty.')
+    expect(prompt).toContain('Extra guidance: Focus on cleanup.')
+  })
+
+  it('leaves out sections that have no content and trims very long notes', () => {
+    const prompt = buildGenerationPrompt({ type: 'essay', count: 3, notes: 'x'.repeat(9000) })
+
+    expect(prompt).not.toContain('Topic:')
+    expect(prompt).not.toContain('already has these questions')
+    expect(prompt.length).toBeLessThan(6000)
   })
 })
 
@@ -91,7 +163,7 @@ describe('AI calls', () => {
       fetchMock,
     )
 
-    const result = await generateQuestions({ type: 'mcq', count: 1, setTitle: 'Math' })
+    const result = await generateQuestions({ type: 'mcq', count: 1, topicTitle: 'Math' })
 
     expect(result).toHaveLength(1)
     expect(result[0].type).toBe('mcq')
@@ -198,15 +270,10 @@ describe('AI calls', () => {
 
     const explanation = await explainQuestionAnswer({
       question: {
-        id: 'q1',
         type: 'mcq',
         text: 'Which planet is known as the Red Planet?',
-        difficulty: 'medium',
-        tags: [],
         options: ['Venus', 'Mars', 'Jupiter', 'Mercury'],
         answerIndex: 1,
-        updatedAt: '2026-10-17T00:00:00.000Z',
-        deleted: false,
       },
       userAnswer: 0,
     })
@@ -246,7 +313,7 @@ describe('AI calls', () => {
       }),
     )
 
-    const result = await generateQuestions({ type: 'mcq', count: 1, setTitle: 'Animals' })
+    const result = await generateQuestions({ type: 'mcq', count: 1, topicTitle: 'Animals' })
 
     expect(result).toHaveLength(1)
     expect(result[0].type).toBe('mcq')

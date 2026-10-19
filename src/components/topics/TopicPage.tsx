@@ -112,7 +112,16 @@ export function TopicPage() {
 
       <ResourcesSection key={`resources-${topic.id}`} topicId={topic.id} resources={resources} />
       <NotesSection key={`notes-${topic.id}`} topicId={topic.id} notes={topic.notes} />
-      <QuestionsSection topicId={topic.id} questions={questions} />
+      <QuestionsSection
+        topicId={topic.id}
+        questions={questions}
+        topicContext={{
+          topicTitle: topic.title,
+          roadmapTitle: roadmap.title,
+          groupTitle: group?.title,
+          notes: topic.notes,
+        }}
+      />
 
       {isConfirmingDelete ? (
         <ConfirmDialog

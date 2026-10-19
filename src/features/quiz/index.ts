@@ -1,12 +1,22 @@
-import type { Question, QuestionDifficulty, QuizSet } from '@/types/quiz'
+import type { Question, QuestionDifficulty } from '@/types/study'
 
-export type QuizMode = 'random' | 'mcq' | 'essay'
 export type QuizQuestionType = 'all' | 'mcq' | 'essay'
 
 export interface QuizQueueFilters {
   questionType?: QuizQuestionType
   difficulty?: QuestionDifficulty | 'all'
+  /** When set, only these question ids are kept (used by the mistakes-only mode). */
+  onlyIds?: ReadonlySet<string>
+  /** Keeps at most this many questions, after shuffling. */
   limit?: number
+}
+
+/** A quiz counts as passed at this share of correct answers (80%). */
+export const PASS_MARK = 0.8
+
+/** Returns true when `correct` out of `total` reaches the pass mark. An empty quiz never passes. */
+export function hasPassed(correct: number, total: number): boolean {
+  return total > 0 && correct / total >= PASS_MARK
 }
 
 /** Returns a shuffled copy of the items; this is the standard Fisher-Yates algorithm. */
@@ -21,31 +31,28 @@ export function shuffle<T>(items: T[]): T[] {
   return copy
 }
 
-/** Builds the question order for the current quiz mode without mutating the stored set. */
-export function buildQuizQueue(
-  set: QuizSet | null,
-  mode: QuizMode = 'random',
-  filters: QuizQueueFilters = {},
-): Question[] {
-  if (!set) {
-    return []
-  }
-
-  const activeQuestions = set.questions.filter((question) => !question.deleted)
-  const questionType = filters.questionType ?? (mode === 'random' ? 'all' : mode)
+/** Keeps the questions that match the filters, in their original order. The limit is not applied. */
+export function filterQuestions(questions: Question[], filters: QuizQueueFilters = {}): Question[] {
+  const questionType = filters.questionType ?? 'all'
   const difficulty = filters.difficulty ?? 'all'
-  const filteredQuestions = activeQuestions.filter(
+
+  return questions.filter(
     (question) =>
       (questionType === 'all' || question.type === questionType) &&
-      (difficulty === 'all' || question.difficulty === difficulty),
+      (difficulty === 'all' || question.difficulty === difficulty) &&
+      (filters.onlyIds === undefined || filters.onlyIds.has(question.id)),
   )
-  const shuffledQuestions = shuffle(filteredQuestions)
+}
+
+/** Builds the question order for a quiz without changing the stored questions. */
+export function buildQuizQueue(questions: Question[], filters: QuizQueueFilters = {}): Question[] {
+  const shuffled = shuffle(filterQuestions(questions, filters))
   const limit =
     filters.limit === undefined || !Number.isFinite(filters.limit)
-      ? shuffledQuestions.length
+      ? shuffled.length
       : Math.max(0, Math.floor(filters.limit))
 
-  return shuffledQuestions.slice(0, limit)
+  return shuffled.slice(0, limit)
 }
 
 /** Formats elapsed quiz time as minutes and seconds, adding hours when needed. */

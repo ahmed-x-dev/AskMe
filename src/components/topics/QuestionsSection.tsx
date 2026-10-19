@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, CircleHelp, Plus } from "lucide-react";
+import { ChevronRight, CircleHelp, Play, Plus, Sparkles } from "lucide-react";
 import { plural } from "@/lib/format";
 import type { Question } from "@/types/study";
+import { GenerateQuestionsDialog, type GenerationContext } from "./GenerateQuestionsDialog";
 
 const TYPE_BADGE: Record<Question["type"], { label: string; className: string }> = {
   mcq: { label: "MCQ", className: "bg-ok-bg text-ok-fg" },
@@ -11,13 +15,20 @@ const TYPE_BADGE: Record<Question["type"], { label: string; className: string }>
 type QuestionsSectionProps = {
   topicId: string;
   questions: Question[];
+  /** What the AI is told about the topic. `topicId` and `existingQuestions` are filled in here. */
+  topicContext: Pick<GenerationContext, "topicTitle" | "roadmapTitle" | "groupTitle" | "notes">;
 };
 
+const secondaryButtonClassName =
+  "inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover";
+
 /** The questions of one topic, each linking to the editor, plus the "Add question" button. */
-export function QuestionsSection({ topicId, questions }: QuestionsSectionProps) {
+export function QuestionsSection({ topicId, questions, topicContext }: QuestionsSectionProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+
   return (
     <section aria-labelledby="questions-heading" className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 id="questions-heading" className="text-[22px] font-medium leading-7 text-fg">
             Questions
@@ -28,15 +39,28 @@ export function QuestionsSection({ topicId, questions }: QuestionsSectionProps) 
         </div>
 
         {questions.length > 0 ? (
-          <Link
-            href={`/topic/${topicId}/q/new`}
-            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
-          >
-            <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-            Add question
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => setIsGenerating(true)} className={secondaryButtonClassName}>
+              <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Generate with AI
+            </button>
+            <Link href={`/topic/${topicId}/q/new`} className={secondaryButtonClassName}>
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Add question
+            </Link>
+          </div>
         ) : null}
       </div>
+
+      {questions.length > 0 ? (
+        <Link
+          href={`/topic/${topicId}/quiz`}
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+        >
+          <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+          Start quiz · {plural(questions.length, "question")}
+        </Link>
+      ) : null}
 
       {questions.length === 0 ? (
         <div className="rounded-2xl bg-card p-6 text-center">
@@ -47,13 +71,19 @@ export function QuestionsSection({ topicId, questions }: QuestionsSectionProps) 
           <p className="mx-auto mt-2 max-w-70 text-[16px] leading-6 text-muted">
             Add a question to start testing yourself on this topic.
           </p>
-          <Link
-            href={`/topic/${topicId}/q/new`}
-            className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
-          >
-            <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-            Add question
-          </Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              href={`/topic/${topicId}/q/new`}
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            >
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Add question
+            </Link>
+            <button type="button" onClick={() => setIsGenerating(true)} className={secondaryButtonClassName}>
+              <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Generate with AI
+            </button>
+          </div>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -92,6 +122,13 @@ export function QuestionsSection({ topicId, questions }: QuestionsSectionProps) 
           })}
         </ul>
       )}
+
+      {isGenerating ? (
+        <GenerateQuestionsDialog
+          context={{ ...topicContext, topicId, existingQuestions: questions.map((question) => question.text) }}
+          onClose={() => setIsGenerating(false)}
+        />
+      ) : null}
     </section>
   );
 }

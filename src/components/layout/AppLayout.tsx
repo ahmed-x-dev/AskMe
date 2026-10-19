@@ -20,8 +20,8 @@ export type AppLayoutProps = {
 export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  /** Topic pages show their own back link to the roadmap, so the generic one is hidden there. */
-  const hasOwnBackLink = pathname.startsWith("/topic/");
+  /** Topic and quiz pages show their own back link, so the generic one is hidden there. */
+  const hasOwnBackLink = pathname.startsWith("/topic/") || /^\/roadmap\/[^/]+\/quiz/.test(pathname);
 
   return (
     <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
