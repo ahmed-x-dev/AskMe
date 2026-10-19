@@ -32,3 +32,4 @@ docs/*
 docs/learn/*
 !docs/learn/26-icon-components.md
 !docs/learn/27-set-groups-and-touch-dragging.md
+!docs/learn/28-shared-ui-interactions.md

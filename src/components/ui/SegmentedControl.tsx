@@ -1,7 +1,7 @@
 type SegmentedControlProps<T extends string> = {
   label: string;
   value: T;
-  options: readonly { value: T; label: string }[];
+  options: readonly { value: T; label: string; disabled?: boolean }[];
   onChange: (value: T) => void;
   /** Set when the control sits inside a `bg-card` panel, so the container takes the step below it. */
   onCard?: boolean;
@@ -28,8 +28,11 @@ export function SegmentedControl<T extends string>({
             key={option.value}
             type="button"
             aria-pressed={value === option.value}
+            disabled={option.disabled}
             onClick={() => onChange(option.value)}
-            className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+            className={`min-h-12 min-w-0 flex-1 rounded-[11px] px-2 text-[13px] font-medium leading-[18px] transition-colors duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+              onCard ? "focus-visible:ring-offset-bg" : "focus-visible:ring-offset-card"
+            } ${
               value === option.value
                 ? "bg-accent text-on-accent"
                 : "text-muted hover:bg-card-hover hover:text-fg"

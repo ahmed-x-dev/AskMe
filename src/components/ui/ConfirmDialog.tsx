@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
@@ -28,8 +28,11 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isConfirming = useRef(false);
 
   const handleConfirm = async () => {
+    if (isConfirming.current) return;
+    isConfirming.current = true;
     setIsBusy(true);
     setError(null);
 
@@ -38,6 +41,7 @@ export function ConfirmDialog({
       onClose();
     } catch (confirmError) {
       setError(confirmError instanceof Error ? confirmError.message : "Something went wrong.");
+      isConfirming.current = false;
       setIsBusy(false);
     }
   };

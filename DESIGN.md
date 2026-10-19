@@ -277,6 +277,7 @@ Shared style is centralized in `src/components/ui/` so every surface matches. Bu
 ### Navigation / shell
 - A single sticky top bar sits above all content: brand on the start side, primary navigation in the middle (or beside the brand on wide screens), and theme/account controls on the end side.
 - Primary navigation (Roadmaps, Review, Settings) is visible on **every** route, not only home. The active route is marked with `text-fg` plus an accent underline or pill; inactive items are `text-muted`.
+- The Roadmaps item remains active on roadmap and topic detail routes. Review and Settings are active only on their own route trees; a URL substring that merely starts with a route name is not enough.
 - On screens narrower than 768px the top-bar links collapse into a bottom navigation bar with three labeled icon targets (Roadmaps, Review, Settings); the Review target keeps its due badge.
 - The shell is full-width and fluid with side padding (`clamp(16px, 2.5vw, 40px)`). Back links appear on detail routes in place of the brand subtitle.
 - The theme toggle is an icon button with an `aria-label` that reflects the next action ("Switch to dark theme").
@@ -327,17 +328,18 @@ Height 6px, fully rounded. Track `bg-card-hover`, fill `bg-accent`, width animat
 Use a 20px control with a 1px `--line` boundary on `bg-card`. Its label is body text and the whole label/control pair has a 48px minimum tap target. Checked state is `bg-accent text-on-accent` with a check or selected indicator; disabled state follows the shared state rules. Never rely on the checked color without the visible indicator.
 
 ### Segmented control (MCQ | Essay)
-Container `bg-card`, radius 14px, padding 3px, no border. Active segment `bg-accent text-on-accent`, inactive `text-muted`, inactive hover `bg-card-hover text-fg`. The inner radius is 11px (container radius minus padding). Pass `onCard` when the control sits inside a `bg-card` panel; the container then uses `bg-bg` so the seam stays visible. The same rule applies to any custom segmented control.
+Container `bg-card`, radius 14px, padding 3px, no border. Active segment `bg-accent text-on-accent`, inactive `text-muted`, inactive hover `bg-card-hover text-fg`. The inner radius is 11px (container radius minus padding). Pass `onCard` when the control sits inside a `bg-card` panel; the container then uses `bg-bg` so the seam stays visible. Segments have a 48px minimum tap height, a visible focus ring against the container surface, and support standard button keyboard activation. Disabled segments use the shared disabled opacity and cursor. The same rule applies to any custom segmented control.
 
 ### Overflow menu, bottom sheet, confirm dialog
-Surface `bg-card-elevated`, radius 16px, 1px `--line` boundary, backdrop `bg-overlay`. Floating surfaces always sit one step above the content they cover, so a menu opened from a card never blends into that card. Fields inside them use `bg-card`. Menus align to the trigger's end edge and stay inside the viewport. Confirm dialogs have a ghost Cancel and a destructive confirm.
+Surface `bg-card-elevated`, radius 16px, 1px `--line` boundary, backdrop `bg-overlay`. Floating surfaces always sit one step above the content they cover, so a menu opened from a card never blends into that card. Fields inside them use `bg-card`. Menus align to the trigger's end edge, flip above it when needed, stay inside viewport boundaries, and escape ancestor clipping. Action menus support arrow, Home/End, Escape, and Tab navigation; disabled actions are skipped. Dialogs fit the viewport, scroll their own content without chaining the page, focus within the native modal, restore focus when closed, and block Escape/backdrop dismissal while saving. Confirm dialogs have a ghost Cancel and a destructive confirm.
 
 ### Empty state
 A bordered-dashed or `bg-card` panel with an icon tile (24px, `text-muted`), a one-line title, a one-line body (`max-width` about 40ch), and a primary button that creates something. Center it within the content area. Do not write "Nothing here yet".
 
 ### Loading and error states
 - Loading uses `role="status"` text plus skeleton blocks that match the shape of the content being loaded (same radius and surface), never a blank screen.
-- Errors use the shared banner (`bg-bad-bg text-bad-fg`, icon, `role="alert"`) for page-level problems and inline text for field-level problems.
+- Errors use the shared banner (`bg-bad-bg text-bad-fg`, icon, `role="alert"`) for page-level problems and inline text for field-level problems. When a safe recovery exists, give the banner a clearly labeled action; never make recovery depend on color.
+- Inputs show concise helper text where constraints are not obvious. Invalid input uses `aria-invalid="true"` and a message referenced by `aria-describedby`; temporary submissions disable the initiating action and announce the pending label.
 
 ### Icons
 Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 16px inline, 20px in rows, 24px in empty states. Icon-only buttons must have an `aria-label`.

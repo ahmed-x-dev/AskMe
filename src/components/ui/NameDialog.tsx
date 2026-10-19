@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
 import { buttonGhost, buttonPrimary, fieldClassName } from "./styles";
@@ -28,9 +28,17 @@ export function NameDialog({
   const [value, setValue] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSavingRef.current) return;
+    if (value.trim() === "") {
+      setError("Enter a name before saving.");
+      return;
+    }
+
+    isSavingRef.current = true;
     setIsSaving(true);
     setError(null);
 
@@ -40,6 +48,7 @@ export function NameDialog({
       setError(
         submitError instanceof Error ? submitError.message : "Could not save the name.",
       );
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -56,18 +65,24 @@ export function NameDialog({
           <input
             type="text"
             value={value}
-            onChange={(event) => setValue(event.target.value)}
+            onChange={(event) => {
+              setValue(event.target.value);
+              setError(null);
+            }}
             maxLength={100}
             required
             autoFocus
             placeholder={placeholder}
             aria-invalid={error ? true : undefined}
-            aria-describedby={error ? "name-dialog-error" : undefined}
+            aria-describedby={`name-dialog-help${error ? " name-dialog-error" : ""}`}
             className={fieldClassName}
           />
+          <span id="name-dialog-help" className="text-[13px] font-normal leading-[18px] text-muted">
+            Required. Use up to 100 characters.
+          </span>
         </label>
 
-        {error ? <ErrorMessage id="name-dialog-error">{error}</ErrorMessage> : null}
+        {error ? <ErrorMessage variant="inline" id="name-dialog-error">{error}</ErrorMessage> : null}
 
         <div className="flex flex-wrap justify-end gap-3">
           <button

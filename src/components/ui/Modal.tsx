@@ -10,7 +10,7 @@ type ModalProps = {
   children: ReactNode;
 };
 
-/** A modal dialog that opens as soon as it is mounted. Render it only while it should be visible. */
+/** A viewport-bounded native modal that restores focus and blocks dismissal while busy. */
 export function Modal({ titleId, isBusy = false, onClose, children }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -20,6 +20,12 @@ export function Modal({ titleId, isBusy = false, onClose, children }: ModalProps
     if (dialog && !dialog.open) {
       dialog.showModal();
     }
+
+    return () => {
+      if (dialog?.open) {
+        dialog.close();
+      }
+    };
   }, []);
 
   return (
@@ -33,7 +39,7 @@ export function Modal({ titleId, isBusy = false, onClose, children }: ModalProps
       onClick={(event) => {
         if (event.target === dialogRef.current && !isBusy) onClose();
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(30rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card-elevated p-0 text-fg backdrop:bg-overlay"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(30rem,calc(100%-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-line bg-card-elevated p-0 text-fg backdrop:bg-overlay"
     >
       {children}
     </dialog>

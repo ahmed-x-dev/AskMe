@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, CalendarCheck, Map, Moon, Settings, Sun, type LucideIcon } from "lucide-react";
 import { countDue } from "@/lib/data";
-import { pageContainer } from "@/components/ui/styles";
+import { iconButton, pageContainer } from "@/components/ui/styles";
 
 export type Theme = "light" | "dark";
 
@@ -42,8 +42,19 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const hasOwnBackLink =
     pathname.startsWith("/topic/") || /^\/roadmap\/[^/]+\/quiz/.test(pathname);
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const isActive = (href: string) => {
+    if (href === "/") {
+      return (
+        pathname === "/" ||
+        pathname.startsWith("/roadmap/") ||
+        pathname.startsWith("/topic/")
+      );
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+  const currentNavigation = (href: string) =>
+    pathname === href ? "page" : isActive(href) ? "location" : undefined;
 
   const toggleTheme = () =>
     setTheme((currentTheme) => (currentTheme === "light" ? "dark" : "light"));
@@ -56,7 +67,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
             <Link
               href="/"
               aria-label="Back to roadmaps"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-muted transition-colors duration-150 hover:bg-card-hover hover:text-fg"
+              className={`${iconButton} text-muted`}
             >
               <ArrowLeft aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
             </Link>
@@ -82,7 +93,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               <Link
                 key={href}
                 href={href}
-                aria-current={isActive(href) ? "page" : undefined}
+                aria-current={currentNavigation(href)}
                 className={`inline-flex min-h-11 items-center gap-2 rounded-2xl px-3 text-[16px] font-medium leading-6 transition-colors duration-150 ${
                   isActive(href)
                     ? "bg-card text-fg"
@@ -106,7 +117,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-muted transition-colors duration-150 hover:bg-card-hover hover:text-fg"
+              className={`${iconButton} text-muted`}
               aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
               aria-pressed={theme === "dark"}
               title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
@@ -134,9 +145,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
             <Link
               key={href}
               href={href}
-              aria-current={isActive(href) ? "page" : undefined}
+              aria-current={currentNavigation(href)}
               className={`relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
-                isActive(href) ? "text-accent-text" : "text-muted"
+                isActive(href)
+                  ? "bg-card text-accent-text"
+                  : "text-muted hover:bg-card"
               }`}
             >
               <span className="relative">

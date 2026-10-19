@@ -8,16 +8,19 @@ type ProgressBarProps = {
   onCard?: boolean;
 };
 
+/** An accessible progress indicator that keeps its value within the declared range. */
 export function ProgressBar({ label, completed, total, color, onCard = false }: ProgressBarProps) {
-  const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const max = Math.max(0, total);
+  const value = Math.max(0, Math.min(completed, max));
+  const percent = max === 0 ? 0 : Math.round((value / max) * 100);
 
   return (
     <div
       role="progressbar"
       aria-label={label}
       aria-valuemin={0}
-      aria-valuemax={total}
-      aria-valuenow={completed}
+      aria-valuemax={max}
+      aria-valuenow={value}
       className={`h-1.5 w-full overflow-hidden rounded-full ${onCard ? "bg-bg" : "bg-card-hover"}`}
     >
       <div
