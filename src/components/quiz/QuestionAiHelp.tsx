@@ -30,6 +30,8 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
   const [explainError, setExplainError] = useState<string | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
   const isMounted = useRef(true);
+  const isGradingRef = useRef(false);
+  const isExplainingRef = useRef(false);
 
   useEffect(() => {
     isMounted.current = true;
@@ -51,6 +53,7 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
   };
 
   const handleGrade = async () => {
+    if (isGradingRef.current) return;
     const answerText = typeof answer === "string" ? answer.trim() : "";
 
     if (question.type !== "essay") return;
@@ -64,6 +67,7 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
 
     if (!provider) return;
 
+    isGradingRef.current = true;
     setIsGrading(true);
     setGradeError(null);
 
@@ -79,15 +83,18 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
     } catch (error) {
       if (isMounted.current) setGradeError(describeError(error));
     } finally {
+      isGradingRef.current = false;
       if (isMounted.current) setIsGrading(false);
     }
   };
 
   const handleExplain = async () => {
+    if (isExplainingRef.current) return;
     const provider = getReadyProvider("requesting an explanation", setExplainError);
 
     if (!provider) return;
 
+    isExplainingRef.current = true;
     setIsExplaining(true);
     setExplainError(null);
 
@@ -98,6 +105,7 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
     } catch (error) {
       if (isMounted.current) setExplainError(describeError(error));
     } finally {
+      isExplainingRef.current = false;
       if (isMounted.current) setIsExplaining(false);
     }
   };
@@ -124,7 +132,7 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
               <p className="mt-1 text-[16px] font-medium leading-6 text-fg tabular-nums">
                 {grade.score}/10 · missing points: {grade.missingPoints}
               </p>
-              <p className="mt-1 wrap-break-word text-[16px] leading-6 text-muted">{grade.feedback}</p>
+              <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[16px] leading-6 text-muted">{grade.feedback}</p>
             </div>
           ) : null}
         </>

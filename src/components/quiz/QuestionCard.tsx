@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Ref } from "react";
 import { Check, X } from "lucide-react";
 import { buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import type { Question } from "@/types/study";
@@ -11,6 +11,7 @@ type QuestionCardProps = {
   /** `undefined` until the learner has answered, then whether the answer was correct. */
   result: boolean | undefined;
   onAnswer: (correct: boolean) => void;
+  questionHeadingRef?: Ref<HTMLHeadingElement>;
 };
 
 const chipClassName = "rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px]";
@@ -24,14 +25,14 @@ function capitalize(value: string): string {
  * are written, compared with the reference answer, then marked right or wrong by the learner.
  * Render it with `key={question.id}` so its state starts fresh for each question.
  */
-export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) {
+export function QuestionCard({ question, result, onAnswer, questionHeadingRef }: QuestionCardProps) {
   const [selected, setSelected] = useState<number | null>(null);
   const [essayText, setEssayText] = useState("");
   const [isRevealed, setIsRevealed] = useState(false);
   const isAnswered = result !== undefined;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-[80ch] flex-col gap-4">
       <div className="rounded-2xl bg-card p-4">
         <div className="flex flex-wrap gap-2">
           <span
@@ -41,12 +42,18 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
           </span>
           <span className={`${chipClassName} bg-bg text-muted`}>{capitalize(question.difficulty)}</span>
           {question.tags.map((tag) => (
-            <span key={tag} className={`${chipClassName} bg-bg text-muted`}>
+            <span key={tag} className={`min-w-0 max-w-full wrap-break-word ${chipClassName} bg-bg text-muted`}>
               {tag}
             </span>
           ))}
         </div>
-        <p className="mt-3 wrap-break-word text-[18px] font-medium leading-7 text-fg">{question.text}</p>
+        <h2
+          ref={questionHeadingRef}
+          tabIndex={-1}
+          className="mt-3 whitespace-pre-wrap wrap-break-word text-[18px] font-medium leading-7 text-fg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-card"
+        >
+          {question.text}
+        </h2>
       </div>
 
       {question.type === "mcq" ? (
@@ -60,14 +67,15 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
               <button
                 key={optionIndex}
                 type="button"
-                aria-disabled={isAnswered}
+                aria-pressed={isChosen}
+                disabled={isAnswered}
                 onClick={() => {
                   if (isAnswered) return;
 
                   setSelected(optionIndex);
                   onAnswer(optionIndex === question.answerIndex);
                 }}
-                className={`flex min-h-12 w-full items-center gap-3 rounded-[14px] border border-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 ${
+                className={`flex min-h-12 w-full items-start gap-3 rounded-[14px] border border-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
                   isRight
                     ? "bg-ok-bg text-ok-fg"
                     : isWrong
@@ -79,20 +87,20 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
               >
                 <span
                   aria-hidden="true"
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-bg text-[13px] font-medium text-muted"
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-bg text-[13px] font-medium text-muted"
                 >
                   {String.fromCharCode(65 + optionIndex)}
                 </span>
-                <span className="min-w-0 flex-1 wrap-break-word">{option}</span>
+                <span className="min-w-0 flex-1 whitespace-pre-wrap wrap-break-word">{option}</span>
                 {isRight ? (
                   <>
-                    <Check aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+                    <Check aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.5} />
                     <span className="sr-only">Correct answer</span>
                   </>
                 ) : null}
                 {isWrong ? (
                   <>
-                    <X aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+                    <X aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.5} />
                     <span className="sr-only">Your answer, wrong</span>
                   </>
                 ) : null}
@@ -139,14 +147,14 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
                     <button
                       type="button"
                       onClick={() => onAnswer(true)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-[16px] font-medium text-ok-fg transition duration-150 ease-out active:scale-[0.98]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-[16px] font-medium text-ok-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     >
                       <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it right
                     </button>
                     <button
                       type="button"
                       onClick={() => onAnswer(false)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-[16px] font-medium text-bad-fg transition duration-150 ease-out active:scale-[0.98]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-[16px] font-medium text-bad-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     >
                       <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it wrong
                     </button>
@@ -169,6 +177,14 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
           )}
         </div>
       )}
+
+      {isAnswered && question.type === "mcq" ? (
+        <p role="status" className="sr-only">
+          {result
+            ? "Correct."
+            : `Incorrect. The correct answer is ${question.options[question.answerIndex]}.`}
+        </p>
+      ) : null}
 
       {isAnswered ? (
         <QuestionAiHelp question={question} answer={question.type === "mcq" ? (selected ?? undefined) : essayText} isAnswered />

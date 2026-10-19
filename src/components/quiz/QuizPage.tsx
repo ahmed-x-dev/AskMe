@@ -15,7 +15,15 @@ import { QuizSetup } from "./QuizSetup";
 type Phase =
   | { name: "setup" }
   | { name: "running"; queue: Question[]; runId: number }
-  | { name: "results"; queue: Question[]; answers: QuizAnswer[]; elapsedSeconds: number; markedDone: Topic[] };
+  | {
+      name: "results";
+      queue: Question[];
+      answers: QuizAnswer[];
+      elapsedSeconds: number;
+      markedDone: Topic[];
+      historyErrors: string[];
+      completionError?: string;
+    };
 
 /** A quiz for one topic, a whole roadmap, or one group of a roadmap. */
 export function QuizPage({ scope }: { scope: QuizScope }) {
@@ -69,16 +77,23 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 
   const start = (queue: Question[]) => setPhase({ name: "running", queue, runId: Date.now() });
 
-  const handleFinish = async (queue: Question[], answers: QuizAnswer[], elapsedSeconds: number) => {
+  const handleFinish = async (
+    queue: Question[],
+    answers: QuizAnswer[],
+    elapsedSeconds: number,
+    historyErrors: string[],
+  ) => {
     let markedDone: Topic[] = [];
+    let completionError: string | undefined;
 
     try {
       markedDone = await completeTopicsFromQuiz(answers);
-    } catch {
-      // The answers are already saved. Failing to mark topics done should not hide the score.
+    } catch (error) {
+      completionError =
+        error instanceof Error ? error.message : "Try again later from the topic page.";
     }
 
-    setPhase({ name: "results", queue, answers, elapsedSeconds, markedDone });
+    setPhase({ name: "results", queue, answers, elapsedSeconds, markedDone, historyErrors, completionError });
   };
 
   if (phase.name === "running") {
@@ -87,7 +102,9 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
         key={phase.runId}
         queue={phase.queue}
         exitHref={source.backHref}
-        onFinish={(answers, elapsedSeconds) => handleFinish(phase.queue, answers, elapsedSeconds)}
+        onFinish={(answers, elapsedSeconds, historyErrors) =>
+          handleFinish(phase.queue, answers, elapsedSeconds, historyErrors)
+        }
       />
     );
   }
@@ -101,6 +118,8 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
         answers={phase.answers}
         elapsedSeconds={phase.elapsedSeconds}
         markedDone={phase.markedDone}
+        historyErrors={phase.historyErrors}
+        completionError={phase.completionError}
         backHref={source.backHref}
         backLabel={source.backLabel}
         onRestart={() => start(shuffle(phase.queue))}

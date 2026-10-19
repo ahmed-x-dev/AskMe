@@ -15,7 +15,13 @@ import type { Question } from "@/types/study";
 type Phase =
   | { name: "setup" }
   | { name: "running"; queue: Question[]; runId: number }
-  | { name: "results"; queue: Question[]; answers: QuizAnswer[]; elapsedSeconds: number };
+  | {
+      name: "results";
+      queue: Question[];
+      answers: QuizAnswer[];
+      elapsedSeconds: number;
+      historyErrors: string[];
+    };
 
 /** Builds one session from the due cards (oldest first), mixed up so topics do not come in blocks. */
 function buildSession(summary: DueSummary): Question[] {
@@ -35,8 +41,8 @@ export function ReviewPage() {
         key={phase.runId}
         queue={phase.queue}
         exitHref="/"
-        onFinish={async (answers, elapsedSeconds) =>
-          setPhase({ name: "results", queue: phase.queue, answers, elapsedSeconds })
+        onFinish={async (answers, elapsedSeconds, historyErrors) =>
+          setPhase({ name: "results", queue: phase.queue, answers, elapsedSeconds, historyErrors })
         }
       />
     );
@@ -53,6 +59,7 @@ export function ReviewPage() {
         queue={phase.queue}
         answers={phase.answers}
         elapsedSeconds={phase.elapsedSeconds}
+        historyErrors={phase.historyErrors}
         backHref="/"
         backLabel="Back to roadmaps"
         onRestart={
@@ -106,8 +113,14 @@ export function ReviewPage() {
           <div>
             <p className="text-[40px] font-medium leading-[44px] text-accent-text tabular-nums">{summary.total}</p>
             <p className="text-[16px] leading-6 text-muted">{plural(summary.total, "question")} due today</p>
+            <p className="mt-1 text-[13px] leading-[18px] text-muted">
+              {sessionSize < summary.total
+                ? `This session covers ${sessionSize} questions, starting with the ones due longest.`
+                : "Your session includes every question due today."}
+            </p>
           </div>
 
+          <h2 className="text-[16px] font-medium leading-6 text-fg">Due by roadmap</h2>
           <ul className="flex flex-col gap-2">
             {summary.byRoadmap.map(({ roadmap, count }) => (
               <li
@@ -115,7 +128,7 @@ export function ReviewPage() {
                 className="flex items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-3 text-[16px] leading-6 text-fg"
               >
                 <span className="min-w-0 wrap-break-word">{roadmap.title}</span>
-                <span className="shrink-0 text-muted tabular-nums">{count}</span>
+                <span className="shrink-0 text-muted tabular-nums">{plural(count, "question")}</span>
               </li>
             ))}
           </ul>

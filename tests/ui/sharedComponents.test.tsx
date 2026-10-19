@@ -246,6 +246,18 @@ describe("shared feedback and choice controls", () => {
     expect(retry).toHaveBeenCalledOnce()
     expect(create).toHaveBeenCalledOnce()
   })
+
+  it("disables an error recovery action while its retry is running", () => {
+    render(
+      <ErrorMessage actionLabel="Retry saving" actionDisabled onAction={vi.fn()}>
+        Saving failed.
+      </ErrorMessage>,
+    )
+
+    const retry = button("Retry saving")!
+    expect(retry.disabled).toBe(true)
+    expect(retry.getAttribute("aria-busy")).toBe("true")
+  })
 })
 
 describe("dialog submission states", () => {

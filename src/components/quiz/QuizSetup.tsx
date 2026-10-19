@@ -44,8 +44,9 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
     onlyIds: mistakesOnly ? mistakeIds : undefined,
   };
   const matching = filterQuestions(source.questions, filters).length;
-  const limitChoices = LIMIT_CHOICES.filter((choice) => choice < matching);
+  const limitChoices = LIMIT_CHOICES.filter((choice) => choice <= matching);
   const effectiveLimit = limit !== "all" && limit < matching ? limit : matching;
+  const selectedLimit = limit !== "all" && limit < matching ? String(limit) : "all";
 
   return (
     <section className="mx-auto flex w-full flex-col gap-6">
@@ -65,61 +66,92 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
         </div>
       </header>
 
-      <div className="flex flex-col gap-6 rounded-2xl bg-card p-4">
-        <h2 className="text-[18px] font-medium leading-[26px] text-fg">Set up your quiz</h2>
-
-        <SegmentedControl label="Question type" value={questionType} options={TYPE_OPTIONS} onChange={setQuestionType} onCard />
-        <SegmentedControl label="Difficulty" value={difficulty} options={DIFFICULTY_OPTIONS} onChange={setDifficulty} onCard />
-
-        {source.mistakeIds.length > 0 ? (
-          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg">
-            <input
-              type="checkbox"
-              checked={mistakesOnly}
-              onChange={(event) => setMistakesOnly(event.target.checked)}
-              className="h-5 w-5 shrink-0 accent-(--accent)"
-            />
-            <span>
-              Only questions I got wrong last time{" "}
-              <span className="text-muted tabular-nums">({source.mistakeIds.length})</span>
-            </span>
-          </label>
-        ) : (
-          <p className="text-[13px] leading-[18px] text-muted">
-            Questions you get wrong will appear here for a mistakes-only quiz.
+      <div className="flex flex-col gap-6 rounded-2xl bg-card p-4 sm:p-6">
+        <div>
+          <h2 className="text-[18px] font-medium leading-[26px] text-fg">Set up your quiz</h2>
+          <p className="mt-1 text-[13px] leading-[18px] text-muted">
+            Choose what to practice. You can change these settings next time.
           </p>
-        )}
+        </div>
 
-        <label className="flex flex-col gap-2 text-[13px] font-medium leading-[18px] text-muted">
-          Number of questions
-          <select
-            value={limit === "all" ? "all" : String(limit)}
-            onChange={(event) => setLimit(event.target.value === "all" ? "all" : Number(event.target.value))}
-            className={`font-normal ${fieldOnCardClassName}`}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section aria-labelledby="quiz-question-selection" className="flex min-w-0 flex-col gap-5">
+            <h3 id="quiz-question-selection" className="text-[16px] font-medium leading-6 text-fg">
+              Question selection
+            </h3>
+            <SegmentedControl
+              label="Question type"
+              value={questionType}
+              options={TYPE_OPTIONS}
+              onChange={setQuestionType}
+              onCard
+            />
+            <SegmentedControl
+              label="Difficulty"
+              value={difficulty}
+              options={DIFFICULTY_OPTIONS}
+              onChange={setDifficulty}
+              onCard
+            />
+          </section>
+
+          <section aria-labelledby="quiz-practice-scope" className="flex min-w-0 flex-col gap-4">
+            <h3 id="quiz-practice-scope" className="text-[16px] font-medium leading-6 text-fg">
+              Practice scope
+            </h3>
+            {source.mistakeIds.length > 0 ? (
+              <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg">
+                <input
+                  type="checkbox"
+                  checked={mistakesOnly}
+                  onChange={(event) => setMistakesOnly(event.target.checked)}
+                  className="h-5 w-5 shrink-0 accent-(--accent)"
+                />
+                <span>
+                  Only questions I got wrong last time{" "}
+                  <span className="text-muted tabular-nums">({source.mistakeIds.length})</span>
+                </span>
+              </label>
+            ) : (
+              <p className="text-[13px] leading-[18px] text-muted">
+                Questions you get wrong will appear here for a mistakes-only quiz.
+              </p>
+            )}
+
+            <label className="flex flex-col gap-2 text-[13px] font-medium leading-[18px] text-muted">
+              Number of questions
+              <select
+                value={selectedLimit}
+                onChange={(event) => setLimit(event.target.value === "all" ? "all" : Number(event.target.value))}
+                className={`font-normal ${fieldOnCardClassName}`}
+              >
+                <option value="all">All matching ({matching})</option>
+                {limitChoices.map((choice) => (
+                  <option key={choice} value={choice}>
+                    {choice}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <p role="status" className="text-[13px] leading-[18px] text-muted">
+            {matching === 0
+              ? "No questions match these choices. Pick another type or difficulty."
+              : `${plural(effectiveLimit, "question")} selected for this quiz.`}
+          </p>
+          <button
+            type="button"
+            disabled={matching === 0}
+            onClick={() => onStart(buildQuizQueue(source.questions, { ...filters, limit: effectiveLimit }))}
+            className={`${buttonPrimary} w-full sm:w-auto`}
           >
-            <option value="all">All matching ({matching})</option>
-            {limitChoices.map((choice) => (
-              <option key={choice} value={choice}>
-                {choice}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <p role="status" className="text-[13px] leading-[18px] text-muted">
-          {matching === 0
-            ? "No questions match these choices. Pick another type or difficulty."
-            : `This quiz will ask ${plural(effectiveLimit, "question")}.`}
-        </p>
-
-        <button
-          type="button"
-          disabled={matching === 0}
-          onClick={() => onStart(buildQuizQueue(source.questions, { ...filters, limit: effectiveLimit }))}
-          className={buttonPrimary}
-        >
-          Start quiz
-        </button>
+            Start quiz
+            {matching > 0 ? ` · ${effectiveLimit}` : ""}
+          </button>
+        </div>
       </div>
     </section>
   );

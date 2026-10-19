@@ -54,6 +54,9 @@ describe('ReviewPage', () => {
     await act(async () => { root.render(<ReviewPage />) })
     await wait()
     expect(container.textContent).toContain('2 questions due today')
+    expect(container.textContent).toContain('Your session includes every question due today.')
+    expect(container.textContent).toContain('Due by roadmap')
+    expect(container.textContent).toContain('2 questions')
     expect(container.textContent).toContain('React')
 
     await click(button('Start review (2)'))
@@ -73,5 +76,32 @@ describe('ReviewPage', () => {
     expect(reviews.every((review) => review.due > new Date().toISOString())).toBe(true) // none is due any more
     expect(button('Review more')).toBeUndefined()
     expect(button('Retry 1 mistake')).toBeDefined()
+  })
+
+  it('explains when the session is capped below the due backlog', async () => {
+    const roadmap = await createRoadmap({ title: 'History' })
+    const topic = await createTopic({ roadmapId: roadmap.id, title: 'Ancient Rome' })
+    const questions = []
+    for (let index = 0; index < 21; index += 1) {
+      questions.push(await addQuestion(topic.id, mcq(`Question ${index + 1}`)))
+    }
+    await db.reviews.bulkAdd(
+      questions.map((question, index) => ({
+        questionId: question.id,
+        topicId: topic.id,
+        ease: 2.5,
+        interval: 1,
+        due: `2020-01-${String(index + 1).padStart(2, '0')}T00:00:00.000Z`,
+        lapses: 0,
+      })),
+    )
+
+    await act(async () => { root.render(<ReviewPage />) })
+    await wait()
+
+    expect(container.textContent).toContain('21 questions due today')
+    expect(container.textContent).toContain('This session covers 20 questions')
+    await click(button('Start review (20)'))
+    expect(container.textContent).toContain('Question 1 of 20')
   })
 })

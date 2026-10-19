@@ -374,9 +374,15 @@ Layout per screen:
 - Every screen keeps the header actions visible and reachable; on phones the primary action may sit in a sticky footer.
 
 Quiz-flow rules:
-- The question text and the options must fit on one phone screen without scrolling for typical questions.
+- Keep one question visually dominant. Use a clear question number, a compact elapsed timer, and a labeled progress count; avoid unrelated page actions while answering.
+- Question text and options use readable body typography and an 80ch reading measure, wrap long words and URLs, and preserve meaningful line breaks. Longer content may scroll; never shrink text or clip answers to force everything onto one phone screen. Current question records are text-only; do not imply embedded-image support.
+- Every answer, self-assessment, AI-help, and navigation control has a visible keyboard focus. After answering, disable MCQ choices and visibly identify the correct answer and the learner's wrong choice.
+- Keep the active quiz calm: use only subtle state feedback, no decorative animation or attention-grabbing effects.
 - Essay answers can be written before revealing the reference answer; after reveal, the learner marks the response right or wrong before continuing.
 - A mode card is shown but explains itself when it has 0 questions.
+- Show finish and exit actions distinctly. Confirm exiting a running quiz and explain that the session score is discarded while attempts already recorded remain in review history.
+- Results summarize correct answers, score, time, topic completion, and missed questions. Make retry mistakes the leading action when there are mistakes and keep restart/back actions available as appropriate.
+- The review page puts the due count, roadmap breakdown, session size, and start action in one clear hierarchy. Explain when a capped session will leave due questions for later.
 
 ## 7. Motion
 

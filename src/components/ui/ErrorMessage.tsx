@@ -10,6 +10,8 @@ type ErrorMessageProps = {
   id?: string;
   /** Optional recovery action displayed with a page-level error. */
   actionLabel?: string;
+  /** Disables a recovery action while its retry is running. */
+  actionDisabled?: boolean;
   onAction?: () => void;
 };
 
@@ -19,6 +21,7 @@ export function ErrorMessage({
   variant = "banner",
   id,
   actionLabel,
+  actionDisabled = false,
   onAction,
 }: ErrorMessageProps) {
   if (variant === "inline") {
@@ -39,7 +42,13 @@ export function ErrorMessage({
       <CircleAlert aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
       <span className="min-w-0 flex-1 wrap-break-word">{children}</span>
       {actionLabel && onAction ? (
-        <button type="button" onClick={onAction} className={buttonSecondaryCompact}>
+        <button
+          type="button"
+          onClick={onAction}
+          disabled={actionDisabled}
+          aria-busy={actionDisabled || undefined}
+          className={buttonSecondaryCompact}
+        >
           {actionLabel}
         </button>
       ) : null}
