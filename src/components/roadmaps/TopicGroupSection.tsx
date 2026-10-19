@@ -6,6 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight, Pencil, Play, Trash2 } from "lucide-react";
 import { ActionMenu, type ActionMenuItem } from "@/components/ui/ActionMenu";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { iconButton, buttonSecondaryCompact } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import { getProgress, type TopicSection } from "@/lib/data";
 import type { Group } from "@/types/study";
@@ -72,7 +73,9 @@ export function TopicGroupSection({
     <section
       ref={setNodeRef}
       aria-label={heading}
-      className={`flex flex-col gap-3 rounded-2xl ${isFlat ? "" : "bg-bg p-1"} ${isOver ? "ring-2 ring-accent" : ""}`}
+      className={`flex flex-col gap-3 rounded-2xl ${isFlat ? "" : "bg-bg p-1"} ${
+        !isFlat && !isFirst ? "border-t border-line pt-4" : ""
+      } ${isOver ? "ring-2 ring-accent" : ""}`}
     >
       {isFlat ? null : (
         <header className="flex items-center gap-2">
@@ -82,7 +85,7 @@ export function TopicGroupSection({
               onClick={() => onToggleCollapsed(group.id)}
               aria-expanded={!isCollapsed}
               aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${group.title}`}
-              className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-fg transition-colors hover:bg-card-hover"
+              className={iconButton}
             >
               {isCollapsed ? (
                 <ChevronRight aria-hidden="true" className="h-5 w-5 rtl:rotate-180" strokeWidth={1.5} />
@@ -104,7 +107,7 @@ export function TopicGroupSection({
           {group && groupQuestionCount > 0 ? (
             <Link
               href={`/roadmap/${roadmapId}/quiz?group=${group.id}`}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[13px] font-medium leading-[18px] text-fg transition-colors hover:bg-card-hover"
+              className={buttonSecondaryCompact}
             >
               <Play aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
               Quiz group

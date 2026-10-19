@@ -33,7 +33,7 @@ export function Modal({ titleId, isBusy = false, onClose, children }: ModalProps
       onClick={(event) => {
         if (event.target === dialogRef.current && !isBusy) onClose();
       }}
-      className="m-auto w-[min(28rem,calc(100%-2rem))] rounded-2xl bg-card p-0 text-fg backdrop:bg-overlay"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(30rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card p-0 text-fg backdrop:bg-overlay"
     >
       {children}
     </dialog>

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Ellipsis, type LucideIcon } from "lucide-react";
+import { menuSurface } from "./styles";
 
 export type ActionMenuItem = {
   label: string;
@@ -53,9 +54,10 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         aria-label={label}
+        aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={menuId}
-        className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-bg text-fg transition-colors hover:bg-card-hover"
+        className="flex h-11 w-11 items-center justify-center rounded-[14px] text-muted transition-colors duration-150 hover:bg-card-hover hover:text-fg"
       >
         <Ellipsis aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </button>
@@ -63,7 +65,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
       {isOpen ? (
         <div
           id={menuId}
-          className="absolute inset-e-0 top-full z-50 mt-2 flex w-48 flex-col gap-1 rounded-2xl bg-bg p-2 ring-1 ring-card-hover"
+          className={`absolute inset-e-0 top-full z-50 mt-2 w-48 max-w-[calc(100vw-2rem)] ${menuSurface}`}
         >
           {items.map(({ label: itemLabel, icon: Icon, onSelect, danger, disabled }) => (
             <button
@@ -74,7 +76,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
                 setIsOpen(false);
                 onSelect();
               }}
-              className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] transition-colors ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
+              className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
             >
               <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               {itemLabel}

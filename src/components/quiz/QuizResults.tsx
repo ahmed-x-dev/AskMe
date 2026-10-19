@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Check, X } from "lucide-react";
+import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
 import { formatElapsedTime, PASS_MARK } from "@/features/quiz";
 import type { QuizAnswer } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -66,7 +67,7 @@ export function QuizResults({
 
       {missed.length > 0 ? (
         <div className="flex flex-col gap-3">
-          <h2 className="text-[18px] font-medium leading-7 text-fg">Missed ({missed.length})</h2>
+          <h2 className="text-[18px] font-medium leading-[26px] text-fg">Missed ({missed.length})</h2>
           <ul className="flex flex-col gap-2">
             {missed.map((question) => (
               <li key={question.id} className="flex items-start gap-3 rounded-2xl bg-card p-3 text-[16px] leading-6 text-fg">
@@ -88,7 +89,7 @@ export function QuizResults({
           <button
             type="button"
             onClick={onRestart}
-            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={`flex-1 ${buttonPrimary}`}
           >
             {restartLabel}
           </button>
@@ -97,14 +98,14 @@ export function QuizResults({
           <button
             type="button"
             onClick={onRetryMistakes}
-            className="min-h-12 flex-1 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+            className={`flex-1 ${buttonSecondary}`}
           >
             Retry {plural(missed.length, "mistake")}
           </button>
         ) : null}
         <Link
           href={backHref}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+          className={`flex-1 ${buttonSecondary}`}
         >
           {backLabel}
         </Link>

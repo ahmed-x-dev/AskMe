@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, CircleAlert } from "lucide-react";
 import { Markdown } from "@/components/ui/Markdown";
+import { fieldClassName } from "@/components/ui/styles";
 import { updateTopic } from "@/lib/data";
 
 type NotesSectionProps = {
@@ -61,19 +62,21 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
   return (
     <section aria-labelledby="notes-heading" className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="notes-heading" className="text-[22px] font-medium leading-7 text-fg">
+        <h2 id="notes-heading" className="text-[16px] font-medium leading-6 text-fg">
           Notes
         </h2>
 
-        <div role="group" aria-label="Notes view" className="flex rounded-[14px] bg-card p-[3px]">
+        <div role="group" aria-label="Notes view" className="flex gap-1 rounded-[14px] bg-card p-[3px]">
           {(["edit", "preview"] as const).map((value) => (
             <button
               key={value}
               type="button"
               onClick={() => setMode(value)}
               aria-pressed={mode === value}
-              className={`min-h-11 rounded-[11px] px-4 text-[16px] font-medium transition-colors ${
-                mode === value ? "bg-accent text-on-accent" : "text-muted"
+              className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+                mode === value
+                  ? "bg-accent text-on-accent"
+                  : "text-muted hover:bg-card-hover hover:text-fg"
               }`}
             >
               {value === "edit" ? "Edit" : "Preview"}
@@ -92,7 +95,7 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
           rows={8}
           aria-label="Notes (Markdown)"
           placeholder="Write notes in Markdown: # headings, **bold**, - lists, `code`…"
-          className="min-h-48 w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+          className={`min-h-48 resize-y py-3 ${fieldClassName}`}
         />
       ) : (
         <div className="min-h-24 rounded-2xl bg-card p-4">

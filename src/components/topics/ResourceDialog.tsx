@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
+import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
 import { withHttps } from "@/lib/format";
 import type { Resource, ResourceKind } from "@/types/study";
 import { RESOURCE_KINDS } from "./resourceKinds";
@@ -19,7 +20,7 @@ type ResourceDialogProps = {
   onClose: () => void;
 };
 
-const fieldClassName = "min-h-12 rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg placeholder:text-muted";
+const fieldClassName = `${fieldOnCardClassName} font-normal`;
 
 /** Edits the title, link and kind of one resource. */
 export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogProps) {
@@ -90,13 +91,12 @@ export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogPr
 
         {error ? <ErrorMessage>{error}</ErrorMessage> : null}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            data-plain
             onClick={onClose}
             disabled={isSaving}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             Cancel
           </button>
@@ -104,7 +104,7 @@ export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogPr
             type="submit"
             disabled={isSaving}
             aria-busy={isSaving}
-            className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonPrimary}
           >
             {isSaving ? "Saving…" : "Save"}
           </button>

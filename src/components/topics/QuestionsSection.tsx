@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight, CircleHelp, Play, Plus, Sparkles } from "lucide-react";
+import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import type { Question } from "@/types/study";
 import { GenerateQuestionsDialog, type GenerationContext } from "./GenerateQuestionsDialog";
@@ -19,9 +20,6 @@ type QuestionsSectionProps = {
   topicContext: Pick<GenerationContext, "topicTitle" | "roadmapTitle" | "groupTitle" | "notes">;
 };
 
-const secondaryButtonClassName =
-  "inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover";
-
 /** The questions of one topic, each linking to the editor, plus the "Add question" button. */
 export function QuestionsSection({ topicId, questions, topicContext }: QuestionsSectionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -30,7 +28,7 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
     <section aria-labelledby="questions-heading" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="questions-heading" className="text-[22px] font-medium leading-7 text-fg">
+          <h2 id="questions-heading" className="text-[16px] font-medium leading-6 text-fg">
             Questions
           </h2>
           <p className="text-[13px] leading-[18px] text-muted tabular-nums">
@@ -40,11 +38,11 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
 
         {questions.length > 0 ? (
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => setIsGenerating(true)} className={secondaryButtonClassName}>
+            <button type="button" onClick={() => setIsGenerating(true)} className={buttonSecondary}>
               <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Generate with AI
             </button>
-            <Link href={`/topic/${topicId}/q/new`} className={secondaryButtonClassName}>
+            <Link href={`/topic/${topicId}/q/new`} className={buttonSecondary}>
               <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Add question
             </Link>
@@ -55,7 +53,7 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
       {questions.length > 0 ? (
         <Link
           href={`/topic/${topicId}/quiz`}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          className={buttonPrimary}
         >
           <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           Start quiz · {plural(questions.length, "question")}
@@ -74,12 +72,12 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               href={`/topic/${topicId}/q/new`}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className={buttonPrimary}
             >
               <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Add question
             </Link>
-            <button type="button" onClick={() => setIsGenerating(true)} className={secondaryButtonClassName}>
+            <button type="button" onClick={() => setIsGenerating(true)} className={buttonSecondary}>
               <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Generate with AI
             </button>
@@ -94,7 +92,7 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
               <li key={question.id}>
                 <Link
                   href={`/topic/${topicId}/q/${question.id}`}
-                  className="flex items-center gap-3 rounded-2xl bg-card p-3 transition-colors hover:bg-card-hover"
+                  className="flex items-center gap-3 rounded-2xl bg-card p-3 transition-colors duration-150 hover:bg-card-hover"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 wrap-break-word text-[16px] leading-6 text-fg">

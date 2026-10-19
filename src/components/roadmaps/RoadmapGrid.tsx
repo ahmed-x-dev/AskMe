@@ -14,6 +14,8 @@ import { BackupReminder } from "@/components/backup/BackupReminder";
 import { ImportRoadmapButton } from "@/components/backup/ImportRoadmapButton";
 import { TodayCard } from "@/components/progress/TodayCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
 import { downloadRoadmap } from "@/lib/backupActions";
 import { RoadmapCard } from "./RoadmapCard";
 import { RoadmapDialog, type RoadmapFormValues } from "./RoadmapDialog";
@@ -70,16 +72,18 @@ export function RoadmapGrid() {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-[28px] font-medium leading-9 text-fg">Roadmaps</h1>
-          <p className="text-[16px] leading-6 text-muted">
+          <h1 className="text-[clamp(1.75rem,3.5vw,2.125rem)] font-medium leading-tight text-fg">
+            Roadmaps
+          </h1>
+          <p className="mt-1 text-[16px] leading-6 text-muted">
             Pick a subject to study, review and test yourself.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ImportRoadmapButton
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover disabled:opacity-50"
+            className={buttonSecondary}
             onImported={() => setActionError(null)}
             onError={setActionError}
           >
@@ -89,7 +93,7 @@ export function RoadmapGrid() {
             <button
               type="button"
               onClick={() => setDialog({ mode: "create" })}
-              className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className={buttonPrimary}
             >
               <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               <span className="hidden sm:inline">New roadmap</span>
@@ -106,14 +110,14 @@ export function RoadmapGrid() {
         </>
       ) : null}
 
-      {actionError ? (
-        <p role="alert" className="rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg">
-          {actionError}
-        </p>
-      ) : null}
+      {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
       {overviews === undefined ? (
-        <div aria-busy="true" aria-label="Loading roadmaps" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          aria-busy="true"
+          aria-label="Loading roadmaps"
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+        >
           {[0, 1, 2].map((index) => (
             <div key={index} className="h-40 animate-pulse rounded-2xl bg-card" />
           ))}
@@ -126,7 +130,7 @@ export function RoadmapGrid() {
           onAction={() => setDialog({ mode: "create" })}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {overviews.map((overview) => (
             <RoadmapCard
               key={overview.roadmap.id}
@@ -139,7 +143,7 @@ export function RoadmapGrid() {
           <button
             type="button"
             onClick={() => setDialog({ mode: "create" })}
-            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-card-hover bg-bg text-muted transition-colors hover:bg-card hover:text-fg"
+            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg"
           >
             <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
             <span className="text-[16px] font-medium">New roadmap</span>

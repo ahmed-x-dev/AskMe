@@ -18,7 +18,7 @@ export function ProgressBar({ label, completed, total, color, onCard = false }: 
       aria-valuemin={0}
       aria-valuemax={total}
       aria-valuenow={completed}
-      className={`h-1.5 w-full overflow-hidden rounded-full ${onCard ? "bg-bg" : "bg-card"}`}
+      className={`h-1.5 w-full overflow-hidden rounded-full ${onCard ? "bg-bg" : "bg-card-hover"}`}
     >
       <div
         className="h-full rounded-full transition-[width] duration-200 ease-out"

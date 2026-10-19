@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
 import { formatElapsedTime } from "@/features/quiz";
 import { recordAttempt, type QuizAnswer } from "@/lib/data";
 import type { Question } from "@/types/study";
@@ -106,14 +107,14 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
             onClick={() => void handleNext()}
             disabled={isFinishing}
             aria-busy={isFinishing}
-            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={`flex-1 ${buttonPrimary}`}
           >
             {isFinishing ? "Finishing…" : isLast ? "Finish" : "Next"}
           </button>
         ) : null}
         <Link
           href={exitHref}
-          className="inline-flex min-h-12 flex-1 items-center justify-center rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+          className={`flex-1 ${buttonSecondary}`}
         >
           Exit quiz
         </Link>

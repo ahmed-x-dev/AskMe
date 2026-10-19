@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Download, TriangleAlert, Upload } from "lucide-react";
 import { ImportRoadmapButton } from "@/components/backup/ImportRoadmapButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { buttonDestructive, buttonPrimary, buttonSecondaryOnCard } from "@/components/ui/styles";
 import { downloadBackup } from "@/lib/backupActions";
 import { resetAllData, restoreBackup } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -12,9 +13,6 @@ import { readBackupArchive, type BackupContents } from "@/lib/libraryArchive";
 import { clearBackupState, useBackupState } from "@/platform/backupStorage";
 
 type Status = { kind: "success" | "error"; message: string; href?: string };
-
-const secondaryButton =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-bg px-4 text-[16px] font-medium text-fg ring-1 ring-card-hover transition-colors hover:bg-card-hover disabled:opacity-50";
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -68,12 +66,11 @@ export function DataSection() {
     : "";
 
   return (
-    <section aria-labelledby="data-heading" className="w-full rounded-2xl bg-card p-5">
-      <p className="text-[13px] leading-[18px] text-muted">Settings</p>
-      <h2 id="data-heading" className="mt-1 text-[22px] font-medium leading-[28px] text-fg">
+    <section aria-labelledby="data-heading" className="w-full rounded-2xl bg-card p-4">
+      <h2 id="data-heading" className="text-[18px] font-medium leading-[26px] text-fg">
         Your data
       </h2>
-      <p className="mt-4 text-[16px] leading-6 text-muted">
+      <p className="mt-2 text-[16px] leading-6 text-muted">
         Everything is stored in this browser only. Browsers can clear it, so download a backup now and then. Backups
         never contain your AI key.
       </p>
@@ -89,7 +86,7 @@ export function DataSection() {
           onClick={() => void handleBackup()}
           disabled={isBackingUp}
           aria-busy={isBackingUp}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+          className={buttonPrimary}
         >
           <Download aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           {isBackingUp ? "Preparing…" : "Download backup"}
@@ -102,7 +99,7 @@ export function DataSection() {
           data-testid="restore-input"
           onChange={(event) => void handleRestoreFile(event.target.files?.[0])}
         />
-        <button type="button" onClick={() => restoreInputRef.current?.click()} className={secondaryButton}>
+        <button type="button" onClick={() => restoreInputRef.current?.click()} className={buttonSecondaryOnCard}>
           <Upload aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           Restore from backup
         </button>
@@ -115,7 +112,7 @@ export function DataSection() {
       </p>
       <div className="mt-3">
         <ImportRoadmapButton
-          className={secondaryButton}
+          className={buttonSecondaryOnCard}
           onImported={({ roadmap, topicCount, questionCount }) =>
             setStatus({
               kind: "success",
@@ -151,7 +148,7 @@ export function DataSection() {
       <button
         type="button"
         onClick={() => setIsResetOpen(true)}
-        className="mt-3 min-h-12 rounded-2xl bg-bad-bg px-4 text-[16px] font-medium text-bad-fg transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+        className={`mt-3 ${buttonDestructive}`}
       >
         Reset all data
       </button>

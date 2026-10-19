@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 
 import {
+  buttonPrimary,
+  buttonSecondaryOnCard,
+  fieldOnCardClassName,
+} from "@/components/ui/styles";
+import {
   clearAiApiKey,
   DEFAULT_AI_PROVIDER,
   getAiApiKey,
@@ -73,17 +78,10 @@ function AiKeySection() {
   };
 
   return (
-    <section className="w-full rounded-2xl bg-card p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[13px] leading-[18px] text-muted">Settings</p>
-          <h2 className="mt-1 text-[22px] font-medium leading-[28px] text-fg">
-            AI key
-          </h2>
-        </div>
-      </div>
+    <section className="w-full rounded-2xl bg-card p-4">
+      <h2 className="text-[18px] font-medium leading-[26px] text-fg">AI key</h2>
 
-      <p className="mt-4 text-[16px] leading-6 text-muted">
+      <p className="mt-2 text-[16px] leading-6 text-muted">
         The key is stored in this browser, outside the app database and sync
         files. Browser storage is not encrypted and can be read by scripts
         running on this site.
@@ -102,7 +100,7 @@ function AiKeySection() {
         onChange={(event) =>
           handleProviderChange(event.target.value as AiProvider)
         }
-        className="mt-2 min-h-12 w-full rounded-[14px] bg-card px-3 text-[16px] leading-6 text-fg"
+        className={`mt-2 ${fieldOnCardClassName}`}
       >
         {providerOptions.map((option) => (
           <option key={option.value} value={option.value}>
@@ -125,12 +123,12 @@ function AiKeySection() {
           disabled={!isLoaded}
           onChange={(event) => setApiKey(event.target.value)}
           placeholder={`Enter your ${provider === "openai" ? "OpenAI" : "Gemini"} key`}
-          className="min-h-12 flex-1 rounded-[14px] bg-card px-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+          className={`flex-1 ${fieldOnCardClassName}`}
         />
         <button
           type="button"
           onClick={() => setIsVisible((current) => !current)}
-          className="min-h-12 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
+          className={`shrink-0 ${buttonSecondaryOnCard}`}
         >
           {isVisible ? "Hide" : "Show"}
         </button>
@@ -141,7 +139,7 @@ function AiKeySection() {
           type="button"
           onClick={handleSave}
           disabled={!isLoaded}
-          className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
+          className={`flex-1 ${buttonPrimary}`}
         >
           Save key
         </button>
@@ -149,7 +147,7 @@ function AiKeySection() {
           type="button"
           onClick={handleRemove}
           disabled={!isLoaded}
-          className="min-h-12 flex-1 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+          className={`flex-1 ${buttonSecondaryOnCard}`}
         >
           Remove
         </button>
@@ -171,9 +169,17 @@ function AiKeySection() {
 
 export function SettingsPage() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <AiKeySection />
-      <DataSection />
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+      <header className="min-w-0">
+        <h1 className="text-[22px] font-medium leading-7 text-fg">Settings</h1>
+        <p className="mt-1 text-[16px] leading-6 text-muted">
+          Your AI key and the study data stored in this browser.
+        </p>
+      </header>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <AiKeySection />
+        <DataSection />
+      </div>
     </div>
   );
 }

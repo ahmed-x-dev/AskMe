@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { buttonPrimary, buttonSecondaryCompact, fieldOnCardClassName } from "@/components/ui/styles";
 import { buildQuizQueue, filterQuestions, type QuizQuestionType } from "@/features/quiz";
 import type { QuizSource } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -51,7 +52,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
       <header className="flex flex-col gap-4">
         <Link
           href={source.backHref}
-          className="inline-flex min-h-12 w-fit items-center gap-2 rounded-2xl bg-card px-4 text-[13px] font-medium leading-[18px] text-fg transition-colors hover:bg-card-hover"
+          className={buttonSecondaryCompact}
         >
           <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
           {source.backLabel}
@@ -65,13 +66,13 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
       </header>
 
       <div className="flex flex-col gap-6 rounded-2xl bg-card p-4">
-        <h2 className="text-[18px] font-medium leading-7 text-fg">Set up your quiz</h2>
+        <h2 className="text-[18px] font-medium leading-[26px] text-fg">Set up your quiz</h2>
 
         <SegmentedControl label="Question type" value={questionType} options={TYPE_OPTIONS} onChange={setQuestionType} />
         <SegmentedControl label="Difficulty" value={difficulty} options={DIFFICULTY_OPTIONS} onChange={setDifficulty} />
 
         {source.mistakeIds.length > 0 ? (
-          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] bg-bg px-3 text-[16px] leading-6 text-fg">
+          <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg">
             <input
               type="checkbox"
               checked={mistakesOnly}
@@ -94,7 +95,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
           <select
             value={limit === "all" ? "all" : String(limit)}
             onChange={(event) => setLimit(event.target.value === "all" ? "all" : Number(event.target.value))}
-            className="min-h-12 w-full rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg"
+            className={`font-normal ${fieldOnCardClassName}`}
           >
             <option value="all">All matching ({matching})</option>
             {limitChoices.map((choice) => (
@@ -115,7 +116,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
           type="button"
           disabled={matching === 0}
           onClick={() => onStart(buildQuizQueue(source.questions, { ...filters, limit: effectiveLimit }))}
-          className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          className={buttonPrimary}
         >
           Start quiz
         </button>

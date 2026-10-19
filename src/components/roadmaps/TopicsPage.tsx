@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { NameDialog } from "@/components/ui/NameDialog";
+import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import {
   applyTopicMove,
@@ -131,7 +132,7 @@ export function TopicsPage() {
       <div
         aria-busy="true"
         aria-label="Loading roadmap"
-        className="mx-auto flex w-full max-w-3xl flex-col gap-4"
+        className="flex w-full flex-col gap-4"
       >
         <div className="h-24 animate-pulse rounded-2xl bg-card" />
         <div className="h-16 animate-pulse rounded-2xl bg-card" />
@@ -142,14 +143,14 @@ export function TopicsPage() {
 
   if (page === null) {
     return (
-      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-6 text-center">
+      <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Roadmap not found</h1>
         <p className="mt-2 text-[16px] leading-6 text-muted">
           It may have been deleted.
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
+          className={`mt-6 ${buttonPrimary}`}
         >
           Back to roadmaps
         </Link>
@@ -295,7 +296,7 @@ export function TopicsPage() {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <header className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
           <RoadmapIcon roadmap={roadmap} />
@@ -327,7 +328,7 @@ export function TopicsPage() {
           {totalQuestions > 0 ? (
             <Link
               href={`/roadmap/${roadmap.id}/quiz`}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className={buttonPrimary}
             >
               <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Quiz all topics
@@ -336,7 +337,7 @@ export function TopicsPage() {
           <button
             type="button"
             onClick={() => setDialog({ kind: "new-group" })}
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+            className={buttonSecondary}
           >
             <FolderPlus
               aria-hidden="true"

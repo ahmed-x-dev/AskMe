@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DatabaseBackup } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { buttonPrimary } from "@/components/ui/styles";
 import { downloadBackup } from "@/lib/backupActions";
 import { shouldRemindBackup } from "@/lib/backupReminder";
 import { snoozeBackupReminder, useBackupState } from "@/platform/backupStorage";
@@ -49,7 +50,7 @@ export function BackupReminder({ oldestDataAt }: { oldestDataAt: string | null }
           onClick={() => void handleBackup()}
           disabled={isBusy}
           aria-busy={isBusy}
-          className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          className={buttonPrimary}
         >
           {isBusy ? "Preparing…" : "Back up now"}
         </button>

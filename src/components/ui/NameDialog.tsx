@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
+import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "./styles";
 
 type NameDialogProps = {
   title: string;
@@ -62,19 +63,18 @@ export function NameDialog({
             placeholder={placeholder}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "name-dialog-error" : undefined}
-            className="min-h-12 rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg placeholder:text-muted"
+            className={fieldOnCardClassName}
           />
         </label>
 
         {error ? <ErrorMessage id="name-dialog-error">{error}</ErrorMessage> : null}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            data-plain
             onClick={onClose}
             disabled={isSaving}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             Cancel
           </button>
@@ -82,7 +82,7 @@ export function NameDialog({
             type="submit"
             disabled={isSaving || value.trim() === ""}
             aria-busy={isSaving}
-            className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonPrimary}
           >
             {isSaving ? "Saving…" : submitLabel}
           </button>

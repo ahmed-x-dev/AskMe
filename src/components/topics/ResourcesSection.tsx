@@ -6,6 +6,7 @@ import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { fieldClassName } from "@/components/ui/styles";
 import {
   addResource,
   deleteResource,
@@ -23,7 +24,7 @@ type ResourcesSectionProps = {
   resources: Resource[];
 };
 
-const fieldClassName = "min-h-12 min-w-0 rounded-[14px] bg-card px-3 text-[16px] text-fg placeholder:text-muted";
+const fieldInputClassName = `min-w-0 ${fieldClassName}`;
 
 /** Learning links for one topic, each with a "done" checkbox. */
 export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) {
@@ -85,7 +86,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
   return (
     <section aria-labelledby="resources-heading" className="flex flex-col gap-4">
       <div>
-        <h2 id="resources-heading" className="text-[22px] font-medium leading-7 text-fg">
+        <h2 id="resources-heading" className="text-[16px] font-medium leading-6 text-fg">
           Resources
         </h2>
         <p className="text-[13px] leading-[18px] text-muted tabular-nums">
@@ -108,7 +109,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
             aria-label="Link"
             aria-invalid={formError !== null}
             aria-describedby={formError ? "resource-form-error" : undefined}
-            className={`${fieldClassName} sm:flex-1`}
+            className={`${fieldInputClassName} sm:flex-1`}
           />
           <input
             type="text"
@@ -117,7 +118,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
             maxLength={100}
             placeholder="Title (optional)"
             aria-label="Link title (optional)"
-            className={`${fieldClassName} sm:flex-1`}
+            className={`${fieldInputClassName} sm:flex-1`}
           />
         </div>
         <div className="flex gap-2">
@@ -125,7 +126,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
             value={kind}
             onChange={(event) => setKind(event.target.value as ResourceKind)}
             aria-label="Kind of link"
-            className={`${fieldClassName} flex-1 sm:flex-none`}
+            className={`${fieldInputClassName} flex-1 sm:w-auto sm:flex-none`}
           >
             {RESOURCE_KINDS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -138,7 +139,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
             disabled={isAdding || url.trim() === ""}
             aria-busy={isAdding}
             aria-label="Add link"
-            className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-150 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed"
           >
             <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
           </button>

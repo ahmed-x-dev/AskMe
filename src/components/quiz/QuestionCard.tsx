@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, X } from "lucide-react";
+import { buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import type { Question } from "@/types/study";
 import { QuestionAiHelp } from "./QuestionAiHelp";
 
@@ -66,7 +67,7 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
                   setSelected(optionIndex);
                   onAnswer(optionIndex === question.answerIndex);
                 }}
-                className={`flex min-h-12 w-full items-center gap-3 rounded-[14px] px-3 py-3 text-start text-[16px] leading-6 transition-colors ${
+                className={`flex min-h-12 w-full items-center gap-3 rounded-[14px] border border-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 ${
                   isRight
                     ? "bg-ok-bg text-ok-fg"
                     : isWrong
@@ -78,7 +79,7 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
               >
                 <span
                   aria-hidden="true"
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-bg text-[13px] font-medium text-muted"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-bg text-[13px] font-medium text-muted"
                 >
                   {String.fromCharCode(65 + optionIndex)}
                 </span>
@@ -108,7 +109,7 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
             rows={5}
             aria-label="Your answer"
             placeholder="Write your answer here, or think it through…"
-            className="min-h-30 w-full resize-y rounded-[14px] bg-card px-3 py-3 text-[16px] leading-6 text-fg placeholder:text-muted"
+            className={`min-h-30 resize-y py-3 ${fieldClassName}`}
           />
 
           {!isRevealed ? (
@@ -117,7 +118,7 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
               <button
                 type="button"
                 onClick={() => setIsRevealed(true)}
-                className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+                className={buttonPrimary}
               >
                 Reveal reference answer
               </button>
@@ -138,14 +139,14 @@ export function QuestionCard({ question, result, onAnswer }: QuestionCardProps) 
                     <button
                       type="button"
                       onClick={() => onAnswer(true)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-[16px] font-medium text-ok-fg transition duration-200 ease-out active:scale-[0.98]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-[16px] font-medium text-ok-fg transition duration-150 ease-out active:scale-[0.98]"
                     >
                       <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it right
                     </button>
                     <button
                       type="button"
                       onClick={() => onAnswer(false)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-[16px] font-medium text-bad-fg transition duration-200 ease-out active:scale-[0.98]"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-[16px] font-medium text-bad-fg transition duration-150 ease-out active:scale-[0.98]"
                     >
                       <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it wrong
                     </button>

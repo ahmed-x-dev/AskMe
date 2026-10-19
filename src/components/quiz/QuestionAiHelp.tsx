@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { buttonSecondary } from "@/components/ui/styles";
 import { describeError, explainQuestionAnswer, gradeEssayAnswer } from "@/features/ai";
 import { getAiProvider, hasAiApiKey } from "@/platform/secureStorage";
 import type { Question } from "@/types/study";
@@ -15,8 +16,7 @@ type QuestionAiHelpProps = {
 
 type Grade = { score: number; missingPoints: number; feedback: string; forAnswer: string };
 
-const secondaryButtonClassName =
-  "min-h-12 w-full rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover disabled:cursor-wait disabled:opacity-70";
+const secondaryButtonClassName = `w-full ${buttonSecondary}`;
 
 /**
  * Optional AI help for one question: grading a written essay answer and explaining the answer.

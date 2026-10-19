@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { fieldClassName } from "@/components/ui/styles";
 
 type AddTopicFormProps = {
   placeholder: string;
@@ -48,14 +49,14 @@ export function AddTopicForm({ placeholder, inputId, onAdd }: AddTopicFormProps)
           aria-label={placeholder}
           aria-invalid={error !== null}
           aria-describedby={error ? `${inputId ?? "add-topic"}-error` : undefined}
-          className="min-h-12 min-w-0 flex-1 rounded-[14px] bg-card px-3 text-[16px] text-fg placeholder:text-muted"
+          className={`min-w-0 flex-1 ${fieldClassName}`}
         />
         <button
           type="submit"
           disabled={isSaving || title.trim() === ""}
           aria-label="Add topic"
           aria-busy={isSaving}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-150 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed"
         >
           <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
         </button>

@@ -7,7 +7,7 @@
 ```yaml
 current_phase: P3
 current_task: P3-01
-last_updated: 2026-10-18
+last_updated: 2026-10-19
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
@@ -348,6 +348,10 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P5-20** Refresh the library layout to match the supplied compact desktop reference.
   - Done when: the library has its summary heading, inline tools, group filter chips, and two-column set cards with clear quiz and open actions; ungrouped sets can be added to an existing group; checks pass.
   - Learn: `docs/learn/11-responsive-layout.md`.
+- [x] **P5-21** UI/UX audit pass: consistent design tokens, dark-theme layering, wide-screen layouts, and shared button/field constants across every screen.
+  - Done when: `--line` gives controls a visible boundary in both themes; dark surfaces are layered (page/card/hover) instead of flat black; buttons, fields, dialogs, menus, empty/loading/error states use the shared constants in `src/components/ui/styles.ts`; every route is usable from mobile to large desktop; no behavioral or data change; checks pass.
+  - Learn: `docs/learn/02-tailwind-and-themes.md`, `docs/learn/11-responsive-layout.md`.
+  - UI-only: presentational changes to CSS, tokens, layout, and markup. No business logic, schema, repository, validation, or route behavior was changed.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -377,6 +381,8 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-17 | Expand the app shell and use content-specific layouts at large breakpoints | Use wide desktop space for related panels and cards while retaining readable widths for forms and quiz content |
 | 2026-10-17 | Use ARIA state attributes with shared CSS for control states | Keeps loading and invalid feedback consistent, accessible, and free of per-screen styling drift |
 | 2026-10-18 | Store optional group metadata in each set's schema-version-4 JSON record | One set can belong to one editable group, and membership survives export and future per-set sync without a separate library file |
+| 2026-10-19 | Split control boundaries into a dedicated `--line` token and add inverse-surface constants (`fieldOnCardClassName`, `buttonSecondaryOnCard`) in `src/components/ui/styles.ts` | A control needs a visible 1px edge in both themes while cards stay borderless; a `bg-card` control is invisible on a `bg-card` panel, so those variants use `bg-bg` |
+| 2026-10-19 | Fix the wide-screen rules: shell `max-w-[1440px]`, roadmap grid `1→2→3→4` columns, settings pairs its panels above 1024px, reading/quiz screens stay bounded at 768–1024px, and reorderable (drag-and-drop) lists stay single column | Uses large desktops without stretching forms into unreadable line lengths, and keeps drag ordering unambiguous |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -396,6 +402,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-19: Completed P5-21: a UI/UX pass with no behavioral change. `DESIGN.md` now documents every shared constant; `src/app/globals.css` gained the `--line` control-boundary token and refreshed light/dark token tables (dark page `#131917`, card `#24312D`, hover `#303E39`, overlay 55%); `src/components/ui/styles.ts` became the single source of button/field class strings and gained `buttonSecondaryOnCard`, `buttonSecondaryCompact`, `buttonDestructive`, and `fieldOnCardClassName`. Layout rules were fixed for wide screens (shell `max-w-[1440px]`, roadmap grid `1→2→3→4`, settings two panels above 1024px, bounded reading/quiz screens, single-column reorderable lists). Cards stayed borderless while controls, dialogs, menus, and empty/loading/error states were unified; screen titles were rescaled (only the home app title exceeds 22px). Updated the themes and responsive-layout guides. `npm outdated` still reports major versions for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. `typecheck`, `lint`, all 117 tests, and production build pass. Next: resume P3-01.
 - 2026-10-18: Completed P5-20: refreshed the library and home header to match the supplied compact desktop reference, retaining import, export, grouping, rename, delete, and navigation flows. Group chips filter the library directly; the compact add-group control sits alongside them; one-set groups are valid, and ungrouped sets can be selected and added to an existing group. Group-selection mode shows Apply and Cancel controls and excludes already grouped sets. Each group's Add, Rename, and Delete controls, and each set's management controls, are now in accessible ellipsis menus. Roomy two-column cards provide Start quiz and Open actions. Updated the responsive-layout, routing, and set-groups guides. `npm outdated` reports major updates for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. `typecheck`, `lint`, all 42 tests, and production build pass. Next: resume P3-01.
 - 2026-10-18: Completed P5-19: added schema-version-4 set groups with manual selection, editable names, non-destructive whole-group and per-set removal, and a groups-only library view with an explicit Ungrouped section. Version 1–3 imports migrate as ungrouped; groups persist in exports. Removed the long-press/drag interaction at the owner's request and updated the set-groups learning guide. `typecheck`, `lint`, all 40 tests, and production build pass. `npm outdated` reports major updates for `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Next: resume P3-01.
 - 2026-10-17: Completed P5-18: added documented overlay, disabled, loading, invalid, and future choice-control states; corrected font and quiz-route guidance; wired `aria-busy` into existing request actions and `aria-invalid` into question-editor validation. Updated the themes learning guide. `typecheck`, `lint`, all 37 tests, and production build pass. Next: resume P3-01.

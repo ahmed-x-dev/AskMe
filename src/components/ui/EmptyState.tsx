@@ -1,4 +1,5 @@
 import { Plus, type LucideIcon } from "lucide-react";
+import { buttonPrimary } from "./styles";
 
 export function EmptyState({
   title,
@@ -15,21 +16,17 @@ export function EmptyState({
   icon?: LucideIcon;
 }) {
   return (
-    <section className="mx-auto w-full rounded-2xl bg-card p-6 text-center lg:max-w-3xl">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
+    <section className="mx-auto flex w-full max-w-2xl flex-col items-center rounded-2xl bg-card px-6 py-10 text-center">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
         <Icon aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <h2 className="mt-4 text-[16px] font-medium leading-6 text-fg">
         {title}
       </h2>
-      <p className="mx-auto mt-2 max-w-70 text-[16px] leading-6 text-muted">
+      <p className="mt-2 max-w-md text-[16px] leading-6 text-muted">
         {description}
       </p>
-      <button
-        type="button"
-        onClick={onAction}
-        className="mt-6 min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
-      >
+      <button type="button" onClick={onAction} className={`mt-6 ${buttonPrimary}`}>
         {actionLabel}
       </button>
     </section>

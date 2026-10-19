@@ -4,13 +4,14 @@
 [data-theme='light'] {
   color-scheme: light;
   --bg: #fbfcfb;
-  --card: #eff3f1;
-  --card-hover: #e6ece9;
+  --card: #edf1ef;
+  --card-hover: #e4eae7;
+  --line: #c9d4ce;
   --fg: #121715;
-  --muted: #5c6661;
+  --muted: #57615c;
   --accent: #09785e;
   --on-accent: #ffffff;
-  --accent-text: #09785e;
+  --accent-text: #096a53;
   --ok-bg: #ddf3e8;
   --ok-fg: #0a6b4d;
   --bad-bg: #fce9e7;
@@ -24,29 +25,31 @@
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0d1110;
-  --card: #1e2523;
-  --card-hover: #262f2c;
-  --fg: #e8eeeb;
-  --muted: #8c9893;
+  --bg: #131917;
+  --card: #24312d;
+  --card-hover: #303e39;
+  --line: #43524c;
+  --fg: #e9efec;
+  --muted: #9aa8a3;
   --accent: #3dd6a5;
   --on-accent: #06100c;
-  --accent-text: #3dd6a5;
-  --ok-bg: #0f2f25;
+  --accent-text: #46dfae;
+  --ok-bg: #12322a;
   --ok-fg: #7be8c0;
-  --bad-bg: #34161a;
-  --bad-fg: #ff9a92;
-  --warn-bg: #2b2108;
+  --bad-bg: #3a1a1e;
+  --bad-fg: #ffa39b;
+  --warn-bg: #33270b;
   --warn-fg: #f2c45a;
-  --essay-bg: #1e2350;
-  --essay-fg: #b8c0ff;
-  --overlay: rgb(0 0 0 / 0.48);
+  --essay-bg: #232a5c;
+  --essay-fg: #c2c9ff;
+  --overlay: rgb(0 0 0 / 0.55);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
+  --color-line: var(--line);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
@@ -87,21 +90,25 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+  color: inherit;
 }
 
 button {
   cursor: pointer;
 }
 
+/*
+ * Form controls carry the shared control boundary. Buttons opt in explicitly with
+ * `border border-line` (see `src/components/ui/styles.ts`) so ghost, menu, and
+ * segmented-control items stay borderless and quiet.
+ */
 input:not([type='file']),
 textarea,
-select,
-button:not(.bg-accent):not(.bg-ok-bg):not(.bg-bad-bg):not([data-plain]),
-a[class*='bg-card'],
-a[class*='bg-bg'] {
-  border: 1px solid var(--card-hover);
+select {
+  border: 1px solid var(--line);
 }
 
 :disabled {
@@ -122,10 +129,40 @@ a[class*='bg-bg'] {
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
-  body {
-    display: flex;
-    justify-content: center;
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@keyframes askme-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes askme-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes askme-shimmer {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
@@ -133,6 +170,8 @@ a[class*='bg-bg'] {
   *,
   *::before,
   *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transform: none !important;
     transition-property: opacity !important;

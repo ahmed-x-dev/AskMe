@@ -18,10 +18,10 @@ export function TodayCard() {
 
   return (
     <section aria-label="Today" className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`grid gap-4 sm:grid-cols-2 ${weakTopics.length > 0 ? "xl:grid-cols-3" : ""}`}>
         <Link
           href="/review"
-          className="flex items-center gap-4 rounded-2xl bg-card p-4 transition-colors hover:bg-card-hover"
+          className="flex items-center gap-4 rounded-2xl bg-card p-4 transition-colors duration-150 hover:bg-card-hover"
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg text-accent-text">
             <CalendarCheck aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
@@ -55,34 +55,34 @@ export function TodayCard() {
             </span>
           </span>
         </div>
-      </div>
 
-      {weakTopics.length > 0 ? (
-        <div className="rounded-2xl bg-card p-4">
-          <h2 className="flex items-center gap-2 text-[16px] font-medium leading-6 text-fg">
-            <TrendingDown aria-hidden="true" className="h-5 w-5 text-muted" strokeWidth={1.5} />
-            Needs more practice
-          </h2>
-          <ul className="mt-3 flex flex-col gap-2">
-            {weakTopics.map(({ topic, roadmap, accuracy, attempts }) => (
-              <li key={topic.id}>
-                <Link
-                  href={`/topic/${topic.id}`}
-                  className="flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-2 transition-colors hover:bg-card-hover"
-                >
-                  <span className="min-w-0">
-                    <span className="block wrap-break-word text-[16px] leading-6 text-fg">{topic.title}</span>
-                    <span className="block wrap-break-word text-[13px] leading-[18px] text-muted">{roadmap.title}</span>
-                  </span>
-                  <span className="shrink-0 text-[13px] font-medium leading-[18px] text-bad-fg tabular-nums">
-                    {Math.round(accuracy * 100)}% of {attempts}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+        {weakTopics.length > 0 ? (
+          <div className="rounded-2xl bg-card p-4 sm:col-span-2 xl:col-span-1">
+            <h2 className="flex items-center gap-2 text-[16px] font-medium leading-6 text-fg">
+              <TrendingDown aria-hidden="true" className="h-5 w-5 text-muted" strokeWidth={1.5} />
+              Needs more practice
+            </h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {weakTopics.map(({ topic, roadmap, accuracy, attempts }) => (
+                <li key={topic.id}>
+                  <Link
+                    href={`/topic/${topic.id}`}
+                    className="flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-2 transition-colors duration-150 hover:bg-card-hover"
+                  >
+                    <span className="min-w-0">
+                      <span className="block wrap-break-word text-[16px] leading-6 text-fg">{topic.title}</span>
+                      <span className="block wrap-break-word text-[13px] leading-[18px] text-muted">{roadmap.title}</span>
+                    </span>
+                    <span className="shrink-0 text-[13px] font-medium leading-[18px] text-bad-fg tabular-nums">
+                      {Math.round(accuracy * 100)}% of {attempts}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }

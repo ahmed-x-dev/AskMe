@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
+import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
 import { listGroups } from "@/lib/data";
 import type { Group, Roadmap, Topic } from "@/types/study";
 
@@ -21,8 +22,7 @@ type MoveTopicDialogProps = {
   onClose: () => void;
 };
 
-const selectClassName =
-  "min-h-12 rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg";
+const selectClassName = `${fieldOnCardClassName} font-normal`;
 
 export function MoveTopicDialog({
   topic,
@@ -116,13 +116,12 @@ export function MoveTopicDialog({
 
         {error ? <ErrorMessage>{error}</ErrorMessage> : null}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            data-plain
             onClick={onClose}
             disabled={isSaving}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             Cancel
           </button>
@@ -130,7 +129,7 @@ export function MoveTopicDialog({
             type="submit"
             disabled={isSaving}
             aria-busy={isSaving}
-            className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonPrimary}
           >
             {isSaving ? "Moving…" : "Move"}
           </button>

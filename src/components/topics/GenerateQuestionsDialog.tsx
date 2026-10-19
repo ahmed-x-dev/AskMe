@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
+import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
 import { describeError, generateQuestions, type GeneratedQuestion } from "@/features/ai";
 import { addQuestions } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -37,8 +38,7 @@ const DIFFICULTY_CHOICES: { value: DifficultyChoice; label: string }[] = [
   { value: "hard", label: "Hard" },
 ];
 
-const fieldClassName =
-  "min-h-12 w-full rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg placeholder:text-muted";
+const fieldClassName = `${fieldOnCardClassName} font-normal`;
 
 /** Generates questions for one topic with AI, lets the learner pick which to keep, then saves them. */
 export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsDialogProps) {
@@ -125,7 +125,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
             </p>
             <Link
               href="/settings"
-              className="inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
+              className={buttonPrimary}
             >
               Open settings
             </Link>
@@ -184,7 +184,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </>
         ) : (
           <>
-            <div role="group" aria-label="Question type" className="flex rounded-[14px] bg-card p-[3px]">
+            <div role="group" aria-label="Question type" className="flex gap-1 rounded-[14px] bg-card p-[3px]">
               {(["mcq", "essay"] as const).map((value) => (
                 <button
                   key={value}
@@ -192,8 +192,8 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                   onClick={() => setType(value)}
                   disabled={isBusy}
                   aria-pressed={type === value}
-                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[16px] font-medium transition-colors ${
-                    type === value ? "bg-accent text-on-accent" : "text-muted"
+                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+                    type === value ? "bg-accent text-on-accent" : "text-muted hover:bg-card-hover hover:text-fg"
                   }`}
                 >
                   {value === "mcq" ? "MCQ" : "Essay"}
@@ -244,7 +244,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                 maxLength={500}
                 rows={3}
                 placeholder="Focus on common mistakes, use code examples…"
-                className="w-full resize-y rounded-[14px] bg-bg px-3 py-3 text-[16px] font-normal leading-6 text-fg placeholder:text-muted"
+                className={`resize-y py-3 ${fieldClassName}`}
               />
             </label>
 
@@ -261,10 +261,9 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
         <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            data-plain
             onClick={step === "preview" ? () => setStep("form") : onClose}
             disabled={isBusy}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             {step === "preview" ? "Back" : "Cancel"}
           </button>
@@ -275,7 +274,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
               onClick={() => void handleSave()}
               disabled={isSaving || selected.size === 0}
               aria-busy={isSaving}
-              className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className={buttonPrimary}
             >
               {isSaving ? "Adding…" : `Add ${plural(selected.size, "question")}`}
             </button>
@@ -285,7 +284,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
               onClick={() => void handleGenerate()}
               disabled={isBusy}
               aria-busy={step === "generating"}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className={buttonPrimary}
             >
               <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               {step === "generating" ? "Generating…" : "Generate"}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
+import { buttonDanger, buttonGhost } from "./styles";
 
 type ConfirmDialogProps = {
   title: string;
@@ -53,13 +54,12 @@ export function ConfirmDialog({
 
         {error ? <ErrorMessage>{error}</ErrorMessage> : null}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
-            data-plain
             onClick={onClose}
             disabled={isBusy}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             Cancel
           </button>
@@ -68,7 +68,7 @@ export function ConfirmDialog({
             onClick={() => void handleConfirm()}
             disabled={isBusy}
             aria-busy={isBusy}
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-bad-bg px-4 text-[16px] font-medium text-bad-fg transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonDanger}
           >
             <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
             {isBusy ? busyLabel : confirmLabel}

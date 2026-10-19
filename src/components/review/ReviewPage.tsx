@@ -6,6 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { CalendarCheck } from "lucide-react";
 import { QuizResults } from "@/components/quiz/QuizResults";
 import { QuizRunner } from "@/components/quiz/QuizRunner";
+import { buttonPrimary } from "@/components/ui/styles";
 import { shuffle } from "@/features/quiz";
 import { getDueSummary, REVIEW_SESSION_SIZE, type DueSummary, type QuizAnswer } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -81,7 +82,7 @@ export function ReviewPage() {
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="min-w-0">
-        <h1 className="text-[28px] font-medium leading-9 text-fg">Review</h1>
+        <h1 className="text-[22px] font-medium leading-7 text-fg">Review</h1>
         <p className="mt-1 text-[16px] leading-6 text-muted">
           Questions come back on a schedule. Answer right and they return later; miss one and it returns tomorrow.
         </p>
@@ -96,10 +97,7 @@ export function ReviewPage() {
           <p className="mx-auto mt-2 max-w-sm text-[16px] leading-6 text-muted">
             Questions join your review the first time you answer them in a quiz.
           </p>
-          <Link
-            href="/"
-            className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
-          >
+          <Link href="/" className={`mt-6 ${buttonPrimary}`}>
             Back to roadmaps
           </Link>
         </div>
@@ -125,7 +123,7 @@ export function ReviewPage() {
           <button
             type="button"
             onClick={() => start(buildSession(summary))}
-            className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonPrimary}
           >
             Start review ({sessionSize})
           </button>

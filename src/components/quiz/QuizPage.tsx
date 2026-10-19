@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
 import { shuffle } from "@/features/quiz";
+import { buttonPrimary } from "@/components/ui/styles";
 import { completeTopicsFromQuiz, getQuizSource, type QuizAnswer, type QuizScope } from "@/lib/data";
 import type { Question, Topic } from "@/types/study";
 import { QuizResults } from "./QuizResults";
@@ -15,9 +16,6 @@ type Phase =
   | { name: "setup" }
   | { name: "running"; queue: Question[]; runId: number }
   | { name: "results"; queue: Question[]; answers: QuizAnswer[]; elapsedSeconds: number; markedDone: Topic[] };
-
-const cardLinkClassName =
-  "mt-6 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent";
 
 /** A quiz for one topic, a whole roadmap, or one group of a roadmap. */
 export function QuizPage({ scope }: { scope: QuizScope }) {
@@ -45,10 +43,10 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 
   if (source === null) {
     return (
-      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-6 text-center">
+      <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Quiz not found</h1>
         <p className="mt-2 text-[16px] leading-6 text-muted">What you wanted to practice may have been deleted.</p>
-        <Link href="/" className={cardLinkClassName}>
+        <Link href="/" className={`mt-6 ${buttonPrimary}`}>
           Back to roadmaps
         </Link>
       </section>
@@ -57,12 +55,12 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 
   if (source.questions.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-6 text-center">
+      <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">No questions yet</h1>
         <p className="mt-2 text-[16px] leading-6 text-muted">
           Add questions to {source.title} before starting a quiz.
         </p>
-        <Link href={source.backHref} className={cardLinkClassName}>
+        <Link href={source.backHref} className={`mt-6 ${buttonPrimary}`}>
           {source.backLabel}
         </Link>
       </section>

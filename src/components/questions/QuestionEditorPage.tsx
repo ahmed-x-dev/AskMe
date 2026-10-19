@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useLiveQuery } from 'dexie-react-hooks'
 
+import { buttonPrimary } from '@/components/ui/styles'
 import { getQuestionEditorData } from '@/lib/data'
 import { QuestionEditorForm } from './QuestionEditorForm'
 
@@ -14,12 +15,9 @@ type QuestionEditorPageProps = {
 
 function NotFound({ title, href, label }: { title: string; href: string; label: string }) {
   return (
-    <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-4">
-      <h2 className="text-[18px] font-medium leading-7 text-fg">{title}</h2>
-      <Link
-        href={href}
-        className="mt-4 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
-      >
+    <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
+      <h2 className="text-[18px] font-medium leading-[26px] text-fg">{title}</h2>
+      <Link href={href} className={`mt-6 ${buttonPrimary}`}>
         {label}
       </Link>
     </section>
@@ -30,7 +28,18 @@ export function QuestionEditorPage({ topicId, qid }: QuestionEditorPageProps) {
   const data = useLiveQuery(() => getQuestionEditorData(topicId, qid), [topicId, qid])
 
   if (data === undefined) {
-    return <p role="status" className="text-[16px] leading-6 text-muted">Loading question…</p>
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Loading question"
+        className="mx-auto flex w-full max-w-5xl flex-col gap-5 rounded-2xl bg-card p-4"
+      >
+        <div className="h-6 w-40 animate-pulse rounded-full bg-bg" />
+        <div className="h-12 animate-pulse rounded-[14px] bg-bg" />
+        <div className="h-32 animate-pulse rounded-[14px] bg-bg" />
+        <div className="h-12 animate-pulse rounded-[14px] bg-bg" />
+      </div>
+    )
   }
 
   if (data === null) {

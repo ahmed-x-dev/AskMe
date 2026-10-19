@@ -10,6 +10,7 @@ import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
+import { buttonPrimary, buttonSecondaryCompact } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import { deleteTopic, getTopicPage, setTopicStatus, updateTopic } from "@/lib/data";
 import type { TopicStatus } from "@/types/study";
@@ -29,7 +30,7 @@ export function TopicPage() {
 
   if (page === undefined) {
     return (
-      <div aria-busy="true" aria-label="Loading topic" className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <div aria-busy="true" aria-label="Loading topic" className="mx-auto flex w-full max-w-4xl flex-col gap-4">
         <div className="h-12 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-20 animate-pulse rounded-2xl bg-card" />
         <div className="h-32 animate-pulse rounded-2xl bg-card" />
@@ -39,12 +40,12 @@ export function TopicPage() {
 
   if (page === null) {
     return (
-      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-6 text-center">
+      <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Topic not found</h1>
         <p className="mt-2 text-[16px] leading-6 text-muted">It may have been deleted.</p>
         <Link
           href="/"
-          className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
+          className={`mt-6 ${buttonPrimary}`}
         >
           Back to roadmaps
         </Link>
@@ -70,11 +71,11 @@ export function TopicPage() {
   }. This cannot be undone.`;
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-8">
+    <section className="mx-auto flex w-full max-w-4xl flex-col gap-8">
       <header className="flex flex-col gap-4">
         <Link
           href={`/roadmap/${roadmap.id}`}
-          className="inline-flex min-h-12 w-fit max-w-full items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
+          className={buttonSecondaryCompact}
         >
           <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
           <span className="truncate">{roadmap.title}</span>

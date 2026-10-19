@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
 import type { Roadmap } from "@/types/study";
 
 export type RoadmapFormValues = {
@@ -74,7 +76,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
       onClick={(event) => {
         if (event.target === dialogRef.current && !isSaving) onClose();
       }}
-      className="m-auto w-[min(28rem,calc(100%-2rem))] rounded-2xl bg-card p-0 text-fg backdrop:bg-overlay"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card p-0 text-fg backdrop:bg-overlay"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <h2
@@ -95,7 +97,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
             autoFocus
             placeholder="React, English, Electronics…"
             aria-invalid={error !== null && title.trim() === ""}
-            className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-normal text-fg placeholder:text-muted"
+            className={`${fieldOnCardClassName} font-normal`}
           />
         </label>
 
@@ -113,7 +115,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
             onChange={(event) => setIcon(event.target.value)}
             maxLength={12}
             placeholder="Paste or pick an emoji"
-            className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] text-fg placeholder:text-muted"
+            className={fieldOnCardClassName}
           />
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_ICONS.map((suggestion) => (
@@ -155,21 +157,14 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
           </div>
         </fieldset>
 
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg"
-          >
-            {error}
-          </p>
-        ) : null}
+        {error ? <ErrorMessage>{error}</ErrorMessage> : null}
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            className="min-h-12 rounded-2xl bg-bg px-5 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+            className={buttonGhost}
           >
             Cancel
           </button>
@@ -177,7 +172,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
             type="submit"
             disabled={isSaving || title.trim() === ""}
             aria-busy={isSaving}
-            className="min-h-12 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className={buttonPrimary}
           >
             {roadmap ? "Save" : "Create"}
           </button>
