@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
@@ -52,10 +52,14 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const isGeneratingRef = useRef(false);
+  const isSavingRef = useRef(false);
 
   const isBusy = step === "generating" || isSaving;
 
   const handleGenerate = async () => {
+    if (isGeneratingRef.current) return;
+    isGeneratingRef.current = true;
     setStep("generating");
     setError(null);
 
@@ -78,6 +82,8 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
     } catch (generateError) {
       setError(describeError(generateError));
       setStep("form");
+    } finally {
+      isGeneratingRef.current = false;
     }
   };
 
@@ -93,6 +99,8 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
   };
 
   const handleSave = async () => {
+    if (isSavingRef.current || selected.size === 0) return;
+    isSavingRef.current = true;
     setIsSaving(true);
     setError(null);
 
@@ -104,13 +112,14 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
       onClose();
     } catch (saveError) {
       setError(describeError(saveError));
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
 
   return (
     <Modal titleId="generate-dialog-title" isBusy={isBusy} onClose={onClose}>
-      <div className="flex max-h-[85vh] flex-col gap-6 overflow-y-auto p-6">
+      <div className="flex flex-col gap-5 p-5 sm:gap-6 sm:p-6">
         <div>
           <h2 id="generate-dialog-title" className="text-[22px] font-medium leading-7 text-fg">
             Generate with AI
@@ -192,7 +201,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                   onClick={() => setType(value)}
                   disabled={isBusy}
                   aria-pressed={type === value}
-                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                     type === value ? "bg-accent text-on-accent" : "text-muted hover:bg-card-hover hover:text-fg"
                   }`}
                 >
@@ -235,7 +244,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
               </label>
             </div>
 
-            <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+            <label className="flex flex-col gap-2 text-[13px] font-medium leading-[18px]">
               Extra instructions (optional)
               <textarea
                 value={instructions}
@@ -244,15 +253,13 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                 maxLength={500}
                 rows={3}
                 placeholder="Focus on common mistakes, use code examples…"
+                aria-describedby="generate-instructions-help"
                 className={`resize-y py-3 ${inputClassName}`}
               />
+              <span id="generate-instructions-help" className="font-normal text-muted">
+                Up to 500 characters. Your topic notes are also included as reference when available.
+              </span>
             </label>
-
-            <p className="text-[13px] leading-[18px] text-muted">
-              {context.notes?.trim()
-                ? "Your notes for this topic are sent to the AI as reference."
-                : "Tip: write notes on the topic first and the questions will follow them."}
-            </p>
           </>
         )}
 

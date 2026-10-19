@@ -37,3 +37,4 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [26 — Icon components](./26-icon-components.md): How Lucide React replaces hand-written UI SVGs with accessible, tree-shakeable icon components.
 - [27 — Set groups](./27-set-groups-and-touch-dragging.md): How persistent one-group-per-set metadata supports manual grouping.
 - [28 — Shared UI interactions](./28-shared-ui-interactions.md): How menus, dialogs, forms, and feedback states stay accessible and consistent.
+- [29 — Topic learning experience](./29-topic-learning-experience.md): How a topic overview guides study through notes, resources, progress, and practice.

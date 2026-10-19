@@ -269,6 +269,7 @@ This gives utilities such as `bg-bg`, `bg-card`, `bg-card-elevated`, `bg-card-ho
 - Sentence case everywhere. No ALL CAPS.
 - Numbers that change (question index `3/10`, score, counts) use tabular numerals: `font-variant-numeric: tabular-nums`.
 - Question text line length: aim for 52 to 68 characters on wide screens.
+- Long-form topic notes and generated question content use a readable text measure (about 65–75 characters per line) on wide screens while the topic page itself remains full-width.
 
 ## 5. Components
 
@@ -341,6 +342,14 @@ A bordered-dashed or `bg-card` panel with an icon tile (24px, `text-muted`), a o
 - Errors use the shared banner (`bg-bad-bg text-bad-fg`, icon, `role="alert"`) for page-level problems and inline text for field-level problems. When a safe recovery exists, give the banner a clearly labeled action; never make recovery depend on color.
 - Inputs show concise helper text where constraints are not obvious. Invalid input uses `aria-invalid="true"` and a message referenced by `aria-describedby`; temporary submissions disable the initiating action and announce the pending label.
 
+### Topic learning page
+- The topic heading carries its roadmap/group context, title, brief study guidance, and visible status control. Do not invent a stored description; explain the existing study flow using the data already available.
+- Put the main practice action and question creation action near the title. Keep AI generation discoverable in the Questions section and preserve its preview-and-select flow.
+- Resource completion is its own progress measure (`completed / total`); question count and topic status remain separate facts. Do not combine them into a fabricated topic percentage.
+- Notes preview and editor share a readable text measure. Markdown headings, paragraphs, lists, and code blocks have enough vertical separation to scan.
+- Resource rows pair a visible type label/icon with a safe external link and a completion control. Long titles and URLs wrap inside the row; actions remain reachable.
+- Resource creation and edit dialogs use visible labels, helper text where needed, linked validation errors, and clear pending/disabled states.
+
 ### Icons
 Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 16px inline, 20px in rows, 24px in empty states. Icon-only buttons must have an `aria-label`.
 
@@ -350,7 +359,7 @@ Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 
 |---|---|---|
 | Roadmaps (home) | `/` | Backup reminder, "Today" summary, roadmap cards (icon, title, topic/question counts, due badge, overflow menu), "New roadmap" primary button, empty state |
 | Roadmap detail | `/roadmap/:id` | Roadmap header (icon, title, counts, progress), "Quiz all topics" and "New group" actions, group sections with draggable topic rows, "Add topic" inline form |
-| Topic | `/topic/:id` | Back link, title, status chip, overflow menu, resources list, notes editor, question list with type chips and "Add question"/"Generate with AI" |
+| Topic | `/topic/:id` | Roadmap/group context, title and study guidance, topic status, resource progress, visible quiz/add-question actions, scannable resources, readable Markdown notes, and question list with type/difficulty indicators |
 | Question editor | `/topic/:id/q/:qid` | MCQ/Essay toggle, question text, difficulty, tags, options with a correct-answer selector, reference answer (essay), Save/Delete |
 | New question | `/topic/:id/q/new` | Same editor without Delete |
 | Topic quiz | `/topic/:id/quiz` | Setup (type, difficulty, limit, mistakes-only) then runner then results |

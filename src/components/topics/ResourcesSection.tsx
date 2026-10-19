@@ -1,12 +1,24 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
+import {
+  ArrowDown,
+  ArrowUp,
+  BookOpen,
+  ExternalLink,
+  FileText,
+  Link as LinkIcon,
+  Pencil,
+  Plus,
+  Trash2,
+  Video,
+  type LucideIcon,
+} from "lucide-react";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { fieldClassName } from "@/components/ui/styles";
+import { buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
+import { plural } from "@/lib/format";
 import {
   addResource,
   deleteResource,
@@ -24,7 +36,13 @@ type ResourcesSectionProps = {
   resources: Resource[];
 };
 
-const fieldInputClassName = `min-w-0 ${fieldClassName}`;
+const fieldInputClassName = `min-w-0 ${fieldOnCardClassName}`;
+const RESOURCE_ICONS: Record<ResourceKind, LucideIcon> = {
+  docs: BookOpen,
+  video: Video,
+  article: FileText,
+  other: LinkIcon,
+};
 
 /** Learning links for one topic, each with a "done" checkbox. */
 export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) {
@@ -33,11 +51,10 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
   const [kind, setKind] = useState<ResourceKind>("docs");
   const [formError, setFormError] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const isAddingRef = useRef(false);
   const [editing, setEditing] = useState<Resource | null>(null);
   const [deleting, setDeleting] = useState<Resource | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  const completed = resources.filter((resource) => resource.done).length;
 
   const run = async (action: () => Promise<void>) => {
     try {
@@ -51,8 +68,9 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
   const handleAdd = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (url.trim() === "") return;
+    if (isAddingRef.current || url.trim() === "") return;
 
+    isAddingRef.current = true;
     setIsAdding(true);
     setFormError(null);
 
@@ -63,6 +81,7 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Could not add the link.");
     } finally {
+      isAddingRef.current = false;
       setIsAdding(false);
     }
   };
@@ -84,69 +103,99 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
   };
 
   return (
-    <section aria-labelledby="resources-heading" className="flex flex-col gap-4">
-      <div>
-        <h2 id="resources-heading" className="text-[16px] font-medium leading-6 text-fg">
-          Resources
-        </h2>
-        <p className="text-[13px] leading-[18px] text-muted tabular-nums">
-          {resources.length === 0 ? "No links yet" : `${completed} / ${resources.length} done`}
-        </p>
+    <section id="resources-section" aria-labelledby="resources-heading" className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 id="resources-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+            Learning resources
+          </h2>
+          <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+            {resources.length === 0
+              ? "Use links to support your study."
+              : plural(resources.length, "resource")}
+          </p>
+        </div>
       </div>
 
-      {resources.length > 0 ? (
-        <ProgressBar label="Resources done" completed={completed} total={resources.length} />
+      {resources.length === 0 ? (
+        <div className="rounded-2xl bg-card px-4 py-3 text-[13px] leading-[18px] text-muted">
+          Add a course page, video, or article you want to use while studying this topic.
+        </div>
       ) : null}
 
-      <form onSubmit={handleAdd} className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            type="text"
-            inputMode="url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder="Paste a link"
-            aria-label="Link"
-            aria-invalid={formError !== null}
-            aria-describedby={formError ? "resource-form-error" : undefined}
-            className={`${fieldInputClassName} sm:flex-1`}
-          />
-          <input
-            type="text"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={100}
-            placeholder="Title (optional)"
-            aria-label="Link title (optional)"
-            className={`${fieldInputClassName} sm:flex-1`}
-          />
+      <form onSubmit={handleAdd} className="flex flex-col gap-3 rounded-2xl bg-card p-4">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+          <label className="flex min-w-0 flex-col gap-2 text-[13px] font-medium leading-[18px] text-fg">
+            Resource link
+            <input
+              type="text"
+              inputMode="url"
+              value={url}
+              onChange={(event) => {
+                setUrl(event.target.value);
+                setFormError(null);
+              }}
+              placeholder="Paste a website address"
+              required
+              aria-invalid={formError !== null}
+              aria-describedby={`resource-url-hint${formError ? " resource-form-error" : ""}`}
+              className={fieldInputClassName}
+            />
+            <span id="resource-url-hint" className="font-normal text-muted">
+              We add https:// if you leave out the protocol.
+            </span>
+          </label>
+          <label className="flex min-w-0 flex-col gap-2 text-[13px] font-medium leading-[18px] text-fg">
+            Link title <span className="font-normal text-muted">(optional)</span>
+            <input
+              type="text"
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value);
+                setFormError(null);
+              }}
+              maxLength={100}
+              placeholder="For example, React documentation"
+              aria-invalid={formError !== null}
+              aria-describedby={`resource-title-hint${formError ? " resource-form-error" : ""}`}
+              className={fieldInputClassName}
+            />
+            <span id="resource-title-hint" className="font-normal text-muted">
+              Leave blank to use the website name.
+            </span>
+          </label>
         </div>
-        <div className="flex gap-2">
-          <select
-            value={kind}
-            onChange={(event) => setKind(event.target.value as ResourceKind)}
-            aria-label="Kind of link"
-            className={`${fieldInputClassName} flex-1 sm:w-auto sm:flex-none`}
-          >
-            {RESOURCE_KINDS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex flex-1 flex-col gap-2 text-[13px] font-medium leading-[18px] text-fg">
+            Resource type
+            <select
+              value={kind}
+              onChange={(event) => {
+                setKind(event.target.value as ResourceKind);
+                setFormError(null);
+              }}
+              className={fieldInputClassName}
+            >
+              {RESOURCE_KINDS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="submit"
             disabled={isAdding || url.trim() === ""}
             aria-busy={isAdding}
-            aria-label="Add link"
-            className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-150 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed"
+            className={`${buttonPrimary} w-full sm:w-auto`}
           >
             <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+            {isAdding ? "Adding…" : "Add resource"}
           </button>
         </div>
         {formError ? (
           <ErrorMessage variant="inline" id="resource-form-error">
-            {formError}
+            <span>{formError}</span>
           </ErrorMessage>
         ) : null}
       </form>
@@ -154,71 +203,88 @@ export function ResourcesSection({ topicId, resources }: ResourcesSectionProps) 
       {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
       {resources.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {resources.map((resource, index) => (
-            <li key={resource.id} className="flex items-center gap-2 rounded-2xl bg-card p-3">
-              <label className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={resource.done}
-                  onChange={(event) =>
-                    void run(() => setResourceDone(resource.id, event.target.checked))
-                  }
-                  aria-label={`Mark “${resource.title}” as done`}
-                  className="h-5 w-5 accent-(--accent)"
+        <ul className="flex flex-col gap-3">
+          {resources.map((resource, index) => {
+            const ResourceIcon = RESOURCE_ICONS[resource.kind];
+            const kindLabel = RESOURCE_KINDS.find((option) => option.value === resource.kind)?.label ?? "Other";
+
+            return (
+              <li key={resource.id} className="flex min-w-0 items-start gap-3 rounded-2xl bg-card p-3">
+                <label className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={resource.done}
+                    onChange={(event) =>
+                      void run(() => setResourceDone(resource.id, event.target.checked))
+                    }
+                    aria-label={
+                      resource.done
+                        ? `Mark “${resource.title}” as not done`
+                        : `Mark “${resource.title}” as done`
+                    }
+                    className="h-5 w-5 accent-(--accent)"
+                  />
+                </label>
+
+                <span
+                  aria-hidden="true"
+                  className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg text-muted"
+                >
+                  <ResourceIcon className="h-5 w-5" strokeWidth={1.5} />
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  {isSafeLink(resource.url) ? (
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex min-w-0 items-start gap-2 text-[16px] font-medium leading-6 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+                        resource.done ? "text-muted line-through" : "text-fg"
+                      }`}
+                    >
+                      <span className="min-w-0 flex-1 wrap-break-word">{resource.title}</span>
+                      <ExternalLink aria-hidden="true" className="mt-1 h-4 w-4 shrink-0" strokeWidth={1.5} />
+                    </a>
+                  ) : (
+                    <span className="block min-w-0 wrap-break-word text-[16px] font-medium leading-6 text-muted">
+                      {resource.title}
+                    </span>
+                  )}
+                  <p className="mt-1 text-[13px] leading-[18px] text-muted">
+                    <span className="font-medium">{kindLabel}</span>
+                    <span aria-hidden="true"> · </span>
+                    <span className="break-all">{hostOf(resource.url)}</span>
+                  </p>
+                </div>
+
+                <ActionMenu
+                  label={`Actions for ${resource.title}`}
+                  items={[
+                    { label: "Edit", icon: Pencil, onSelect: () => setEditing(resource) },
+                    {
+                      label: "Move up",
+                      icon: ArrowUp,
+                      disabled: index === 0,
+                      onSelect: () => handleMove(resource, -1),
+                    },
+                    {
+                      label: "Move down",
+                      icon: ArrowDown,
+                      disabled: index === resources.length - 1,
+                      onSelect: () => handleMove(resource, 1),
+                    },
+                    {
+                      label: "Delete",
+                      icon: Trash2,
+                      danger: true,
+                      onSelect: () => setDeleting(resource),
+                    },
+                  ]}
                 />
-              </label>
-
-              <div className="min-w-0 flex-1">
-                {isSafeLink(resource.url) ? (
-                  <a
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`inline-flex max-w-full items-center gap-2 text-[16px] font-medium leading-6 hover:underline ${
-                      resource.done ? "text-muted line-through" : "text-fg"
-                    }`}
-                  >
-                    <span className="wrap-break-word">{resource.title}</span>
-                    <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                  </a>
-                ) : (
-                  <span className="wrap-break-word text-[16px] font-medium leading-6 text-muted">
-                    {resource.title}
-                  </span>
-                )}
-                <p className="truncate text-[13px] leading-[18px] text-muted">
-                  {RESOURCE_KINDS.find((option) => option.value === resource.kind)?.label} ·{" "}
-                  {hostOf(resource.url)}
-                </p>
-              </div>
-
-              <ActionMenu
-                label={`Actions for ${resource.title}`}
-                items={[
-                  { label: "Edit", icon: Pencil, onSelect: () => setEditing(resource) },
-                  {
-                    label: "Move up",
-                    icon: ArrowUp,
-                    disabled: index === 0,
-                    onSelect: () => handleMove(resource, -1),
-                  },
-                  {
-                    label: "Move down",
-                    icon: ArrowDown,
-                    disabled: index === resources.length - 1,
-                    onSelect: () => handleMove(resource, 1),
-                  },
-                  {
-                    label: "Delete",
-                    icon: Trash2,
-                    danger: true,
-                    onSelect: () => setDeleting(resource),
-                  },
-                ]}
-              />
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       ) : null}
 

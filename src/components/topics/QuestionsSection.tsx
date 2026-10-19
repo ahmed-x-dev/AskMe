@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, CircleHelp, Play, Plus, Sparkles } from "lucide-react";
-import { buttonPrimary, buttonSecondary } from "@/components/ui/styles";
+import { ChevronRight, CircleHelp, Sparkles } from "lucide-react";
+import { buttonSecondary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import type { Question } from "@/types/study";
 import { GenerateQuestionsDialog, type GenerationContext } from "./GenerateQuestionsDialog";
@@ -23,42 +23,39 @@ type QuestionsSectionProps = {
 /** The questions of one topic, each linking to the editor, plus the "Add question" button. */
 export function QuestionsSection({ topicId, questions, topicContext }: QuestionsSectionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const typeCounts = questions.reduce(
+    (counts, question) => {
+      counts[question.type] += 1;
+      return counts;
+    },
+    { mcq: 0, essay: 0 },
+  );
 
   return (
-    <section aria-labelledby="questions-heading" className="flex flex-col gap-4">
+    <section id="questions-section" aria-labelledby="questions-heading" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="questions-heading" className="text-[16px] font-medium leading-6 text-fg">
+          <h2 id="questions-heading" className="text-[18px] font-medium leading-[26px] text-fg">
             Questions
           </h2>
           <p className="text-[13px] leading-[18px] text-muted tabular-nums">
-            {plural(questions.length, "question")}
+            {questions.length === 0
+              ? "Add practice questions to check what you have learned."
+              : `${plural(questions.length, "question")} · ${plural(typeCounts.mcq, "MCQ")} · ${plural(typeCounts.essay, "essay")}`}
           </p>
         </div>
 
-        {questions.length > 0 ? (
-          <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => setIsGenerating(true)} className={buttonSecondary}>
-              <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Generate with AI
-            </button>
-            <Link href={`/topic/${topicId}/q/new`} className={buttonSecondary}>
-              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Add question
-            </Link>
-          </div>
-        ) : null}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setIsGenerating(true)}
+            className={buttonSecondary}
+          >
+            <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+            Generate with AI
+          </button>
+        </div>
       </div>
-
-      {questions.length > 0 ? (
-        <Link
-          href={`/topic/${topicId}/quiz`}
-          className={buttonPrimary}
-        >
-          <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-          Start quiz · {plural(questions.length, "question")}
-        </Link>
-      ) : null}
 
       {questions.length === 0 ? (
         <div className="rounded-2xl bg-card p-6 text-center">
@@ -66,22 +63,9 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
             <CircleHelp aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
           </div>
           <h3 className="mt-4 text-[16px] font-medium leading-6 text-fg">No questions yet</h3>
-          <p className="mx-auto mt-2 max-w-70 text-[16px] leading-6 text-muted">
-            Add a question to start testing yourself on this topic.
+          <p className="mx-auto mt-2 max-w-[40ch] text-[16px] leading-6 text-muted">
+            Write your own question or ask AI to draft a few from your notes. You can review every suggestion before adding it.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              href={`/topic/${topicId}/q/new`}
-              className={buttonPrimary}
-            >
-              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Add question
-            </Link>
-            <button type="button" onClick={() => setIsGenerating(true)} className={buttonSecondary}>
-              <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Generate with AI
-            </button>
-          </div>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -92,19 +76,19 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
               <li key={question.id}>
                 <Link
                   href={`/topic/${topicId}/q/${question.id}`}
-                  className="flex items-center gap-3 rounded-2xl bg-card p-3 transition-colors duration-150 hover:bg-card-hover"
+                  className="flex min-w-0 items-start gap-3 rounded-2xl bg-card p-3 transition-colors duration-150 hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 wrap-break-word text-[16px] leading-6 text-fg">
                       {question.text}
                     </p>
-                    <div className="mt-1 flex items-center gap-3">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px] ${badge.className}`}
                       >
                         {badge.label}
                       </span>
-                      <span className="text-[13px] capitalize leading-[18px] text-muted">
+                      <span className="rounded-full bg-bg px-2.5 py-0.5 text-[13px] leading-[18px] text-muted">
                         {question.difficulty}
                       </span>
                     </div>

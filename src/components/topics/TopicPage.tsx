@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Pencil, Play, Plus, Trash2 } from "lucide-react";
 import { StatusSelect } from "@/components/roadmaps/TopicRow";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
-import { buttonPrimary, buttonSecondaryCompact } from "@/components/ui/styles";
+import { ProgressBar } from "@/components/ui/ProgressBar";
+import { buttonPrimary, buttonSecondary, buttonSecondaryCompact } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import { deleteTopic, getTopicPage, setTopicStatus, updateTopic } from "@/lib/data";
 import type { TopicStatus } from "@/types/study";
@@ -54,6 +55,7 @@ export function TopicPage() {
   }
 
   const { topic, roadmap, group, resources, questions } = page;
+  const completedResources = resources.filter((resource) => resource.done).length;
 
   const run = async (action: () => Promise<void>) => {
     try {
@@ -73,22 +75,26 @@ export function TopicPage() {
   return (
     <section className="mx-auto flex w-full flex-col gap-8">
       <header className="flex flex-col gap-4">
-        <Link
-          href={`/roadmap/${roadmap.id}`}
-          className={buttonSecondaryCompact}
-        >
-          <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
-          <span className="truncate">{roadmap.title}</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-[18px] text-muted">
+          <Link href={`/roadmap/${roadmap.id}`} className={buttonSecondaryCompact}>
+            <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
+            <span className="max-w-[min(60vw,24rem)] truncate">{roadmap.title}</span>
+          </Link>
+          {group ? (
+            <>
+              <span aria-hidden="true">/</span>
+              <span className="min-w-0 wrap-break-word">{group.title}</span>
+            </>
+          ) : null}
+        </div>
 
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">
               {topic.title}
             </h1>
-            <p className="text-[16px] leading-6 text-muted">
-              {group ? `${group.title} · ` : ""}
-              {plural(questions.length, "question")}
+            <p className="mt-1 max-w-[72ch] text-[16px] leading-6 text-muted">
+              Learn the key ideas with your notes and resources, then use practice questions to check your understanding.
             </p>
           </div>
 
@@ -101,18 +107,70 @@ export function TopicPage() {
           />
         </div>
 
-        <div>
-          <StatusSelect
-            topic={topic}
-            onChange={(status: TopicStatus) => void run(() => setTopicStatus(topic.id, status))}
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          {questions.length > 0 ? (
+            <Link href={`/topic/${topic.id}/quiz`} className={buttonPrimary}>
+              <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Start quiz
+              <span>· {plural(questions.length, "question")}</span>
+            </Link>
+          ) : (
+            <Link href={`/topic/${topic.id}/q/new`} className={buttonPrimary}>
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Add your first question
+            </Link>
+          )}
+          {questions.length > 0 ? (
+            <Link href={`/topic/${topic.id}/q/new`} className={buttonSecondary}>
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Add question
+            </Link>
+          ) : null}
         </div>
+
+        <section aria-label="Topic progress" className="flex flex-col gap-4 rounded-2xl bg-card p-4 sm:flex-row sm:items-center">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-[16px] font-medium leading-6 text-fg">Learning progress</h2>
+              <span className="text-[13px] leading-[18px] text-muted tabular-nums">
+                {questions.length > 0
+                  ? plural(questions.length, "question")
+                  : "No practice questions yet"}
+              </span>
+            </div>
+            {resources.length > 0 ? (
+              <>
+                <ProgressBar
+                  label="Learning resources completed"
+                  completed={completedResources}
+                  total={resources.length}
+                  onCard
+                />
+                <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
+                  {completedResources} of {plural(resources.length, "resource")} completed
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-[13px] leading-[18px] text-muted">
+                <BookOpen aria-hidden="true" className="me-1 inline h-4 w-4" strokeWidth={1.5} />
+                Add a learning link to track what you have read or watched.
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 flex-col gap-1">
+            <span className="text-[13px] font-medium leading-[18px] text-muted">Topic status</span>
+            <StatusSelect
+              topic={topic}
+              onChange={(status: TopicStatus) => void run(() => setTopicStatus(topic.id, status))}
+            />
+          </div>
+        </section>
       </header>
 
       {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
-      <ResourcesSection key={`resources-${topic.id}`} topicId={topic.id} resources={resources} />
       <NotesSection key={`notes-${topic.id}`} topicId={topic.id} notes={topic.notes} />
+      <ResourcesSection key={`resources-${topic.id}`} topicId={topic.id} resources={resources} />
       <QuestionsSection
         topicId={topic.id}
         questions={questions}

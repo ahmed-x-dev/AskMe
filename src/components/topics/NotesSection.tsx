@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, CircleAlert } from "lucide-react";
 import { Markdown } from "@/components/ui/Markdown";
-import { fieldClassName } from "@/components/ui/styles";
+import { buttonSecondaryCompact, fieldClassName } from "@/components/ui/styles";
 import { updateTopic } from "@/lib/data";
 
 type NotesSectionProps = {
@@ -30,24 +30,36 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
   const [mode, setMode] = useState<Mode>(saved ? "preview" : "edit");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const savedRef = useRef(saved);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+
+  useEffect(() => {
+    savedRef.current = saved;
+  }, [saved]);
 
   const isDirty = normalize(draft) !== saved;
 
-  const save = useCallback(
-    async (value: string) => {
+  const save = useCallback((value: string) => {
+    const normalized = normalize(value);
+    const request = saveQueue.current.then(async () => {
+      if (normalized === savedRef.current) return;
+
       setIsSaving(true);
 
       try {
-        await updateTopic(topicId, { notes: value });
+        await updateTopic(topicId, { notes: normalized });
+        savedRef.current = normalized;
         setError(null);
       } catch (saveError) {
         setError(saveError instanceof Error ? saveError.message : "Could not save the notes.");
       } finally {
         setIsSaving(false);
       }
-    },
-    [topicId],
-  );
+    });
+
+    saveQueue.current = request;
+    return request;
+  }, [topicId]);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -73,10 +85,10 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
               type="button"
               onClick={() => setMode(value)}
               aria-pressed={mode === value}
-              className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+              className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                 mode === value
-                  ? "bg-accent text-on-accent"
-                  : "text-muted hover:bg-card-hover hover:text-fg"
+                  ? "bg-accent text-on-accent active:scale-[0.98]"
+                  : "text-muted hover:bg-card-hover hover:text-fg active:scale-[0.98]"
               }`}
             >
               {value === "edit" ? "Edit" : "Preview"}
@@ -95,10 +107,10 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
           rows={8}
           aria-label="Notes (Markdown)"
           placeholder="Write notes in Markdown: # headings, **bold**, - lists, `code`…"
-          className={`min-h-48 resize-y py-3 ${fieldClassName}`}
+          className={`min-h-48 w-full max-w-[72ch] resize-y py-3 ${fieldClassName}`}
         />
       ) : (
-        <div className="min-h-24 rounded-2xl bg-card p-4">
+        <div className="min-h-24 w-full max-w-[72ch] rounded-2xl bg-card p-4">
           {draft.trim() ? (
             <Markdown>{draft}</Markdown>
           ) : (
@@ -109,17 +121,22 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
         </div>
       )}
 
-      <p
-        role={error ? "alert" : "status"}
-        className={`flex items-center gap-2 text-[13px] leading-[18px] ${error ? "text-bad-fg" : "text-muted"}`}
-      >
-        {error ? (
+      {error ? (
+        <div role="alert" className="flex flex-wrap items-center gap-3 text-[13px] leading-[18px] text-bad-fg">
           <CircleAlert aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-        ) : !isSaving && !isDirty ? (
-          <Check aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-        ) : null}
-        {statusText}
-      </p>
+          <span className="min-w-0 flex-1 wrap-break-word">{statusText}</span>
+          <button type="button" onClick={() => void save(draft)} className={buttonSecondaryCompact}>
+            Try again
+          </button>
+        </div>
+      ) : (
+        <p role="status" className="flex items-center gap-2 text-[13px] leading-[18px] text-muted">
+          {!isSaving && !isDirty ? (
+            <Check aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+          ) : null}
+          {statusText}
+        </p>
+      )}
     </section>
   );
 }
