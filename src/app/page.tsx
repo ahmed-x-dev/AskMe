@@ -1,5 +1,5 @@
-import { SetsPage } from "@/components/sets/SetsPage";
+import { RoadmapGrid } from "@/components/roadmaps/RoadmapGrid";
 
 export default function Page() {
-  return <SetsPage />;
+  return <RoadmapGrid />;
 }
