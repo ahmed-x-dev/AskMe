@@ -30,7 +30,7 @@ export function TopicPage() {
 
   if (page === undefined) {
     return (
-      <div aria-busy="true" aria-label="Loading topic" className="mx-auto flex w-full max-w-4xl flex-col gap-4">
+      <div aria-busy="true" aria-label="Loading topic" className="mx-auto flex w-full flex-col gap-4">
         <div className="h-12 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-20 animate-pulse rounded-2xl bg-card" />
         <div className="h-32 animate-pulse rounded-2xl bg-card" />
@@ -71,7 +71,7 @@ export function TopicPage() {
   }. This cannot be undone.`;
 
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+    <section className="mx-auto flex w-full flex-col gap-8">
       <header className="flex flex-col gap-4">
         <Link
           href={`/roadmap/${roadmap.id}`}

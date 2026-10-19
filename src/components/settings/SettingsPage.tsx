@@ -169,7 +169,7 @@ function AiKeySection() {
 
 export function SettingsPage() {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <div className="mx-auto flex w-full flex-col gap-6">
       <header className="min-w-0">
         <h1 className="text-[22px] font-medium leading-7 text-fg">Settings</h1>
         <p className="mt-1 text-[16px] leading-6 text-muted">

@@ -22,6 +22,17 @@ import { RoadmapDialog, type RoadmapFormValues } from "./RoadmapDialog";
 
 type DialogState = { mode: "create" } | { mode: "edit"; overview: RoadmapOverview };
 
+/**
+ * Column count for the roadmap grid, given the number of tiles (roadmap cards plus the
+ * "New roadmap" tile). Following the item count keeps a short list from leaving empty
+ * columns at a breakpoint, while a long list still reaches four columns on wide screens.
+ */
+function gridClassName(tileCount: number): string {
+  if (tileCount <= 2) return "grid grid-cols-1 gap-4 sm:grid-cols-2";
+  if (tileCount === 3) return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
+  return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+}
+
 export function RoadmapGrid() {
   const overviews = useLiveQuery(() => getRoadmapOverviews(), []);
   const [dialog, setDialog] = useState<DialogState | null>(null);
@@ -116,7 +127,7 @@ export function RoadmapGrid() {
         <div
           aria-busy="true"
           aria-label="Loading roadmaps"
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          className={gridClassName(3)}
         >
           {[0, 1, 2].map((index) => (
             <div key={index} className="h-40 animate-pulse rounded-2xl bg-card" />
@@ -130,7 +141,7 @@ export function RoadmapGrid() {
           onAction={() => setDialog({ mode: "create" })}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className={gridClassName(overviews.length + 1)}>
           {overviews.map((overview) => (
             <RoadmapCard
               key={overview.roadmap.id}

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
-import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
+import { buttonGhost, buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import { withHttps } from "@/lib/format";
 import type { Resource, ResourceKind } from "@/types/study";
 import { RESOURCE_KINDS } from "./resourceKinds";
@@ -20,7 +20,7 @@ type ResourceDialogProps = {
   onClose: () => void;
 };
 
-const fieldClassName = `${fieldOnCardClassName} font-normal`;
+const inputClassName = `${fieldClassName} font-normal`;
 
 /** Edits the title, link and kind of one resource. */
 export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogProps) {
@@ -58,7 +58,7 @@ export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogPr
             onChange={(event) => setTitle(event.target.value)}
             required
             autoFocus
-            className={fieldClassName}
+            className={inputClassName}
           />
         </label>
 
@@ -70,7 +70,7 @@ export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogPr
             value={url}
             onChange={(event) => setUrl(event.target.value)}
             required
-            className={fieldClassName}
+            className={inputClassName}
           />
         </label>
 
@@ -79,7 +79,7 @@ export function ResourceDialog({ resource, onSubmit, onClose }: ResourceDialogPr
           <select
             value={kind}
             onChange={(event) => setKind(event.target.value as ResourceKind)}
-            className={fieldClassName}
+            className={inputClassName}
           >
             {RESOURCE_KINDS.map((option) => (
               <option key={option.value} value={option.value}>

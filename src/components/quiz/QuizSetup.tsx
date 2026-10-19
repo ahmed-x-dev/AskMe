@@ -48,7 +48,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
   const effectiveLimit = limit !== "all" && limit < matching ? limit : matching;
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="mx-auto flex w-full flex-col gap-6">
       <header className="flex flex-col gap-4">
         <Link
           href={source.backHref}
@@ -68,8 +68,8 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
       <div className="flex flex-col gap-6 rounded-2xl bg-card p-4">
         <h2 className="text-[18px] font-medium leading-[26px] text-fg">Set up your quiz</h2>
 
-        <SegmentedControl label="Question type" value={questionType} options={TYPE_OPTIONS} onChange={setQuestionType} />
-        <SegmentedControl label="Difficulty" value={difficulty} options={DIFFICULTY_OPTIONS} onChange={setDifficulty} />
+        <SegmentedControl label="Question type" value={questionType} options={TYPE_OPTIONS} onChange={setQuestionType} onCard />
+        <SegmentedControl label="Difficulty" value={difficulty} options={DIFFICULTY_OPTIONS} onChange={setDifficulty} onCard />
 
         {source.mistakeIds.length > 0 ? (
           <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg">

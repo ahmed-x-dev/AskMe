@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
-import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
+import { buttonGhost, buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import { describeError, generateQuestions, type GeneratedQuestion } from "@/features/ai";
 import { addQuestions } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -38,7 +38,7 @@ const DIFFICULTY_CHOICES: { value: DifficultyChoice; label: string }[] = [
   { value: "hard", label: "Hard" },
 ];
 
-const fieldClassName = `${fieldOnCardClassName} font-normal`;
+const inputClassName = `${fieldClassName} font-normal`;
 
 /** Generates questions for one topic with AI, lets the learner pick which to keep, then saves them. */
 export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsDialogProps) {
@@ -208,7 +208,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                   value={count}
                   onChange={(event) => setCount(Number(event.target.value))}
                   disabled={isBusy}
-                  className={fieldClassName}
+                  className={inputClassName}
                 >
                   {COUNTS.map((value) => (
                     <option key={value} value={value}>
@@ -224,7 +224,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                   value={difficulty}
                   onChange={(event) => setDifficulty(event.target.value as DifficultyChoice)}
                   disabled={isBusy}
-                  className={fieldClassName}
+                  className={inputClassName}
                 >
                   {DIFFICULTY_CHOICES.map((choice) => (
                     <option key={choice.value} value={choice.value}>
@@ -244,7 +244,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                 maxLength={500}
                 rows={3}
                 placeholder="Focus on common mistakes, use code examples…"
-                className={`resize-y py-3 ${fieldClassName}`}
+                className={`resize-y py-3 ${inputClassName}`}
               />
             </label>
 

@@ -117,7 +117,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
   }
 
   return (
-    <section className="mx-auto flex w-full max-w-5xl flex-col gap-5 rounded-2xl bg-card p-4">
+    <section className="mx-auto flex w-full flex-col gap-5 rounded-2xl bg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[13px] leading-[18px] text-muted">

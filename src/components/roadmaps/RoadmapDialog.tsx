@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
+import { buttonGhost, buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import type { Roadmap } from "@/types/study";
 
 export type RoadmapFormValues = {
@@ -76,7 +76,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
       onClick={(event) => {
         if (event.target === dialogRef.current && !isSaving) onClose();
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card p-0 text-fg backdrop:bg-overlay"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-2xl border border-line bg-card-elevated p-0 text-fg backdrop:bg-overlay"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <h2
@@ -97,7 +97,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
             autoFocus
             placeholder="React, English, Electronics…"
             aria-invalid={error !== null && title.trim() === ""}
-            className={`${fieldOnCardClassName} font-normal`}
+            className={`${fieldClassName} font-normal`}
           />
         </label>
 
@@ -115,7 +115,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
             onChange={(event) => setIcon(event.target.value)}
             maxLength={12}
             placeholder="Paste or pick an emoji"
-            className={fieldOnCardClassName}
+            className={fieldClassName}
           />
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_ICONS.map((suggestion) => (
@@ -125,7 +125,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
                 onClick={() => setIcon(suggestion)}
                 aria-label={`Use ${suggestion} as icon`}
                 aria-pressed={icon === suggestion}
-                className={`flex h-11 w-11 items-center justify-center rounded-[14px] text-[20px] transition-colors hover:bg-card-hover ${icon === suggestion ? "bg-bg ring-2 ring-accent" : "bg-bg"}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-[14px] text-[20px] transition-colors hover:bg-card-hover ${icon === suggestion ? "bg-card ring-2 ring-accent" : "bg-card"}`}
               >
                 {suggestion}
               </button>
@@ -148,7 +148,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
                 />
                 <span
                   title={option.name}
-                  className="block h-9 w-9 rounded-full ring-offset-2 ring-offset-card peer-checked:ring-2 peer-checked:ring-fg peer-focus-visible:ring-2 peer-focus-visible:ring-accent"
+                  className="block h-9 w-9 rounded-full ring-offset-2 ring-offset-card-elevated peer-checked:ring-2 peer-checked:ring-fg peer-focus-visible:ring-2 peer-focus-visible:ring-accent"
                   style={{ backgroundColor: option.value || "var(--accent)" }}
                 />
                 <span className="sr-only">{option.name}</span>

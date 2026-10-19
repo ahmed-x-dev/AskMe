@@ -4,11 +4,12 @@
 [data-theme='light'] {
   color-scheme: light;
   --bg: #fbfcfb;
-  --card: #edf1ef;
-  --card-hover: #e4eae7;
-  --line: #c9d4ce;
+  --card: #e9eeeb;
+  --card-elevated: #ffffff;
+  --card-hover: #dfe6e2;
+  --line: #c4d0c9;
   --fg: #121715;
-  --muted: #57615c;
+  --muted: #545e59;
   --accent: #09785e;
   --on-accent: #ffffff;
   --accent-text: #096a53;
@@ -23,31 +24,35 @@
   --overlay: rgb(0 0 0 / 0.4);
 }
 
+/* Dark is a layered charcoal with a green tint, never black: each surface is a
+ * visible step above the one it sits on (see DESIGN.md section 2). */
 [data-theme='dark'] {
   color-scheme: dark;
-  --bg: #131917;
-  --card: #24312d;
-  --card-hover: #303e39;
-  --line: #43524c;
-  --fg: #e9efec;
-  --muted: #9aa8a3;
+  --bg: #151b19;
+  --card: #242f2a;
+  --card-elevated: #2e3a34;
+  --card-hover: #39463f;
+  --line: #44524b;
+  --fg: #edf3ef;
+  --muted: #aab5ae;
   --accent: #3dd6a5;
   --on-accent: #06100c;
-  --accent-text: #46dfae;
-  --ok-bg: #12322a;
-  --ok-fg: #7be8c0;
-  --bad-bg: #3a1a1e;
-  --bad-fg: #ffa39b;
-  --warn-bg: #33270b;
-  --warn-fg: #f2c45a;
-  --essay-bg: #232a5c;
-  --essay-fg: #c2c9ff;
+  --accent-text: #4fd9ac;
+  --ok-bg: #14322a;
+  --ok-fg: #7ce8c1;
+  --bad-bg: #3b1c20;
+  --bad-fg: #ffa69e;
+  --warn-bg: #342a0f;
+  --warn-fg: #f3c65f;
+  --essay-bg: #232b57;
+  --essay-fg: #c4cbff;
   --overlay: rgb(0 0 0 / 0.55);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
+  --color-card-elevated: var(--card-elevated);
   --color-card-hover: var(--card-hover);
   --color-line: var(--line);
   --color-fg: var(--fg);

@@ -1,78 +1,116 @@
 # Responsive layout: phone-first, desktop-friendly
 
-The app is designed for short mobile revision sessions before being widened to larger screens.
+How one set of layout rules serves a 375px phone and a 1920px monitor without stretching text.
 
 ## Why we need it
 
-The app is meant to be used on a phone, but the same layout should still feel comfortable on tablets and desktops. Mobile-first design makes the basics easy to use and reliable.
+The app is meant for short revision sessions on a phone, but the same screens must feel
+comfortable on a tablet and use a wide monitor instead of sitting in a narrow strip in the
+middle. Mobile-first keeps the basics reliable; the wide-screen rules stop us from wasting
+the extra space or, the opposite mistake, stretching a paragraph across the whole monitor.
 
 ## The concept, simply
 
-CSS should start from the narrowest view and add layout improvements as the screen gets wider. This keeps content readable and touch-friendly everywhere.
+CSS starts at the narrowest view and adds layout as the screen grows. Two ideas do most of the work:
 
-This phone-first layout approach is separate from release order: AskMe ships as a web app first and desktop second. Mobile delivery is deferred, and PWA install/offline support is currently disabled.
+- **A fluid container**: one centered box with fluid side padding. Everything inside
+  it shares the same left and right edge, so the header lines up with the content below it.
+- **Full-width layout**: a wide monitor is used to its full potential for every screen. Whether it's a grid of cards or a text-heavy study session, the content stretches to fill the available space.
 
-In this project, the shell uses safe-area padding and expands on large displays. Each screen then uses the space that fits its task: set details place the overview beside the AI helper and show questions in a two-column grid; quiz setup places filters side by side; settings, editors, and active quiz content remain in centered, readable panels.
-
-The library home page uses a compact heading with set/question totals, a search field, import/export actions, and group filter chips. These controls stack on phones and share a row when the available width allows. On wide screens, the set cards deliberately stay in two columns so each one can keep a clear primary **Start quiz** action beside an **Open** link instead of becoming a dense tile.
-
-The shared header keeps the AskMe brand on the library page. On inner pages it replaces that brand with a 48px-tall **Back to sets** link, leaving the theme control in the same place.
+The padding that keeps content off the screen edge is **fluid**: it is 16px on a phone and
+grows with the viewport until it stops at 40px. That single value replaces the old fixed steps
+(16px / 24px / 32px) and means every width in between is handled, not just the breakpoints.
 
 ## In our code
 
-`src/components/AppLayout.tsx` selects the library width with the Next.js pathname and lets the outer page fill the viewport before its inner column is centered. `src/components/SetsPage.tsx` uses a responsive grid, and `app/globals.css` keeps the app centered with safe-area padding.
+The shell is `src/components/layout/AppLayout.tsx`. Its header and its content wrapper both
+reuse one shared string from `src/components/ui/styles.ts`:
 
-```css
-body {
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-}
+```ts
+export const pageContainer =
+  'mx-auto w-full px-[clamp(1rem,2.5vw,2.5rem)]';
+```
 
-@media (min-width: 768px) {
-  body {
-    display: flex;
-    justify-content: center;
-  }
+Line by line:
+
+- `mx-auto w-full` — fill the available width, centered.
+- `px-[clamp(1rem,2.5vw,2.5rem)]` — `clamp(min, preferred, max)`: at least `1rem` (16px),
+  at most `2.5rem` (40px), otherwise `2.5vw` (2.5% of the viewport width).
+
+At the widths we test, the padding works out to roughly:
+
+| Viewport | Side padding | Container |
+|---|---|---|
+| 375px | 16px | full width |
+| 768px | 19px | full width |
+| 1024px | 26px | full width |
+| 1440px | 36px | full width |
+| 1920px | 40px | full width |
+
+Each page then constrains its own content with a second max-width, chosen by the task:
+
+- **Every screen** uses the container as-is, filling the full width of the shell.
+  `src/components/roadmaps/RoadmapGrid.tsx` fills it, but its column count follows
+  the number of items, so a short list never leaves an empty column:
+
+```ts
+function gridClassName(tileCount: number): string {
+  if (tileCount <= 2) return "grid grid-cols-1 gap-4 sm:grid-cols-2";
+  if (tileCount === 3) return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
+  return "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
 }
 ```
 
-The page does not need a Vite `#root` element: Next.js renders the route under the root layout. The layout classes in `AppLayout.tsx` set an 800px base maximum, expanding to 1280px at large widths and 1536px at extra-large widths. Each page component constrains its own content or switches to columns where useful. `SetDetailPage.tsx` places its overview and AI helper next to each other and uses two columns for questions. `QuizPage.tsx` lays out setup filters in two columns and offers MCQ choices in a two-column grid, while keeping the score card narrower. `QuestionEditorPage.tsx` uses a wider form and two columns for MCQ options, and `SettingsPage.tsx` keeps its short form centered. In `SetsPage.tsx`, `md:grid-cols-2`, `lg:grid-cols-3`, and `2xl:grid-cols-4` use available width for more set cards without stretching each card too far. The intro paragraph grows to 600px and the empty state stays within 768px. Breakpoint variants such as `sm:flex-row` switch page actions from a vertical stack to a horizontal row. The shared `AppLayout` uses `usePathname()` to show the brand on `/` and a direct library link elsewhere.
+The count passed in is `overviews.length + 1`, because the "New roadmap" tile is a grid child
+too. The loading skeleton calls the same function with `3`, so the placeholder shape matches.
+
+- **Reading screens** (topic, review, quiz, editor) now fill the full shell width.
+  They are centered *inside* the container, so they cover all available space on a wide page.
+
+Below 768px the primary navigation leaves the header and becomes a bottom bar
+(`md:hidden`); dialogs (`w-[min(30rem,calc(100%-2rem))]`) and the overflow menu
+(`w-48 max-w-[calc(100vw-2rem)]`) are clamped to the viewport, so nothing overflows sideways.
 
 ## ❌ / ✅ examples
 
-- ❌ Building the desktop layout first and only shrinking later.
-- ✅ Starting with a phone-sized canvas and then widening it.
-- ❌ Using a fixed width that breaks on narrow screens.
-- ✅ A max-width container and safe-area padding keep things stable.
-- ❌ Force the heading and all actions into one row at phone width.
-- ✅ Let the controls wrap or stack until there is enough room.
-- ❌ Make the logo the only way back to the library on inner pages.
-- ✅ Use a clearly labeled, touch-sized back link to `/`.
+- ❌ Hard-coding `max-w-[1440px]` and fixed `px-4 md:px-6 xl:px-8`, so a 1920px monitor keeps
+  the same 1440px box with 240px of unused space each side.
+- ✅ Truly fluid `w-full` with `px-[clamp(1rem,2.5vw,2.5rem)]`, so the content covers the viewport.
+- ❌ A static `sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4` for one card, leaving dead columns.
+- ✅ Let the column count follow the item count.
+- ❌ Limiting reading screens to a fixed width like `max-w-3xl` or `max-w-4xl`.
+- ✅ Truly fluid `w-full` for all screens, so the content covers the entire viewport.
 
 ## Try it yourself
 
-1. Open the app at a narrow width and confirm the title, import and create controls fit.
-2. Increase the viewport width and see the sets grid widen and actions move beside the heading.
-3. Open a set detail or editor page and confirm **Back to sets** and the theme toggle both fit.
+1. Set the browser to 375px, 768px, 1024px, 1440px, and 1920px. Confirm the content never
+   scrolls horizontally and that the header and the content share the same left edge.
+2. Add one roadmap, then three, then eight. Watch the home grid go 2 → 3 → 4 columns and confirm
+   there is never an empty column beside a lone card.
+3. Open Review and the quiz runner at 1920px. Confirm the content covers all available
+   space rather than being restricted to a narrow column.
 
 ## Quick Reference
 
-- `lg:max-w-7xl 2xl:max-w-screen-2xl` lets the set library use wide desktop space.
-- `lg:max-w-3xl` keeps an empty-state card from becoming too wide.
-- `lg:grid-cols-2` lets related content share desktop space while keeping each card readable.
-- `max-w-[480px]` keeps question and quiz screens readable at a desktop width.
-- `md:grid-cols-2` expands the library into roomy action cards.
-- `sm:flex-row` can move stacked controls into a row when there is room.
-- `Link href="/"` provides a reliable return to the library from any inner route.
-- `env(safe-area-inset-*)` keeps the app from being clipped on modern phones.
+- `pageContainer` — the shared shell container; compose it with `flex …` classes.
+- `mx-auto w-full` — centered and truly fluid, covers all spaces on all pages.
+- `px-[clamp(1rem,2.5vw,2.5rem)]` — fluid side padding: 16px minimum, 40px maximum.
+- `sm:` 640px · `md:` 768px · `lg:` 1024px · `xl:` 1280px · `2xl:` 1536px — the Tailwind steps.
+- `md:hidden` on the bottom nav / `hidden md:flex` on the top-bar nav — the nav swap at 768px.
+- `w-[min(30rem,calc(100%-2rem))]` — a dialog that always fits the viewport.
 
 ## Key Takeaways
 
-- Mobile-first design is about constraints, not limitations.
-- A small set of safe spacing rules makes the app consistent across devices.
-- Responsive layout should support touch usage without sacrificing readability.
+- One container constant keeps the header and every page aligned and easy to change.
+- Fluid padding beats fixed breakpoint steps because it covers every width in between.
+- Wide is for everything; line length follows the full container width.
+- Grids should follow the item count so short lists never look broken.
+- Overflow safety comes from clamping dialogs and menus to the viewport, not from removing max-widths.
 
 ## Links to related files
 
-- `app/globals.css`
-- `src/components/SetsPage.tsx`
-- `src/components/AppLayout.tsx`
+- `DESIGN.md` §3 (Shape and spacing) and §6 (Screens → layout per screen) — the rules this code follows.
+- `src/components/ui/styles.ts` — where `pageContainer` and the other shared class strings live.
+- `src/components/layout/AppLayout.tsx` — the header, content wrapper, and bottom navigation.
+- `src/components/roadmaps/RoadmapGrid.tsx` — the item-count grid.
+- Builds on `02-tailwind-and-themes.md` (tokens and `@theme`).

@@ -40,13 +40,13 @@ useEffect(() => {
 - The effect updates the root element so CSS can respond to the saved theme.
 - A second effect persists later theme changes after the saved value has loaded.
 
-`DESIGN.md` is the source of truth for every color and styling rule. In `src/app/globals.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card`, `bg-card-hover`, `border-line`, and `text-muted`. Keep these mappings aligned with the design token table.
+`DESIGN.md` is the source of truth for every color and styling rule. In `src/app/globals.css`, the theme selectors copy its color values into CSS variables and `@theme inline` exposes those variables as Tailwind utilities such as `bg-card`, `bg-card-elevated`, `bg-card-hover`, `border-line`, and `text-muted`. Keep these mappings aligned with the design token table.
 
-The soft-cards design uses lightness for depth: `bg-bg` is the page, `bg-card` is a surface, and `bg-card-hover` is the pressed or hovered state. UI components never contain raw hex colors; changing a token updates the whole app in both themes. Primary actions alone use `bg-accent`; secondary controls stay neutral and use `bg-card-hover` for feedback.
+The soft-cards design uses lightness for depth, with four neutral surfaces in one ramp: `bg-bg` is the page, `bg-card` is a resting surface (cards, option rows, inputs), `bg-card-elevated` is a floating surface (dialogs, overflow menus) that overlaps other content, and `bg-card-hover` is the pressed or hovered state of any of them. The order flips by theme: light gets depth by darkening (`card-hover` → `card` → `bg` → `card-elevated`), dark by lightening (`bg` → `card` → `card-elevated` → `card-hover`). That is why the dark page background is charcoal, not black — if it were black, the steps above it would have nowhere to go. UI components never contain raw hex colors; changing a token updates the whole app in both themes. Primary actions alone use `bg-accent`; secondary controls stay neutral and use `bg-card-hover` for feedback.
 
 Cards deliberately have no border. Controls are different: inputs, text areas, selects, and neutral buttons receive a 1px `--line` boundary. This makes fields and secondary actions easy to find without giving every card a hard outline. The focus ring remains a separate, thicker accent outline, so keyboard focus is always clear.
 
-`--line` is its own token, a slightly stronger step than `--card-hover`, so a control boundary never disappears on a card. Because a `bg-card` control would be invisible on a `bg-card` panel, `src/components/ui/styles.ts` also exports an inverse variant (`fieldOnCardClassName`, `buttonSecondaryOnCard`) that uses `bg-bg`. The file holds every shared button and field class string, so a screen never hand-writes its own.
+`--line` is its own token, a slightly stronger step than `--card-hover`, so a control boundary never disappears on a card. A control always takes the step *below* the surface it sits on: `bg-card` on the page and inside a floating surface, but `bg-bg` inside a `bg-card` panel. `src/components/ui/styles.ts` holds every shared button and field class string for those cases (`fieldClassName`, `fieldOnCardClassName`, `buttonSecondary`, `buttonSecondaryOnCard`), so a screen never hand-writes its own.
 
 State belongs in the design system too. A temporary action uses `aria-busy="true"` with a progress label, while an invalid field uses `aria-invalid="true"` and points to its error text with `aria-describedby`. Global CSS can then apply the same cursor, opacity, and error boundary rules everywhere instead of each form inventing them.
 
@@ -73,20 +73,35 @@ In `src/components/layout/AppLayout.tsx`, the theme button shows a moon when it 
 ```css
 @import 'tailwindcss';
 
-:root {
+:root,
+[data-theme='light'] {
   --bg: #fbfcfb;
-  --card: #edf1ef;
-  --card-hover: #e4eae7;
-  --line: #c9d4ce;
+  --card: #e9eeeb;
+  --card-elevated: #ffffff;
+  --card-hover: #dfe6e2;
+  --line: #c4d0c9;
   --fg: #121715;
-  --muted: #57615c;
+  --muted: #545e59;
   --accent: #09785e;
   --overlay: rgb(0 0 0 / 0.4);
+}
+
+[data-theme='dark'] {
+  --bg: #151b19;
+  --card: #242f2a;
+  --card-elevated: #2e3a34;
+  --card-hover: #39463f;
+  --line: #44524b;
+  --fg: #edf3ef;
+  --muted: #aab5ae;
+  --accent: #3dd6a5;
+  --overlay: rgb(0 0 0 / 0.55);
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-card: var(--card);
+  --color-card-elevated: var(--card-elevated);
   --color-card-hover: var(--card-hover);
   --color-line: var(--line);
   --color-fg: var(--fg);
@@ -103,9 +118,11 @@ window.localStorage.setItem("askme-theme", "dark");
 
 - Tailwind classes compose small styling utilities in markup.
 - CSS variables allow values to change by theme without rewriting components.
+- Four surfaces form one ramp: page, resting, floating, hover. Depth is lightness, not shadow.
+- The dark page is charcoal (~9% lightness), never black, so the steps above it stay visible.
 - `bg-card-hover` gives neutral controls feedback without giving them primary-action color.
 - A `--line` boundary distinguishes controls; cards remain borderless.
-- Controls inside a card use the inverse surface (`bg-bg`) so they stay visible.
+- Controls take the step below their surface: `bg-card` on the page or a floating surface, `bg-bg` inside a card.
 - `aria-busy` and `aria-invalid` connect visual states to assistive technology.
 - React state drives the active theme; `localStorage` persists it in this browser.
 - The saved value is validated before it is used.

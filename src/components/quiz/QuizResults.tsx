@@ -41,7 +41,7 @@ export function QuizResults({
   const missed = queue.filter((question) => missedIds.has(question.id));
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="mx-auto flex w-full flex-col gap-6">
       <div className="rounded-2xl bg-card p-6 text-center">
         <p className="text-[13px] leading-[18px] text-muted">Quiz complete</p>
         <p className="mt-2 text-[40px] font-medium leading-[44px] text-accent-text tabular-nums">

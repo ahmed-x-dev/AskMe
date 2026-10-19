@@ -70,7 +70,7 @@ export function ReviewPage() {
 
   if (summary === undefined) {
     return (
-      <div aria-busy="true" aria-label="Loading review" className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <div aria-busy="true" aria-label="Loading review" className="mx-auto flex w-full flex-col gap-4">
         <div className="h-10 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-40 animate-pulse rounded-2xl bg-card" />
       </div>
@@ -80,7 +80,7 @@ export function ReviewPage() {
   const sessionSize = Math.min(summary.total, REVIEW_SESSION_SIZE);
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="mx-auto flex w-full flex-col gap-6">
       <header className="min-w-0">
         <h1 className="text-[22px] font-medium leading-7 text-fg">Review</h1>
         <p className="mt-1 text-[16px] leading-6 text-muted">

@@ -74,7 +74,7 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="mx-auto flex w-full flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[16px] font-medium leading-6 text-fg tabular-nums">
           Question {index + 1} of {queue.length}

@@ -296,7 +296,7 @@ export function TopicsPage() {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+    <section className="mx-auto flex w-full flex-col gap-6">
       <header className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
           <RoadmapIcon roadmap={roadmap} />

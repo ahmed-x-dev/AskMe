@@ -15,7 +15,7 @@ export const buttonPrimary = `${buttonBase} bg-accent text-on-accent hover:opaci
 /** Neutral button with the shared control boundary. */
 export const buttonSecondary = `${buttonBase} border border-line bg-card text-fg hover:bg-card-hover`;
 
-/** Neutral button for a `bg-card` surface (dialog or settings panel), using the inverse surface. */
+/** Neutral button for a `bg-card` panel (settings section, question editor), using the inverse surface. */
 export const buttonSecondaryOnCard = `${buttonBase} border border-line bg-bg text-fg hover:bg-card-hover`;
 
 /** Borderless text button for low-emphasis actions such as Cancel. */
@@ -35,14 +35,22 @@ export const buttonDestructive = `${buttonBase} border border-line bg-bg text-ba
 export const iconButton =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-line bg-card text-fg transition-colors duration-150 hover:bg-card-hover';
 
-/** Field styling for inputs, text areas and selects that sit on the page background. */
+/** Field styling for inputs, text areas and selects on the page background and inside floating surfaces (dialogs, menus). */
 export const fieldClassName =
   'min-h-12 w-full rounded-[14px] border border-line bg-card px-3 text-[16px] leading-6 text-fg placeholder:text-muted';
 
-/** Field styling for controls inside a `bg-card` surface (for example a dialog). */
+/** Field styling for controls inside a `bg-card` panel (settings section, question editor, quiz setup). */
 export const fieldOnCardClassName =
   'min-h-12 w-full rounded-[14px] border border-line bg-bg px-3 text-[16px] leading-6 text-fg placeholder:text-muted';
 
-/** Raised menu surface (overflow menu, dropdown). */
+/** Floating menu surface (overflow menu, dropdown). One step above the content it covers. */
 export const menuSurface =
-  'flex flex-col gap-1 rounded-2xl border border-line bg-card p-2';
+  'flex flex-col gap-1 rounded-2xl border border-line bg-card-elevated p-2';
+
+/**
+ * Shared page container for the shell (top bar and content). Centered and fluid, with
+ * side padding that stays at 16px on phones and grows to 40px on wide screens.
+ * Compose it with layout classes, for example `${pageContainer} flex flex-col gap-6`.
+ */
+export const pageContainer =
+  'mx-auto w-full px-[clamp(1rem,2.5vw,2.5rem)]';

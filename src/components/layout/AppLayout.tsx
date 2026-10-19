@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, CalendarCheck, Map, Moon, Settings, Sun, type LucideIcon } from "lucide-react";
 import { countDue } from "@/lib/data";
+import { pageContainer } from "@/components/ui/styles";
 
 export type Theme = "light" | "dark";
 
@@ -50,7 +51,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   return (
     <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
       <header className="sticky top-0 z-30 border-b border-line bg-bg">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center gap-2 px-4 py-3 md:gap-4 md:px-6 xl:px-8">
+        <div className={`${pageContainer} flex items-center gap-2 py-3 md:gap-4`}>
           {!isHomePage && !hasOwnBackLink ? (
             <Link
               href="/"
@@ -120,7 +121,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 pb-28 pt-6 md:px-6 md:pb-12 xl:px-8">
+      <div className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
         {children}
       </div>
 

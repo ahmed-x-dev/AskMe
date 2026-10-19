@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
-import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "./styles";
+import { buttonGhost, buttonPrimary, fieldClassName } from "./styles";
 
 type NameDialogProps = {
   title: string;
@@ -63,7 +63,7 @@ export function NameDialog({
             placeholder={placeholder}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "name-dialog-error" : undefined}
-            className={fieldOnCardClassName}
+            className={fieldClassName}
           />
         </label>
 

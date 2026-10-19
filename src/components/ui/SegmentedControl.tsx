@@ -3,14 +3,26 @@ type SegmentedControlProps<T extends string> = {
   value: T;
   options: readonly { value: T; label: string }[];
   onChange: (value: T) => void;
+  /** Set when the control sits inside a `bg-card` panel, so the container takes the step below it. */
+  onCard?: boolean;
 };
 
 /** A row of mutually exclusive choices, such as a question type or difficulty. */
-export function SegmentedControl<T extends string>({ label, value, options, onChange }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  onCard = false,
+}: SegmentedControlProps<T>) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-2 text-[13px] font-medium leading-[18px] text-muted">{label}</legend>
-      <div role="group" aria-label={label} className="flex gap-1 rounded-[14px] bg-card p-[3px]">
+      <div
+        role="group"
+        aria-label={label}
+        className={`flex gap-1 rounded-[14px] p-[3px] ${onCard ? "bg-bg" : "bg-card"}`}
+      >
         {options.map((option) => (
           <button
             key={option.value}

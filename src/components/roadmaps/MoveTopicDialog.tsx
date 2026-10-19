@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
-import { buttonGhost, buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
+import { buttonGhost, buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import { listGroups } from "@/lib/data";
 import type { Group, Roadmap, Topic } from "@/types/study";
 
@@ -22,7 +22,7 @@ type MoveTopicDialogProps = {
   onClose: () => void;
 };
 
-const selectClassName = `${fieldOnCardClassName} font-normal`;
+const selectClassName = `${fieldClassName} font-normal`;
 
 export function MoveTopicDialog({
   topic,
