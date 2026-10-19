@@ -29,16 +29,27 @@ type TopicRowProps = {
   actions: TopicRowActions;
 };
 
-function StatusSelect({ topic, onChange }: { topic: Topic; onChange: (status: TopicStatus) => void }) {
+/**
+ * A status chip that is also a select. The visible chip keeps the 13px chip look, while the
+ * invisible native select covers a 44px-tall area so it is easy to tap.
+ */
+export function StatusSelect({ topic, onChange }: { topic: Topic; onChange: (status: TopicStatus) => void }) {
   const current = STATUS_OPTIONS.find((option) => option.value === topic.status) ?? STATUS_OPTIONS[0];
 
   return (
-    <span className="relative inline-flex">
+    <span className="relative inline-flex min-h-11 items-center rounded-full has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">
+      <span
+        aria-hidden="true"
+        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px] ${current.className}`}
+      >
+        {current.label}
+        <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
+      </span>
       <select
         aria-label={`Status of ${topic.title}`}
         value={topic.status}
         onChange={(event) => onChange(event.target.value as TopicStatus)}
-        className={`field-sizing-content cursor-pointer appearance-none rounded-full py-1 ps-3 pe-7 text-[13px] font-medium leading-5 ${current.className}`}
+        className="absolute inset-0 h-full w-full cursor-pointer appearance-none opacity-0 outline-none"
       >
         {STATUS_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -46,11 +57,6 @@ function StatusSelect({ topic, onChange }: { topic: Topic; onChange: (status: To
           </option>
         ))}
       </select>
-      <ChevronDown
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-e-2 top-1/2 h-4 w-4 -translate-y-1/2"
-        strokeWidth={1.5}
-      />
     </span>
   );
 }
@@ -58,8 +64,8 @@ function StatusSelect({ topic, onChange }: { topic: Topic; onChange: (status: To
 /** Shows a topic's row without drag behavior, used for the drag overlay. */
 export function TopicRowPreview({ topic, number }: { topic: Topic; number: number }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-card-hover p-3 shadow-lg">
-      <span className="flex h-11 w-9 shrink-0 items-center justify-center text-muted">
+    <div className="flex items-center gap-3 rounded-2xl bg-card-hover p-3 ring-2 ring-accent">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center text-muted">
         <GripVertical aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </span>
       <span className="w-6 text-center text-[16px] text-muted tabular-nums">{number}</span>
@@ -98,7 +104,7 @@ export function TopicRow({ topic, number, questionCount, actions }: TopicRowProp
         {...attributes}
         {...listeners}
         aria-label={`Reorder ${topic.title}`}
-        className="flex h-11 w-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-[14px] bg-bg text-muted transition-colors hover:text-fg active:cursor-grabbing"
+        className="flex h-11 w-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-[14px] bg-bg text-muted transition-colors hover:text-fg active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </button>
@@ -112,9 +118,9 @@ export function TopicRow({ topic, number, questionCount, actions }: TopicRowProp
         >
           {topic.title}
         </Link>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-3">
           <StatusSelect topic={topic} onChange={(status) => actions.onStatusChange(topic, status)} />
-          <span className="text-[13px] leading-5 text-muted tabular-nums">
+          <span className="text-[13px] leading-[18px] text-muted tabular-nums">
             {plural(questionCount, "question")}
           </span>
         </div>

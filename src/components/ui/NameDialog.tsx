@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { ErrorMessage } from "./ErrorMessage";
 import { Modal } from "./Modal";
 
 type NameDialogProps = {
@@ -44,7 +45,7 @@ export function NameDialog({
 
   return (
     <Modal titleId="name-dialog-title" isBusy={isSaving} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-6">
         <h2 id="name-dialog-title" className="text-[22px] font-medium leading-7">
           {title}
         </h2>
@@ -59,22 +60,21 @@ export function NameDialog({
             required
             autoFocus
             placeholder={placeholder}
-            className="min-h-12 rounded-2xl bg-bg px-4 text-[16px] font-normal text-fg placeholder:text-muted"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "name-dialog-error" : undefined}
+            className="min-h-12 rounded-[14px] bg-bg px-3 text-[16px] font-normal text-fg placeholder:text-muted"
           />
         </label>
 
-        {error ? (
-          <p role="alert" className="rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg">
-            {error}
-          </p>
-        ) : null}
+        {error ? <ErrorMessage id="name-dialog-error">{error}</ErrorMessage> : null}
 
         <div className="flex justify-end gap-3">
           <button
             type="button"
+            data-plain
             onClick={onClose}
             disabled={isSaving}
-            className="min-h-12 rounded-2xl bg-bg px-5 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium text-accent-text transition-colors hover:bg-card-hover"
           >
             Cancel
           </button>
@@ -82,9 +82,9 @@ export function NameDialog({
             type="submit"
             disabled={isSaving || value.trim() === ""}
             aria-busy={isSaving}
-            className="min-h-12 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            className="min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
           >
-            {submitLabel}
+            {isSaving ? "Saving…" : submitLabel}
           </button>
         </div>
       </form>

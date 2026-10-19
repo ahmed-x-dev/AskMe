@@ -21,6 +21,7 @@ type ActionMenuProps = {
 export function ActionMenu({ label, items }: ActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 
   useEffect(() => {
@@ -30,7 +31,10 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
       if (!containerRef.current?.contains(event.target as Node)) setIsOpen(false);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        triggerRef.current?.focus();
+      }
     };
 
     document.addEventListener("mousedown", closeOnOutsideClick);
@@ -45,6 +49,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
   return (
     <div ref={containerRef} className={`relative shrink-0 ${isOpen ? "z-40" : ""}`}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         aria-label={label}
@@ -58,7 +63,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
       {isOpen ? (
         <div
           id={menuId}
-          className="absolute inset-e-0 top-full z-50 mt-2 flex w-48 flex-col gap-1 rounded-2xl bg-card p-2 shadow-lg"
+          className="absolute inset-e-0 top-full z-50 mt-2 flex w-48 flex-col gap-1 rounded-2xl bg-bg p-2 ring-1 ring-card-hover"
         >
           {items.map(({ label: itemLabel, icon: Icon, onSelect, danger, disabled }) => (
             <button
@@ -69,7 +74,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
                 setIsOpen(false);
                 onSelect();
               }}
-              className={`flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] transition-colors ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
+              className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] transition-colors ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
             >
               <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               {itemLabel}

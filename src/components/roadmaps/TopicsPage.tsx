@@ -18,7 +18,10 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { FolderPlus, Play } from "lucide-react";
+import { FolderPlus, ListPlus, Play } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { NameDialog } from "@/components/ui/NameDialog";
 import { plural } from "@/lib/format";
@@ -49,7 +52,11 @@ type DialogState =
   | { kind: "new-group" }
   | { kind: "rename-group"; group: Group }
   | { kind: "rename-topic"; topic: Topic }
-  | { kind: "move-topic"; topic: Topic };
+  | { kind: "move-topic"; topic: Topic }
+  | { kind: "delete-topic"; topic: Topic }
+  | { kind: "delete-group"; group: Group };
+
+const ADD_TOPIC_INPUT_ID = "add-topic-input";
 
 const CONTAINER_PREFIX = "container:";
 
@@ -76,7 +83,6 @@ export function TopicsPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string | null>(null);
-  /** Topics after a drop, shown immediately until the saved data arrives. */
   /** Topics after a drop, shown until the live query delivers a newer `page`. */
   const [pending, setPending] = useState<{
     base: typeof page;
@@ -125,7 +131,7 @@ export function TopicsPage() {
       <div
         aria-busy="true"
         aria-label="Loading roadmap"
-        className="flex flex-col gap-4"
+        className="mx-auto flex w-full max-w-3xl flex-col gap-4"
       >
         <div className="h-24 animate-pulse rounded-2xl bg-card" />
         <div className="h-16 animate-pulse rounded-2xl bg-card" />
@@ -136,14 +142,14 @@ export function TopicsPage() {
 
   if (page === null) {
     return (
-      <section className="rounded-2xl bg-card p-6 text-center">
+      <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Roadmap not found</h1>
         <p className="mt-2 text-[16px] leading-6 text-muted">
           It may have been deleted.
         </p>
         <Link
           href="/"
-          className="mt-5 inline-flex min-h-12 items-center rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent"
+          className="mt-6 inline-flex min-h-12 items-center rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent"
         >
           Back to roadmaps
         </Link>
@@ -231,14 +237,7 @@ export function TopicsPage() {
 
   const handleMoveTopic = async (topic: Topic, values: MoveTopicValues) => {
     if (values.roadmapId !== topic.roadmapId) {
-      await moveTopicToRoadmap(topic.id, values.roadmapId);
-
-      if (values.groupId) {
-        await moveTopic(topic.id, {
-          groupId: values.groupId,
-          index: Number.MAX_SAFE_INTEGER,
-        });
-      }
+      await moveTopicToRoadmap(topic.id, values.roadmapId, values.groupId);
     } else if ((topic.groupId ?? null) !== values.groupId) {
       await moveTopic(topic.id, {
         groupId: values.groupId,
@@ -249,32 +248,24 @@ export function TopicsPage() {
     setDialog(null);
   };
 
-  const handleDeleteTopic = (topic: Topic) => {
+  const deleteTopicMessage = (topic: Topic) => {
     const questionCount = questionCounts[topic.id] ?? 0;
     const contents =
       questionCount > 0
         ? ` This also deletes its ${plural(questionCount, "question")} and links.`
         : "";
 
-    if (
-      window.confirm(
-        `Delete “${topic.title}”?${contents} This cannot be undone.`,
-      )
-    ) {
-      void run(() => deleteTopic(topic.id));
-    }
+    return `“${topic.title}” will be deleted.${contents} This cannot be undone.`;
   };
 
-  const handleDeleteGroup = (group: Group) => {
+  const deleteGroupMessage = (group: Group) => {
     const count = topics.filter((topic) => topic.groupId === group.id).length;
     const contents =
       count > 0
         ? ` Its ${plural(count, "topic")} will stay in the roadmap, ungrouped.`
         : "";
 
-    if (window.confirm(`Delete the group “${group.title}”?${contents}`)) {
-      void run(() => deleteGroup(group.id));
-    }
+    return `The group “${group.title}” will be deleted.${contents}`;
   };
 
   const handleMoveGroup = (group: Group, direction: -1 | 1) => {
@@ -304,12 +295,12 @@ export function TopicsPage() {
   };
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
           <RoadmapIcon roadmap={roadmap} />
           <div className="min-w-0 flex-1">
-            <h1 className="wrap-break-word text-[28px] font-medium leading-9 text-fg">
+            <h1 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">
               {roadmap.title}
             </h1>
             <p className="text-[16px] leading-6 text-muted tabular-nums">
@@ -326,7 +317,7 @@ export function TopicsPage() {
               total={total}
               color={roadmap.color}
             />
-            <p className="mt-2 text-[13px] leading-5 text-muted tabular-nums">
+            <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
               {completed} / {total} done
             </p>
           </div>
@@ -336,24 +327,16 @@ export function TopicsPage() {
           {totalQuestions > 0 ? (
             <Link
               href={`/roadmap/${roadmap.id}/quiz`}
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
             >
               <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               Quiz all topics
             </Link>
-          ) : (
-            <span
-              title="Add questions to your topics first"
-              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-5 text-[16px] font-medium text-muted opacity-60"
-            >
-              <Play aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Quiz all topics
-            </span>
-          )}
+          ) : null}
           <button
             type="button"
             onClick={() => setDialog({ kind: "new-group" })}
-            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-5 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
+            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover"
           >
             <FolderPlus
               aria-hidden="true"
@@ -363,29 +346,32 @@ export function TopicsPage() {
             New group
           </button>
         </div>
+
+        {totalQuestions === 0 ? (
+          <p className="text-[13px] leading-[18px] text-muted">
+            Add questions to your topics to unlock quizzes.
+          </p>
+        ) : null}
       </header>
 
       <AddTopicForm
-        placeholder="Add a topic"
+        inputId={ADD_TOPIC_INPUT_ID}
+        placeholder={isFlat ? "Add a topic" : "Add an ungrouped topic"}
         onAdd={async (title) => {
           await createTopic({ roadmapId, title });
         }}
       />
 
-      {actionError ? (
-        <p
-          role="alert"
-          className="rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg"
-        >
-          {actionError}
-        </p>
-      ) : null}
+      {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
       {isFlat && total === 0 ? (
-        <p className="rounded-2xl bg-card p-6 text-center text-[16px] leading-6 text-muted">
-          No topics yet. Type a name above and press Enter to add your first
-          topic.
-        </p>
+        <EmptyState
+          icon={ListPlus}
+          title="No topics yet"
+          description="Add the first topic you want to study in this roadmap."
+          actionLabel="Add a topic"
+          onAction={() => document.getElementById(ADD_TOPIC_INPUT_ID)?.focus()}
+        />
       ) : (
         <DndContext
           id="topics-dnd"
@@ -422,12 +408,12 @@ export function TopicsPage() {
                     onRename: (topic) =>
                       setDialog({ kind: "rename-topic", topic }),
                     onMove: (topic) => setDialog({ kind: "move-topic", topic }),
-                    onDelete: handleDeleteTopic,
+                    onDelete: (topic) => setDialog({ kind: "delete-topic", topic }),
                   }}
                   groupActions={{
                     onRename: (group) =>
                       setDialog({ kind: "rename-group", group }),
-                    onDelete: handleDeleteGroup,
+                    onDelete: (group) => setDialog({ kind: "delete-group", group }),
                     onMove: handleMoveGroup,
                   }}
                 />
@@ -489,6 +475,26 @@ export function TopicsPage() {
             await updateTopic(dialog.topic.id, { title: name });
             setDialog(null);
           }}
+        />
+      ) : null}
+
+      {dialog?.kind === "delete-topic" ? (
+        <ConfirmDialog
+          title="Delete topic?"
+          message={deleteTopicMessage(dialog.topic)}
+          confirmLabel="Delete topic"
+          onClose={() => setDialog(null)}
+          onConfirm={() => deleteTopic(dialog.topic.id)}
+        />
+      ) : null}
+
+      {dialog?.kind === "delete-group" ? (
+        <ConfirmDialog
+          title="Delete group?"
+          message={deleteGroupMessage(dialog.group)}
+          confirmLabel="Delete group"
+          onClose={() => setDialog(null)}
+          onConfirm={() => deleteGroup(dialog.group.id)}
         />
       ) : null}
 

@@ -141,8 +141,16 @@ export async function moveTopic(topicId: string, target: TopicTarget): Promise<v
   })
 }
 
-/** Moves a topic (with its questions and history) to another roadmap, as ungrouped and last. */
-export async function moveTopicToRoadmap(topicId: string, roadmapId: string): Promise<void> {
+/**
+ * Moves a topic (with its questions and history) to another roadmap, in one transaction.
+ * It lands at the end of `groupId` in the target roadmap, or at the end of the ungrouped list
+ * when `groupId` is empty. To reorder inside one roadmap, use `moveTopic` instead.
+ */
+export async function moveTopicToRoadmap(
+  topicId: string,
+  roadmapId: string,
+  groupId?: string | null,
+): Promise<void> {
   await db.transaction(
     'rw',
     [db.roadmaps, db.groups, db.topics, db.questions, db.attempts],
@@ -161,13 +169,23 @@ export async function moveTopicToRoadmap(topicId: string, roadmapId: string): Pr
         throw new Error('Roadmap not found.')
       }
 
+      const targetGroupId = groupId || undefined
+
+      if (targetGroupId) {
+        const group = await db.groups.get(targetGroupId)
+
+        if (!group || group.roadmapId !== roadmapId) {
+          throw new Error('That group is not in the target roadmap.')
+        }
+      }
+
       const sourceRoadmapId = topic.roadmapId
       const sourceGroupId = topic.groupId ?? undefined
-      const order = nextOrder(await loadContainer(roadmapId, undefined))
+      const order = nextOrder(await loadContainer(roadmapId, targetGroupId))
 
       await db.topics.update(topicId, {
         roadmapId,
-        groupId: undefined,
+        groupId: targetGroupId,
         order,
         updatedAt: nowIso(),
       })

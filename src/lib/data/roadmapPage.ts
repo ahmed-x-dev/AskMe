@@ -29,12 +29,16 @@ export async function getRoadmapPage(roadmapId: string): Promise<RoadmapPageData
     listTopics(roadmapId),
   ])
 
-  const counts = await Promise.all(
-    topics.map(async (topic) => [
-      topic.id,
-      await db.questions.where('topicId').equals(topic.id).count(),
-    ] as const),
+  const questionCounts: Record<string, number> = Object.fromEntries(
+    topics.map((topic) => [topic.id, 0]),
   )
 
-  return { roadmap, roadmaps, groups, topics, questionCounts: Object.fromEntries(counts) }
+  await db.questions
+    .where('roadmapId')
+    .equals(roadmapId)
+    .each((question) => {
+      questionCounts[question.topicId] = (questionCounts[question.topicId] ?? 0) + 1
+    })
+
+  return { roadmap, roadmaps, groups, topics, questionCounts }
 }

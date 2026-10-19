@@ -131,6 +131,22 @@ describe('cross-roadmap move and cascades', () => {
     expect((await db.attempts.where('questionId').equals(q.id).first())!.roadmapId).toBe(r2.id)
     expect((await db.topics.get(t1.id))!.groupId).toBeUndefined()
   })
+  it('moveTopicToRoadmap can land in a group of the target roadmap, atomically', async () => {
+    const r1 = await createRoadmap({ title: 'A' }); const r2 = await createRoadmap({ title: 'B' })
+    const g2 = await createGroup(r2.id, 'G2')
+    await createTopic({ roadmapId: r2.id, groupId: g2.id, title: 'first' })
+    const t = await createTopic({ roadmapId: r1.id, title: 'moving' })
+    await moveTopicToRoadmap(t.id, r2.id, g2.id)
+    expect(await titles(r2.id, g2.id)).toEqual(['first:0', 'moving:1'])
+    expect(await titles(r1.id)).toEqual([])
+  })
+  it('moveTopicToRoadmap rejects a group from another roadmap and changes nothing', async () => {
+    const r1 = await createRoadmap({ title: 'A' }); const r2 = await createRoadmap({ title: 'B' })
+    const g1 = await createGroup(r1.id, 'G1')
+    const t = await createTopic({ roadmapId: r1.id, title: 'stay' })
+    await expect(moveTopicToRoadmap(t.id, r2.id, g1.id)).rejects.toThrow('target roadmap')
+    expect((await db.topics.get(t.id))!.roadmapId).toBe(r1.id)
+  })
   it('deleteTopic / deleteRoadmap cascade', async () => {
     const r = await createRoadmap({ title: 'R' }); const other = await createRoadmap({ title: 'Other' })
     const t = await createTopic({ roadmapId: r.id, title: 't' }); const t2 = await createTopic({ roadmapId: r.id, title: 't2' })

@@ -78,7 +78,7 @@ export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
           {isMenuOpen ? (
             <div
               id={menuId}
-              className="absolute inset-e-0 top-full z-50 mt-2 flex w-44 flex-col gap-1 rounded-2xl bg-card p-2 shadow-lg"
+              className="absolute inset-e-0 top-full z-50 mt-2 flex w-44 flex-col gap-1 rounded-2xl bg-bg p-2 ring-1 ring-card-hover"
             >
               <button
                 type="button"
@@ -117,8 +117,9 @@ export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
               completed={completedCount}
               total={topicCount}
               color={roadmap.color}
+              onCard
             />
-            <p className="mt-2 text-[13px] leading-5 text-muted tabular-nums">
+            <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
               {completedCount} / {topicCount} done
             </p>
           </>

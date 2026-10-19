@@ -20,6 +20,8 @@ export type AppLayoutProps = {
 export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+  /** Topic pages show their own back link to the roadmap, so the generic one is hidden there. */
+  const hasOwnBackLink = pathname.startsWith("/topic/");
 
   return (
     <main className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
@@ -49,7 +51,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                   aria-current="page"
                   className="min-h-12 rounded-2xl bg-card px-4 py-3 text-[16px] font-medium leading-6 text-fg"
                 >
-                  Library
+                  Roadmaps
                 </Link>
                 <Link
                   href="/settings"
@@ -59,7 +61,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 </Link>
               </nav>
             </div>
-          ) : (
+          ) : hasOwnBackLink ? null : (
             <Link
               href="/"
               className="inline-flex min-h-12 min-w-12 items-center gap-2 rounded-2xl bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
@@ -69,11 +71,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 className="h-5 w-5"
                 strokeWidth={1.5}
               />
-              Back to sets
+              Back to roadmaps
             </Link>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
               onClick={() =>

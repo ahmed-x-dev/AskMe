@@ -7,5 +7,5 @@ export default async function Page({
 }) {
   const { id } = await params;
 
-  return <QuestionEditorPage key={id} setId={id} />;
+  return <QuestionEditorPage key={id} topicId={id} />;
 }

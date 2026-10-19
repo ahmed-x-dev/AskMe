@@ -2,14 +2,17 @@
 
 import { useState, type FormEvent } from "react";
 import { Plus } from "lucide-react";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
 
 type AddTopicFormProps = {
   placeholder: string;
+  /** Id of the text field, so other parts of the page can move focus to it. */
+  inputId?: string;
   onAdd: (title: string) => Promise<void>;
 };
 
 /** One-line form: type a name and press Enter to add a topic. */
-export function AddTopicForm({ placeholder, onAdd }: AddTopicFormProps) {
+export function AddTopicForm({ placeholder, inputId, onAdd }: AddTopicFormProps) {
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -36,6 +39,7 @@ export function AddTopicForm({ placeholder, onAdd }: AddTopicFormProps) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <div className="flex gap-2">
         <input
+          id={inputId}
           type="text"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
@@ -43,21 +47,23 @@ export function AddTopicForm({ placeholder, onAdd }: AddTopicFormProps) {
           placeholder={placeholder}
           aria-label={placeholder}
           aria-invalid={error !== null}
-          className="min-h-12 min-w-0 flex-1 rounded-2xl bg-bg px-4 text-[16px] text-fg placeholder:text-muted"
+          aria-describedby={error ? `${inputId ?? "add-topic"}-error` : undefined}
+          className="min-h-12 min-w-0 flex-1 rounded-[14px] bg-card px-3 text-[16px] text-fg placeholder:text-muted"
         />
         <button
           type="submit"
           disabled={isSaving || title.trim() === ""}
           aria-label="Add topic"
+          aria-busy={isSaving}
           className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
         >
           <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
         </button>
       </div>
       {error ? (
-        <p role="alert" className="text-[13px] leading-5 text-bad-fg">
+        <ErrorMessage variant="inline" id={`${inputId ?? "add-topic"}-error`}>
           {error}
-        </p>
+        </ErrorMessage>
       ) : null}
     </form>
   );

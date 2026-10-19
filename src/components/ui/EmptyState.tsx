@@ -1,20 +1,23 @@
-import { Plus } from "lucide-react";
+import { Plus, type LucideIcon } from "lucide-react";
 
 export function EmptyState({
   title,
   description,
   actionLabel,
   onAction,
+  icon: Icon = Plus,
 }: {
   title: string;
   description: string;
   actionLabel: string;
   onAction: () => void;
+  /** 24px outline icon shown above the title. Defaults to a plus. */
+  icon?: LucideIcon;
 }) {
   return (
     <section className="mx-auto w-full rounded-2xl bg-card p-6 text-center lg:max-w-3xl">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
-        <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
+        <Icon aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
       </div>
       <h2 className="mt-4 text-[16px] font-medium leading-6 text-fg">
         {title}
@@ -25,7 +28,7 @@ export function EmptyState({
       <button
         type="button"
         onClick={onAction}
-        className="mt-5 min-h-12 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+        className="mt-6 min-h-12 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
       >
         {actionLabel}
       </button>

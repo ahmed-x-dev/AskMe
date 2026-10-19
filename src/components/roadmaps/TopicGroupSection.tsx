@@ -85,7 +85,7 @@ export function TopicGroupSection({
               className="flex min-h-11 min-w-11 items-center justify-center rounded-[14px] bg-card text-fg transition-colors hover:bg-card-hover"
             >
               {isCollapsed ? (
-                <ChevronRight aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                <ChevronRight aria-hidden="true" className="h-5 w-5 rtl:rotate-180" strokeWidth={1.5} />
               ) : (
                 <ChevronDown aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               )}
@@ -94,29 +94,21 @@ export function TopicGroupSection({
 
           <div className="min-w-0 flex-1">
             <h2 className="wrap-break-word text-[16px] font-medium leading-6 text-fg">{heading}</h2>
-            <p className="text-[13px] leading-5 text-muted tabular-nums">
-              {total === 0 ? "No topics" : `${completed} / ${total} done`}
+            <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+              {total === 0
+                ? "No topics"
+                : `${completed} / ${total} done · ${plural(groupQuestionCount, "question")}`}
             </p>
           </div>
 
-          {group ? (
-            groupQuestionCount > 0 ? (
-              <Link
-                href={`/roadmap/${roadmapId}/quiz?group=${group.id}`}
-                className="inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-card px-3 text-[13px] font-medium text-fg transition-colors hover:bg-card-hover"
-              >
-                <Play aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
-                Quiz group
-              </Link>
-            ) : (
-              <span
-                title="Add questions to this group's topics first"
-                className="inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-card px-3 text-[13px] font-medium text-muted opacity-60"
-              >
-                <Play aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
-                Quiz group
-              </span>
-            )
+          {group && groupQuestionCount > 0 ? (
+            <Link
+              href={`/roadmap/${roadmapId}/quiz?group=${group.id}`}
+              className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[13px] font-medium leading-[18px] text-fg transition-colors hover:bg-card-hover"
+            >
+              <Play aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+              Quiz group
+            </Link>
           ) : null}
 
           {group ? <ActionMenu label={`Actions for ${group.title}`} items={menuItems} /> : null}
@@ -130,7 +122,7 @@ export function TopicGroupSection({
       ) : null}
 
       {isCollapsed ? (
-        <p className="px-3 pb-2 text-[13px] leading-5 text-muted">
+        <p className="px-3 pb-2 text-[13px] leading-[18px] text-muted">
           {plural(topics.length, "topic")} hidden
         </p>
       ) : (
@@ -150,7 +142,7 @@ export function TopicGroupSection({
           </SortableContext>
 
           {topics.length === 0 && !isFlat ? (
-            <p className="rounded-2xl border-2 border-dashed border-card-hover px-4 py-3 text-center text-[13px] leading-5 text-muted">
+            <p className="rounded-2xl bg-card px-4 py-3 text-center text-[13px] leading-[18px] text-muted">
               {group ? "Drop a topic here, or add one below." : "Drop a topic here to remove it from its group."}
             </p>
           ) : null}
@@ -159,6 +151,7 @@ export function TopicGroupSection({
             <div className="px-1 pb-1">
               <AddTopicForm
                 placeholder={`Add a topic to ${group.title}`}
+                inputId={`add-topic-${group.id}`}
                 onAdd={(title) => onAddTopic(group.id, title)}
               />
             </div>

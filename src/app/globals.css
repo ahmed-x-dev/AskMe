@@ -98,7 +98,7 @@ button {
 input:not([type='file']),
 textarea,
 select,
-button:not(.bg-accent):not(.bg-ok-bg):not(.bg-bad-bg),
+button:not(.bg-accent):not(.bg-ok-bg):not(.bg-bad-bg):not([data-plain]),
 a[class*='bg-card'],
 a[class*='bg-bg'] {
   border: 1px solid var(--card-hover);
