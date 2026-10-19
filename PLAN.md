@@ -7,7 +7,7 @@
 ```yaml
 current_phase: P3
 current_task: P3-01
-last_updated: 2026-10-19
+last_updated: 2026-10-20
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
@@ -376,6 +376,10 @@ This tree describes the current app. Add future sync or desktop-platform modules
   - Done when: quiz setup, active questions, progress, finish/exit, results, AI help, and due-review actions are clear and keyboard accessible on small screens; question attempts, score derivation, completion thresholds, review scheduling, retry selection, and AI behavior are verified unchanged; focused quiz/review tests, typecheck, lint, and production build pass.
   - Learn: `docs/learn/30-focused-quiz-and-review.md`.
   - UI and interaction feedback only; retain existing question selection, scoring, attempt tracking, spaced-repetition, and AI behavior.
+- [x] **P5-28** Improve settings and data-management usability without changing storage or backup behavior.
+  - Done when: appearance and AI preferences are grouped and understandable; backup, restore, import, and reset actions clearly describe their effects and outcomes; destructive actions require confirmation; controls are keyboard and mobile accessible; data-management tests, typecheck, lint, and production build pass.
+  - Learn: `docs/learn/31-settings-and-data-management.md`.
+  - UI-focused; preserve theme/key storage, backup/archive formats, validation, import/export, restore, and reset semantics.
 
 **Exit criteria:** none; this phase is ongoing.
 
@@ -413,6 +417,8 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-19 | Render action menus in a body portal and position them against their trigger | A viewport-fixed floating surface avoids clipping by card and list overflow while preserving the shared menu surface and keyboard behavior |
 | 2026-10-19 | Keep topic-learning improvements presentation-only; derive the overview from existing topic status, resources, and questions | The current topic model has no separate description or completion field; deriving useful guidance and resource progress avoids a schema migration and preserves saved data |
 | 2026-10-19 | Keep quiz score and spaced-repetition rules unchanged while improving the quiz interface | Quiz results derive from the runner's per-question correctness values; scoring and scheduling already have feature and data tests, so redesign should not alter these rules |
+| 2026-10-20 | Keep the app shell as the single source of truth for theme preference and expose it to nested Settings controls through React context | Settings can change the same persisted preference as the global toggle without duplicating browser-storage logic |
+| 2026-10-20 | Require an explicit Remove action and confirmation to clear a saved AI key | An empty “Save key” action is ambiguous; the dedicated Remove action prevents accidental key loss while leaving the underlying browser-storage behavior unchanged |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -432,6 +438,8 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-20: Completed P5-28: grouped Settings into Appearance, AI assistance, and Study data; added accessible theme radios backed by the shell's existing preference, clarified key storage and removal, and improved backup, restore, import, and reset guidance, pending states, and outcome feedback. Restore/reset and AI-key removal require confirmation that states exactly what changes and what remains. Backup/archive formats, validation, storage, and import/export behavior remain unchanged. Added settings/data UI tests and the learning guide. All 147 tests pass; typecheck, lint, and production build pass; 375px mobile and 1280px desktop browser checks showed no horizontal overflow in both themes. `npm outdated` found major @types/node/TypeScript updates; none were installed. Next: resume P3-01.
+- 2026-10-20: Started P5-28: settings and data-management UX. Existing backup/import tests verify archive contents, validation, restore replacement, and reset behavior; dependency check found newer non-major PostCSS/typescript-eslint versions and newer major @types/node/TypeScript versions. No dependency changes. Next: improve appearance/key preferences, backup/import/restore feedback, and destructive-action clarity without altering storage behavior.
 - 2026-10-19: Completed P5-27: redesigned quiz setup, focused active questions, answer/progress feedback, retryable history-save errors, exit confirmation, results, AI help states, and due-review guidance while preserving the data model and scoring/scheduling rules. Verified queue-to-answer score derivation, the 80% completion threshold, topic completion, attempt recording, review rescheduling, and mistakes retry selection in code and tests. Added focused keyboard/failure tests and the learning guide; 43 focused tests and all 136 tests pass, as do typecheck, lint, and production build. A 375px browser check of Review in both themes showed no horizontal overflow. Next: P3-01.
 - 2026-10-19: Started P5-27: quiz and review UX. Verified the existing runner maps each question's recorded correctness into results, feature tests cover the 80% completion threshold, and review data tests cover due-card selection and rescheduling. Next: improve setup, question focus, progress, recovery, results, and due-review hierarchy while keeping those rules and AI help unchanged.
 - 2026-10-19: Re-reviewed P5-26 after implementation: removed the repeated resource-completion summary from the resource section (the overview remains the single progress summary) and strengthened UI coverage for the distinct resource count and notes saving on blur. Browser verification at 375px in both themes shows no horizontal overflow. `typecheck`, `lint`, all 129 tests, and production build pass. Next: P3-01.

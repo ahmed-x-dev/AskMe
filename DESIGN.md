@@ -324,6 +324,14 @@ Height 6px, fully rounded. Track `bg-card-hover`, fill `bg-accent`, width animat
 ### Inputs and text areas
 `bg-card`, radius 14px, padding 12px, 1px solid `--line`, placeholder `text-muted`. Focus: 2px outline `--accent`. Errors: message below in `text-bad-fg` plus an icon. Selects use the same boundary and focus treatment. A field always takes the step below its surface: on the page and inside a dialog or menu it is `bg-card` (`fieldClassName`); inside a `bg-card` panel (settings section, question editor, quiz setup) it is `bg-bg` (`fieldOnCardClassName`).
 
+### Settings and data management
+- Group preferences by purpose: appearance, AI assistance, and study data. Explain where a preference or key is stored and whether it is included in a backup.
+- Theme choices use native labeled radios with a clear selected state. Keep the global header toggle available as a shortcut.
+- Describe the scope of each file action before it is triggered: a full ZIP backup includes progress, a roadmap JSON shares content without progress, import adds a new roadmap, and restore replaces the local library.
+- Give backup, restore, and import operations visible pending and success/error feedback. Keep success and error text announced with `role="status"` or `role="alert"`.
+- Put reset in a distinct inset danger area. State exactly what it deletes and what stays; the reset and restore confirmations repeat their consequences.
+- Ask before removing a saved AI key, and distinguish saving a key from removing one.
+
 ### Checkbox, radio, and switch
 
 Use a 20px control with a 1px `--line` boundary on `bg-card`. Its label is body text and the whole label/control pair has a 48px minimum tap target. Checked state is `bg-accent text-on-accent` with a check or selected indicator; disabled state follows the shared state rules. Never rely on the checked color without the visible indicator.

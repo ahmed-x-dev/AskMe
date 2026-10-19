@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, CalendarCheck, Map, Moon, Settings, Sun, type LucideIcon } from "lucide-react";
 import { countDue } from "@/lib/data";
@@ -13,6 +13,21 @@ export type Theme = "light" | "dark";
 export type ThemeSetter = (
   nextTheme: Theme | ((currentTheme: Theme) => Theme),
 ) => void;
+
+type AppTheme = { theme: Theme; setTheme: ThemeSetter };
+
+const AppThemeContext = createContext<AppTheme | null>(null);
+
+/** Reads the active theme and setter provided by the shared application shell. */
+export function useAppTheme(): AppTheme {
+  const value = useContext(AppThemeContext);
+
+  if (!value) {
+    throw new Error("useAppTheme must be used inside AppLayout.");
+  }
+
+  return value;
+}
 
 export type AppLayoutProps = {
   theme: Theme;
@@ -132,9 +147,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
         </div>
       </header>
 
-      <div className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
-        {children}
-      </div>
+      <AppThemeContext value={{ theme, setTheme }}>
+        <div className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
+          {children}
+        </div>
+      </AppThemeContext>
 
       <nav
         aria-label="Primary navigation"

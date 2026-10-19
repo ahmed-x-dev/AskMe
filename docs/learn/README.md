@@ -39,3 +39,4 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [28 — Shared UI interactions](./28-shared-ui-interactions.md): How menus, dialogs, forms, and feedback states stay accessible and consistent.
 - [29 — Topic learning experience](./29-topic-learning-experience.md): How a topic overview guides study through notes, resources, progress, and practice.
 - [30 — Focused quiz and review](./30-focused-quiz-and-review.md): How setup, question feedback, attempt saving, results, and due reviews work together without changing scoring rules.
+- [31 — Settings and data management](./31-settings-and-data-management.md): How appearance and AI preferences share app state, and how backup/restore actions explain their effects.

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Download, TriangleAlert, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, TriangleAlert, Upload } from "lucide-react";
 import { ImportRoadmapButton } from "@/components/backup/ImportRoadmapButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { buttonDestructive, buttonPrimary, buttonSecondaryOnCard } from "@/components/ui/styles";
@@ -24,6 +24,7 @@ export function DataSection() {
   const restoreInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isReadingRestore, setIsReadingRestore] = useState(false);
   const [pendingRestore, setPendingRestore] = useState<BackupContents | null>(null);
   const [isResetOpen, setIsResetOpen] = useState(false);
 
@@ -44,6 +45,7 @@ export function DataSection() {
   const handleRestoreFile = async (file: File | undefined) => {
     if (!file) return;
 
+    setIsReadingRestore(true);
     setStatus(null);
 
     try {
@@ -51,6 +53,7 @@ export function DataSection() {
     } catch (error) {
       setStatus({ kind: "error", message: error instanceof Error ? error.message : "The backup could not be read." });
     } finally {
+      setIsReadingRestore(false);
       if (restoreInputRef.current) restoreInputRef.current.value = "";
     }
   };
@@ -66,19 +69,19 @@ export function DataSection() {
     : "";
 
   return (
-    <section aria-labelledby="data-heading" className="w-full rounded-2xl bg-card p-4">
+    <section aria-labelledby="data-heading" className="flex w-full flex-col gap-1 rounded-2xl bg-card p-4">
       <h2 id="data-heading" className="text-[18px] font-medium leading-[26px] text-fg">
-        Your data
+        Study data
       </h2>
       <p className="mt-2 text-[16px] leading-6 text-muted">
-        Everything is stored in this browser only. Browsers can clear it, so download a backup now and then. Backups
-        never contain your AI key.
+        Roadmaps and progress are stored in this browser, which may clear local data. A full backup is a ZIP containing
+        your roadmaps and progress; it never contains your AI key.
       </p>
 
-      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">Backup</h3>
+      <h3 className="mt-5 text-[16px] font-medium leading-6 text-fg">Full backup</h3>
       <p className="mt-1 text-[13px] leading-[18px] text-muted">
-        {lastBackupAt ? `Last backup: ${formatDate(lastBackupAt)}` : "No backup yet."} A backup holds every roadmap and
-        all your progress.
+        {lastBackupAt ? `Last downloaded: ${formatDate(lastBackupAt)}.` : "No backup downloaded yet."} Keep the ZIP in
+        a safe place outside this browser.
       </p>
       <div className="mt-3 flex flex-wrap gap-3">
         <button
@@ -99,16 +102,22 @@ export function DataSection() {
           data-testid="restore-input"
           onChange={(event) => void handleRestoreFile(event.target.files?.[0])}
         />
-        <button type="button" onClick={() => restoreInputRef.current?.click()} className={buttonSecondaryOnCard}>
+        <button
+          type="button"
+          onClick={() => restoreInputRef.current?.click()}
+          disabled={isReadingRestore}
+          aria-busy={isReadingRestore}
+          className={buttonSecondaryOnCard}
+        >
           <Upload aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-          Restore from backup
+          {isReadingRestore ? "Reading backup…" : "Restore from backup"}
         </button>
       </div>
 
-      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">Share a roadmap</h3>
+      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">Share one roadmap</h3>
       <p className="mt-1 text-[13px] leading-[18px] text-muted">
-        Export a roadmap from its card on the home page. A roadmap file holds topics, links and questions, never your
-        progress. Import adds it as a new roadmap.
+        Export a JSON file from a roadmap card on the home page. It includes topics, links, and questions but not
+        progress. Import adds a separate new roadmap; it does not replace existing data.
       </p>
       <div className="mt-3">
         <ImportRoadmapButton
@@ -125,38 +134,48 @@ export function DataSection() {
       </div>
 
       {status ? (
-        <p
+        <div
           role={status.kind === "error" ? "alert" : "status"}
-          className={`mt-4 text-[13px] leading-[18px] ${status.kind === "error" ? "text-bad-fg" : "text-accent-text"}`}
+          className={`mt-3 flex items-start gap-2 text-[13px] leading-[18px] ${status.kind === "error" ? "text-bad-fg" : "text-accent-text"}`}
         >
-          {status.message}{" "}
-          {status.href ? (
-            <Link href={status.href} className="font-medium underline underline-offset-2">
-              Open it
-            </Link>
-          ) : null}
-        </p>
+          {status.kind === "error" ? (
+            <AlertCircle aria-hidden="true" className="mt-px h-4 w-4 shrink-0" strokeWidth={1.5} />
+          ) : (
+            <CheckCircle2 aria-hidden="true" className="mt-px h-4 w-4 shrink-0" strokeWidth={1.5} />
+          )}
+          <p className="min-w-0 wrap-break-word">
+            {status.message}{" "}
+            {status.href ? (
+              <Link href={status.href} className="font-medium underline underline-offset-2">
+                Open it
+              </Link>
+            ) : null}
+          </p>
+        </div>
       ) : null}
 
-      <h3 className="mt-8 flex items-center gap-2 text-[16px] font-medium leading-6 text-bad-fg">
-        <TriangleAlert aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-        Reset all data
-      </h3>
-      <p className="mt-1 text-[13px] leading-[18px] text-muted">
-        Deletes every roadmap, topic, question and all progress from this browser. Your AI key and theme stay.
-      </p>
-      <button
-        type="button"
-        onClick={() => setIsResetOpen(true)}
-        className={`mt-3 ${buttonDestructive}`}
-      >
-        Reset all data
-      </button>
+      <section aria-labelledby="reset-data-heading" className="mt-7 rounded-2xl bg-bg p-4">
+        <h3 id="reset-data-heading" className="flex items-center gap-2 text-[16px] font-medium leading-6 text-bad-fg">
+          <TriangleAlert aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+          Reset all data
+        </h3>
+        <p className="mt-2 text-[13px] leading-[18px] text-muted">
+          Permanently deletes all roadmaps, topics, questions, and study progress from this browser. Your AI key and
+          theme preference stay. This cannot be undone.
+        </p>
+        <button
+          type="button"
+          onClick={() => setIsResetOpen(true)}
+          className={`mt-3 ${buttonDestructive}`}
+        >
+          Reset all data
+        </button>
+      </section>
 
       {pendingRestore ? (
         <ConfirmDialog
           title="Restore this backup?"
-          message={`This replaces everything in this browser with ${restoreSummary} from the backup. This cannot be undone.`}
+          message={`This replaces all roadmaps, topics, questions, and progress in this browser with ${restoreSummary} from the backup. Your AI key and theme preference stay. This cannot be undone.`}
           confirmLabel="Replace my data"
           busyLabel="Restoring…"
           onConfirm={async () => {
@@ -170,7 +189,7 @@ export function DataSection() {
       {isResetOpen ? (
         <ConfirmDialog
           title="Reset all data?"
-          message="This deletes every roadmap, topic, question and all progress in this browser. Download a backup first if you might want it back. This cannot be undone."
+          message="This deletes every roadmap, topic, question and all progress in this browser. Download a backup first if you might want it back. Your AI key and theme preference stay. This cannot be undone."
           confirmLabel="Delete everything"
           busyLabel="Deleting…"
           onConfirm={async () => {
