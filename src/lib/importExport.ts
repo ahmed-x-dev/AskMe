@@ -1,220 +1,153 @@
-import type { Question, QuestionDifficulty, QuizSet, SetGroup } from '../types/quiz'
+import type { z } from 'zod'
 
-export const CURRENT_SCHEMA_VERSION = 4
+import { newId } from './data/util'
+import {
+  progressFileSchema,
+  roadmapFileSchema,
+  type ProgressFile,
+  type RoadmapFile,
+} from './schemas'
 
-const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3, CURRENT_SCHEMA_VERSION]
-const QUESTION_DIFFICULTIES: QuestionDifficulty[] = ['easy', 'medium', 'hard']
+/** Turns a Zod error into one readable sentence, such as `topics.2.title: Too small`. */
+function describeIssue(error: z.ZodError): string {
+  const [issue] = error.issues
+  const path = issue.path.join('.')
 
-function isQuestionDifficulty(value: unknown): value is QuestionDifficulty {
-  return QUESTION_DIFFICULTIES.some((difficulty) => difficulty === value)
+  return path ? `${path}: ${issue.message}` : issue.message
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+/** Parses JSON text and checks it against a schema, throwing an error a person can read. */
+function parseWith<T>(text: string, schema: z.ZodType<T>, what: string): T {
+  let value: unknown
+
+  try {
+    value = JSON.parse(text)
+  } catch {
+    throw new Error(`This is not a valid ${what} file (it is not JSON).`)
+  }
+
+  const result = schema.safeParse(value)
+
+  if (!result.success) {
+    throw new Error(`This is not a valid ${what} file. ${describeIssue(result.error)}`)
+  }
+
+  return result.data
 }
 
-function normalizeGroup(value: unknown): SetGroup | undefined {
-  if (value === undefined) {
-    return undefined
-  }
-
-  if (!isRecord(value) || typeof value.id !== 'string' || !value.id.trim() || typeof value.name !== 'string' || !value.name.trim()) {
-    throw new Error('The set group must have a valid id and name.')
-  }
-
-  return { id: value.id.trim(), name: value.name.trim() }
+/** Reads the text of a roadmap file, for example one picked in the import dialog. */
+export function parseRoadmapFile(text: string): RoadmapFile {
+  return parseWith(text, roadmapFileSchema, 'AskMe roadmap')
 }
 
-function normalizeQuestion(question: unknown, index: number): Question {
-  if (!isRecord(question)) {
-    throw new Error(`Question ${index + 1} is not an object.`)
-  }
+/** Reads the `progress.json` file inside a backup. */
+export function parseProgressFile(text: string): ProgressFile {
+  return parseWith(text, progressFileSchema, 'AskMe progress')
+}
 
-  const {
-    id,
-    type,
-    text,
-    difficulty,
-    tags,
-    updatedAt,
-    deleted,
-    options,
-    answerIndex,
-    referenceAnswer,
-  } = question
+/** Serializes a roadmap or progress file as readable JSON. */
+export function stringifyFile(file: RoadmapFile | ProgressFile): string {
+  return JSON.stringify(file, null, 2)
+}
 
-  if (typeof id !== 'string' || !id.trim()) {
-    throw new Error(`Question ${index + 1} is missing a valid id.`)
-  }
+/**
+ * Gives every record of a roadmap file a new id, so importing never collides with data that is
+ * already stored (importing the same file twice makes two copies). Links between records
+ * (topic to group, question to topic, and so on) are kept. `makeId` can be replaced in tests.
+ */
+export function cloneWithNewIds(file: RoadmapFile, makeId: () => string = newId): RoadmapFile {
+  const ids = new Map<string, string>()
+  const remap = (oldId: string): string => {
+    const existing = ids.get(oldId)
 
-  if (!['mcq', 'essay'].includes(String(type))) {
-    throw new Error(`Question ${index + 1} has an unsupported type.`)
-  }
-
-  const trimmedText = typeof text === 'string' ? text.trim() : ''
-  if (!trimmedText) {
-    throw new Error(`Question ${index + 1} is missing text.`)
-  }
-
-  if (typeof updatedAt !== 'string' || !updatedAt.trim()) {
-    throw new Error(`Question ${index + 1} is missing an updatedAt value.`)
-  }
-
-  if (
-    difficulty !== undefined &&
-    difficulty !== 'normal' &&
-    !isQuestionDifficulty(difficulty)
-  ) {
-    throw new Error(`Question ${index + 1} has an unsupported difficulty.`)
-  }
-
-  if (tags !== undefined && (!Array.isArray(tags) || tags.some((tag) => typeof tag !== 'string'))) {
-    throw new Error(`Question ${index + 1} tags must be an array of strings.`)
-  }
-
-  const normalizedDifficulty =
-    difficulty === 'normal'
-      ? 'medium'
-      : isQuestionDifficulty(difficulty)
-        ? difficulty
-        : 'medium'
-  const normalizedTags = [
-    ...new Set(
-      (Array.isArray(tags) ? tags : [])
-        .filter((tag): tag is string => typeof tag === 'string')
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-    ),
-  ]
-
-  if (type === 'mcq') {
-    if (!Array.isArray(options) || options.length !== 4) {
-      throw new Error(`MCQ question ${index + 1} must have four options.`)
+    if (existing) {
+      return existing
     }
 
-    const sanitizedOptions = options.map((option) => String(option ?? '').trim())
-    const validOptions = sanitizedOptions.every((option) => option.length > 0)
+    const created = makeId()
 
-    if (!validOptions) {
-      throw new Error(`MCQ question ${index + 1} must have four non-empty answers.`)
-    }
-
-    const parsedAnswerIndex = Number(answerIndex)
-    if (!Number.isInteger(parsedAnswerIndex) || parsedAnswerIndex < 0 || parsedAnswerIndex > 3) {
-      throw new Error(`MCQ question ${index + 1} has an invalid answerIndex.`)
-    }
-
-    return {
-      id: id.trim(),
-      type: 'mcq',
-      text: trimmedText,
-      difficulty: normalizedDifficulty,
-      tags: normalizedTags,
-      updatedAt,
-      deleted: Boolean(deleted),
-      options: [
-        sanitizedOptions[0],
-        sanitizedOptions[1],
-        sanitizedOptions[2],
-        sanitizedOptions[3],
-      ],
-      answerIndex: parsedAnswerIndex,
-    }
+    ids.set(oldId, created)
+    return created
   }
+
+  const roadmapId = remap(file.roadmap.id)
 
   return {
-    id: id.trim(),
-    type: 'essay',
-    text: trimmedText,
-    difficulty: normalizedDifficulty,
-    tags: normalizedTags,
-    updatedAt,
-    deleted: Boolean(deleted),
-    ...(typeof referenceAnswer === 'string' ? { referenceAnswer } : {}),
+    ...file,
+    roadmap: { ...file.roadmap, id: roadmapId },
+    groups: file.groups.map((group) => ({ ...group, id: remap(group.id), roadmapId })),
+    topics: file.topics.map((topic) => ({
+      ...topic,
+      id: remap(topic.id),
+      roadmapId,
+      groupId: topic.groupId ? remap(topic.groupId) : undefined,
+    })),
+    resources: file.resources.map((resource) => ({
+      ...resource,
+      id: remap(resource.id),
+      topicId: remap(resource.topicId),
+    })),
+    questions: file.questions.map((question) => ({
+      ...question,
+      id: remap(question.id),
+      topicId: remap(question.topicId),
+      roadmapId,
+    })),
   }
 }
 
-/** Parses a set JSON export and validates the portable schema before storing it. */
-export function parseSetJson(rawJson: string): QuizSet {
-  const parsed = JSON.parse(rawJson) as unknown
-
-  if (!isRecord(parsed)) {
-    throw new Error('The exported file must contain a JSON object.')
-  }
-
-  if (
-    typeof parsed.schemaVersion !== 'number' ||
-    !SUPPORTED_SCHEMA_VERSIONS.includes(parsed.schemaVersion)
-  ) {
-    throw new Error(`Unsupported schema version: ${String(parsed.schemaVersion ?? 'unknown')}.`)
-  }
-
-  const { id, title, updatedAt, deleted, group, questions } = parsed
-
-  if (typeof id !== 'string' || !id.trim()) {
-    throw new Error('The set is missing a valid id.')
-  }
-
-  if (typeof title !== 'string' || !title.trim()) {
-    throw new Error('The set title cannot be empty.')
-  }
-
-  if (typeof updatedAt !== 'string' || !updatedAt.trim()) {
-    throw new Error('The set is missing a valid updatedAt value.')
-  }
-
-  if (!Array.isArray(questions)) {
-    throw new Error('The set is missing a questions array.')
-  }
-
-  const normalizedQuestions = questions.map((question, index) => normalizeQuestion(question, index))
-
-  const normalizedGroup = normalizeGroup(group)
-
+/** Removes progress from a roadmap file, so shared roadmaps start fresh: every topic is `todo`, no link is done. */
+export function stripProgress(file: RoadmapFile): RoadmapFile {
   return {
-    schemaVersion: CURRENT_SCHEMA_VERSION,
-    id: id.trim(),
-    title: title.trim(),
-    updatedAt,
-    deleted: Boolean(deleted),
-    ...(normalizedGroup ? { group: normalizedGroup } : {}),
-    questions: normalizedQuestions,
+    ...file,
+    topics: file.topics.map((topic) => ({ ...topic, status: 'todo' })),
+    resources: file.resources.map((resource) => ({ ...resource, done: false })),
   }
 }
 
-/** Parses one question, a question array, or an exported set and returns its active questions. */
-export function parseQuestionsJson(rawJson: string): Question[] {
-  const parsed: unknown = JSON.parse(rawJson)
-  const questionValues = Array.isArray(parsed)
-    ? parsed
-    : isRecord(parsed) && 'questions' in parsed
-      ? parsed.questions
-      : [parsed]
+/** Makes a safe file name from a title, for example `React Hooks!` becomes `react-hooks`. */
+export function slugify(title: string): string {
+  const slug = title
+    .normalize('NFKD')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
 
-  if (!Array.isArray(questionValues)) {
-    throw new Error('The JSON file must contain a question or a questions array.')
-  }
-
-  const questions = questionValues
-    .map((question, index) => normalizeQuestion(question, index))
-    .filter((question) => !question.deleted)
-
-  if (questions.length === 0) {
-    throw new Error('The JSON file does not contain any active questions.')
-  }
-
-  return questions
+  return slug.slice(0, 40) || 'roadmap'
 }
 
-/** Serializes a set to JSON for export. */
-export function exportSetJson(set: QuizSet): string {
-  return JSON.stringify(
-    {
-      ...set,
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      questions: set.questions.filter((question) => !question.deleted),
-    },
-    null,
-    2,
-  )
+/**
+ * Checks that the parts of a backup fit together before anything is stored: no id is used twice,
+ * and every attempt and review points at a question that is in the backup. Throws a readable error.
+ */
+export function validateBackup(roadmaps: readonly RoadmapFile[], progress: ProgressFile): void {
+  const seen = new Set<string>()
+
+  for (const file of roadmaps) {
+    const ids = [
+      file.roadmap.id,
+      ...file.groups.map((item) => item.id),
+      ...file.topics.map((item) => item.id),
+      ...file.resources.map((item) => item.id),
+      ...file.questions.map((item) => item.id),
+    ]
+
+    for (const id of ids) {
+      if (seen.has(id)) {
+        throw new Error('The backup is damaged: the same id appears twice.')
+      }
+
+      seen.add(id)
+    }
+  }
+
+  const questionIds = new Set(roadmaps.flatMap((file) => file.questions.map((item) => item.id)))
+
+  if (progress.attempts.some((attempt) => !questionIds.has(attempt.questionId))) {
+    throw new Error('The backup is damaged: an answer points at a question that is not in it.')
+  }
+
+  if (progress.reviews.some((review) => !questionIds.has(review.questionId))) {
+    throw new Error('The backup is damaged: a review date points at a question that is not in it.')
+  }
 }

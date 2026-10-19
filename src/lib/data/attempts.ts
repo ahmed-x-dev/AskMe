@@ -1,10 +1,14 @@
+import { scheduleAnswer } from '../srs'
 import { db } from './db'
 import { newId, nowIso } from './util'
 import type { Attempt } from '../../types/study'
 
-/** Saves the result of answering one question. */
+/**
+ * Saves the result of answering one question and updates its spaced-repetition schedule
+ * (see `scheduleAnswer`), in one transaction.
+ */
 export async function recordAttempt(questionId: string, correct: boolean): Promise<Attempt> {
-  return db.transaction('rw', db.questions, db.attempts, async () => {
+  return db.transaction('rw', db.questions, db.attempts, db.reviews, async () => {
     const question = await db.questions.get(questionId)
 
     if (!question) {
@@ -21,6 +25,14 @@ export async function recordAttempt(questionId: string, correct: boolean): Promi
     }
 
     await db.attempts.add(attempt)
+    await db.reviews.put(
+      scheduleAnswer(
+        await db.reviews.get(questionId),
+        { questionId, topicId: question.topicId },
+        correct,
+        new Date(attempt.at),
+      ),
+    )
     return attempt
   })
 }

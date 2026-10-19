@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { Ellipsis, Pencil, Trash2 } from "lucide-react";
+import { Download, Ellipsis, Pencil, Trash2 } from "lucide-react";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { plural } from "@/lib/format";
 import type { RoadmapOverview } from "@/lib/data";
@@ -11,11 +11,12 @@ import { RoadmapIcon } from "./RoadmapIcon";
 type RoadmapCardProps = {
   overview: RoadmapOverview;
   onEdit: (overview: RoadmapOverview) => void;
+  onExport: (overview: RoadmapOverview) => void;
   onDelete: (overview: RoadmapOverview) => void;
 };
 
-export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
-  const { roadmap, topicCount, completedCount, questionCount } = overview;
+export function RoadmapCard({ overview, onEdit, onExport, onDelete }: RoadmapCardProps) {
+  const { roadmap, topicCount, completedCount, questionCount, statusCounts, dueCount } = overview;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -95,6 +96,17 @@ export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
                 type="button"
                 onClick={() => {
                   setIsMenuOpen(false);
+                  onExport(overview);
+                }}
+                className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-fg transition-colors hover:bg-card-hover"
+              >
+                <Download aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
                   onDelete(overview);
                 }}
                 className="flex min-h-11 items-center gap-3 rounded-[14px] px-3 text-start text-[16px] text-bad-fg transition-colors hover:bg-bad-bg"
@@ -108,6 +120,11 @@ export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
       </div>
 
       <div className="pointer-events-none relative z-20">
+        {dueCount > 0 ? (
+          <p className="mb-3 inline-flex rounded-full bg-bg px-2.5 py-0.5 text-[13px] font-medium leading-[18px] text-accent-text tabular-nums">
+            {dueCount} due for review
+          </p>
+        ) : null}
         {topicCount === 0 ? (
           <p className="text-[16px] leading-6 text-muted">No topics yet</p>
         ) : (
@@ -121,6 +138,8 @@ export function RoadmapCard({ overview, onEdit, onDelete }: RoadmapCardProps) {
             />
             <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
               {completedCount} / {topicCount} done
+              {statusCounts.active > 0 ? ` · ${statusCounts.active} active` : ""}
+              {statusCounts.todo > 0 ? ` · ${statusCounts.todo} to do` : ""}
             </p>
           </>
         )}

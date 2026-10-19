@@ -12,11 +12,13 @@ type QuizResultsProps = {
   queue: Question[];
   answers: QuizAnswer[];
   elapsedSeconds: number;
-  /** Topics that were marked done because of this quiz. */
-  markedDone: Topic[];
+  /** Topics that were marked done because of this quiz. Leave it out for a review session, which never marks topics. */
+  markedDone?: Topic[];
   backHref: string;
   backLabel: string;
-  onRestart: () => void;
+  /** Leave it out to hide the restart button. */
+  onRestart?: () => void;
+  restartLabel?: string;
   onRetryMistakes: () => void;
 };
 
@@ -29,6 +31,7 @@ export function QuizResults({
   backHref,
   backLabel,
   onRestart,
+  restartLabel = "Restart",
   onRetryMistakes,
 }: QuizResultsProps) {
   const correct = answers.filter((answer) => answer.correct).length;
@@ -48,7 +51,7 @@ export function QuizResults({
         </p>
       </div>
 
-      {markedDone.length > 0 ? (
+      {markedDone === undefined ? null : markedDone.length > 0 ? (
         <p role="status" className="flex items-start gap-3 rounded-2xl bg-ok-bg px-4 py-3 text-[16px] leading-6 text-ok-fg">
           <Check aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.5} />
           <span className="min-w-0 wrap-break-word">
@@ -81,13 +84,15 @@ export function QuizResults({
       )}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={onRestart}
-          className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
-        >
-          Restart
-        </button>
+        {onRestart ? (
+          <button
+            type="button"
+            onClick={onRestart}
+            className="min-h-12 flex-1 rounded-2xl bg-accent px-4 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+          >
+            {restartLabel}
+          </button>
+        ) : null}
         {missed.length > 0 ? (
           <button
             type="button"

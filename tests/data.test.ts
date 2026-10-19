@@ -153,7 +153,7 @@ describe('cross-roadmap move and cascades', () => {
     const ot = await createTopic({ roadmapId: other.id, title: 'ot' }); const oq = await addQuestion(ot.id, mcq)
     const q = await addQuestion(t.id, mcq); await addQuestion(t2.id, mcq); await addResource({ topicId: t.id, url: 'https://a.com' })
     await recordAttempt(q.id, true)
-    await db.reviews.add({ questionId: q.id, topicId: t.id, ease: 2.5, interval: 1, due: new Date().toISOString(), lapses: 0 })
+    expect(await db.reviews.count()).toBe(1) // recordAttempt scheduled it
     await deleteTopic(t.id)
     expect(await titles(r.id)).toEqual(['t2:0'])
     expect(await db.questions.get(q.id)).toBeUndefined()

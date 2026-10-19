@@ -11,13 +11,14 @@ import {
   setAiProvider,
   type AiProvider,
 } from "@/platform/secureStorage";
+import { DataSection } from "./DataSection";
 
 const providerOptions: { value: AiProvider; label: string }[] = [
   { value: "gemini", label: "Gemini" },
   { value: "openai", label: "OpenAI" },
 ];
 
-export function SettingsPage() {
+function AiKeySection() {
   const [provider, setProvider] = useState<AiProvider>(DEFAULT_AI_PROVIDER);
   const [apiKey, setApiKey] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -72,7 +73,7 @@ export function SettingsPage() {
   };
 
   return (
-    <section className="mx-auto w-full max-w-3xl rounded-2xl bg-card p-5">
+    <section className="w-full rounded-2xl bg-card p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] leading-[18px] text-muted">Settings</p>
@@ -165,5 +166,14 @@ export function SettingsPage() {
         </p>
       ) : null}
     </section>
+  );
+}
+
+export function SettingsPage() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+      <AiKeySection />
+      <DataSection />
+    </div>
   );
 }

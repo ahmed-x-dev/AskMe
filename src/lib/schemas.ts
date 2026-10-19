@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { Group, Question, Resource, Roadmap, Topic } from '../types/study'
+import type { Attempt, Group, Question, Resource, Review, Roadmap, Topic } from '../types/study'
 
 const id = z.string().min(1)
 const timestamp = z.iso.datetime()
@@ -42,7 +42,8 @@ export const resourceSchema: z.ZodType<Resource> = z.object({
   id,
   topicId: id,
   title: z.string().min(1),
-  url: z.url(),
+  // Only web links, like `cleanUrl` in the app. A `javascript:` link in an imported file must not get through.
+  url: z.url({ protocol: /^https?$/ }),
   kind: z.enum(['docs', 'video', 'article', 'other']),
   done: z.boolean(),
   order,
@@ -72,6 +73,24 @@ export const questionSchema: z.ZodType<Question> = z.discriminatedUnion('type', 
     referenceAnswer: z.string().optional(),
   }),
 ])
+
+export const attemptSchema: z.ZodType<Attempt> = z.object({
+  id,
+  questionId: id,
+  topicId: id,
+  roadmapId: id,
+  correct: z.boolean(),
+  at: timestamp,
+})
+
+export const reviewSchema: z.ZodType<Review> = z.object({
+  questionId: id,
+  topicId: id,
+  ease: z.number().min(1.3).max(10),
+  interval: z.number().int().min(0),
+  due: timestamp,
+  lapses: z.number().int().min(0),
+})
 
 /** Portable file for sharing one roadmap. It holds content only, never progress (attempts, reviews). */
 export const roadmapFileSchema = z
@@ -117,3 +136,14 @@ export const roadmapFileSchema = z
   })
 
 export type RoadmapFile = z.infer<typeof roadmapFileSchema>
+
+/** The progress half of a full backup: what the learner answered and when each question is due. */
+export const progressFileSchema = z.object({
+  format: z.literal('askme-progress'),
+  version: z.literal(1),
+  exportedAt: timestamp,
+  attempts: z.array(attemptSchema),
+  reviews: z.array(reviewSchema),
+})
+
+export type ProgressFile = z.infer<typeof progressFileSchema>

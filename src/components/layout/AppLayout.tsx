@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeft, Moon, Sun } from "lucide-react";
+import { countDue } from "@/lib/data";
 
 export type Theme = "light" | "dark";
 
@@ -19,6 +21,7 @@ export type AppLayoutProps = {
 
 export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const pathname = usePathname();
+  const dueCount = useLiveQuery(() => countDue(), []) ?? 0;
   const isHomePage = pathname === "/";
   /** Topic and quiz pages show their own back link, so the generic one is hidden there. */
   const hasOwnBackLink = pathname.startsWith("/topic/") || /^\/roadmap\/[^/]+\/quiz/.test(pathname);
@@ -52,6 +55,20 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                   className="min-h-12 rounded-2xl bg-card px-4 py-3 text-[16px] font-medium leading-6 text-fg"
                 >
                   Roadmaps
+                </Link>
+                <Link
+                  href="/review"
+                  className="inline-flex min-h-12 items-center gap-2 rounded-2xl px-3 py-3 text-[16px] leading-6 text-muted transition-colors hover:bg-card hover:text-fg"
+                >
+                  Review
+                  {dueCount > 0 ? (
+                    <span
+                      aria-label={`${dueCount} due`}
+                      className="rounded-full bg-accent px-2 py-0.5 text-[13px] font-medium leading-[18px] text-on-accent tabular-nums"
+                    >
+                      {dueCount}
+                    </span>
+                  ) : null}
                 </Link>
                 <Link
                   href="/settings"

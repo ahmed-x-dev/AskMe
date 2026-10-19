@@ -10,7 +10,11 @@ import {
   updateRoadmap,
   type RoadmapOverview,
 } from "@/lib/data";
+import { BackupReminder } from "@/components/backup/BackupReminder";
+import { ImportRoadmapButton } from "@/components/backup/ImportRoadmapButton";
+import { TodayCard } from "@/components/progress/TodayCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { downloadRoadmap } from "@/lib/backupActions";
 import { RoadmapCard } from "./RoadmapCard";
 import { RoadmapDialog, type RoadmapFormValues } from "./RoadmapDialog";
 
@@ -30,6 +34,19 @@ export function RoadmapGrid() {
 
     setDialog(null);
   };
+
+  const handleExport = async ({ roadmap }: RoadmapOverview) => {
+    try {
+      await downloadRoadmap(roadmap.id);
+      setActionError(null);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The roadmap could not be exported.");
+    }
+  };
+
+  const oldestDataAt = overviews && overviews.length > 0
+    ? overviews.reduce((oldest, { roadmap }) => (roadmap.createdAt < oldest ? roadmap.createdAt : oldest), overviews[0].roadmap.createdAt)
+    : null;
 
   const handleDelete = async ({ roadmap, topicCount, questionCount }: RoadmapOverview) => {
     const contents =
@@ -60,18 +77,34 @@ export function RoadmapGrid() {
             Pick a subject to study, review and test yourself.
           </p>
         </div>
-        {overviews && overviews.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setDialog({ mode: "create" })}
-            className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+        <div className="flex shrink-0 items-center gap-2">
+          <ImportRoadmapButton
+            className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-card px-4 text-[16px] font-medium text-fg transition-colors hover:bg-card-hover disabled:opacity-50"
+            onImported={() => setActionError(null)}
+            onError={setActionError}
           >
-            <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-            <span className="hidden sm:inline">New roadmap</span>
-            <span className="sm:hidden">New</span>
-          </button>
-        ) : null}
+            <span className="hidden sm:inline">Import</span>
+          </ImportRoadmapButton>
+          {overviews && overviews.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setDialog({ mode: "create" })}
+              className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-2xl bg-accent px-5 text-[16px] font-medium text-on-accent transition duration-200 ease-out hover:opacity-90 active:scale-[0.98]"
+            >
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              <span className="hidden sm:inline">New roadmap</span>
+              <span className="sm:hidden">New</span>
+            </button>
+          ) : null}
+        </div>
       </div>
+
+      {overviews && overviews.length > 0 ? (
+        <>
+          <BackupReminder oldestDataAt={oldestDataAt} />
+          <TodayCard />
+        </>
+      ) : null}
 
       {actionError ? (
         <p role="alert" className="rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg">
@@ -99,6 +132,7 @@ export function RoadmapGrid() {
               key={overview.roadmap.id}
               overview={overview}
               onEdit={(selected) => setDialog({ mode: "edit", overview: selected })}
+              onExport={(selected) => void handleExport(selected)}
               onDelete={(selected) => void handleDelete(selected)}
             />
           ))}
