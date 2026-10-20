@@ -1,15 +1,31 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { SerwistProvider } from "@serwist/turbopack/react";
 
 import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  applicationName: "AskMe",
   title: "AskMe",
   description: "Your revision space",
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AskMe",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09785e",
 };
 
 /**
@@ -28,7 +44,13 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <AppShell>{children}</AppShell>
+        <SerwistProvider
+          swUrl="/serwist/sw.js"
+          disable={process.env.NODE_ENV !== "production"}
+          reloadOnOnline={false}
+        >
+          <AppShell>{children}</AppShell>
+        </SerwistProvider>
       </body>
     </html>
   );

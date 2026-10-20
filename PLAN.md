@@ -5,14 +5,14 @@
 > Agents: update this block whenever a task changes state.
 
 ```yaml
-current_phase: P3
-current_task: P3-01
+current_phase: P4
+current_task: P4-09
 last_updated: 2026-10-20
 phases:
   P1: { name: "Local app (web)", status: done }
   P2: { name: "AI features", status: done }
   P3: { name: "Google Drive sync", status: in_progress }
-  P4: { name: "Desktop and mobile delivery", status: not_started }
+  P4: { name: "Desktop and mobile delivery", status: in_progress }
   P5: { name: "Polish and extras", status: in_progress }
 ```
 
@@ -25,12 +25,12 @@ Task markers: `[ ]` todo, `[~]` in progress, `[x]` done, `[!]` blocked.
 
 A simple, fast revision app for short study sessions on any device. The user builds question sets (MCQ and essay), practices them in different modes, and gets AI help generating questions and grading essays. Anything added on one device appears on the others, with no backend to run.
 
-**Platform delivery order:** build and stabilize the web app first, package for desktop second, then revisit mobile delivery. PWA installation and offline caching are currently deferred. Native Capacitor apps and app-store releases are not part of the current roadmap.
+**Platform delivery order:** build and stabilize the web app first, package for desktop second, then deliver mobile access through the installable PWA. Native Capacitor apps and app-store releases are not part of the current roadmap.
 
 **Principles**
 
 - Web first, desktop second, then revisit mobile delivery.
-- One responsive web app across desktop and mobile browsers.
+- One responsive web app across desktop and mobile browsers, installable as a PWA with cached app-shell support.
 - No backend. Local storage plus sync through the user's own Google Drive.
 - Simple UI with two themes only: light (white) and dark (black).
 - The user owns their data. Each set is a plain JSON file that can be exported and imported.
@@ -198,7 +198,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [x] **P1-09** JSON import and export per set, with `schemaVersion` validation.
   - Done when: an exported set re-imports without loss, and bad files show a clear error.
   - Learn: `docs/learn/09-json-import-export.md`.
-- [x] **P1-10** PWA setup: manifest, icons, service worker for offline use (historical; now disabled).
+- [x] **P1-10** PWA setup: manifest, icons, service worker for offline use (completed in Phase 1, later disabled, and reintroduced in P4-09).
   - Done when: the app installs and works offline after the first load.
   - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [x] **P1-11** Make the layout mobile-first and responsive (small screens first, safe areas, touch-sized controls).
@@ -236,7 +236,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 **Goal:** changes on one device appear on all others.
 
 - [x] **P3-07** Migrate the web app from Vite and React Router to Next.js App Router without moving Dexie data or AI keys off the browser.
-  - Done when: all app routes work under Next.js, checks pass, and Vite/React Router are no longer the app runtime. PWA behavior was subsequently deferred.
+  - Done when: all app routes work under Next.js, checks pass, and Vite/React Router are no longer the app runtime. PWA behavior was later paused and reintroduced in P4-09.
   - Learn: `docs/learn/18-nextjs-app-router.md`.
 - [ ] **P3-01** Merge function (per-question newest `updatedAt` wins, tombstones respected) with thorough unit tests.
   - Done when: tests cover add, edit, delete, and concurrent edits from two devices.
@@ -261,7 +261,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 ### Phase P4: Desktop and mobile delivery
 
-**Goal:** deliver a desktop app after the web app is stable, then revisit mobile delivery. PWA installation and offline behavior are currently deferred; do not add a native wrapper or app-store release flow under the current roadmap.
+**Goal:** deliver a desktop app after the web app is stable, then support mobile browsers through the installable PWA. Do not add a native wrapper or app-store release flow under the current roadmap.
 
 - [!] **P4-01** Add Capacitor; create Android and iOS projects; `cap sync` works in the build flow.
   - Not in current scope: mobile delivery is deferred; no native app is planned.
@@ -280,15 +280,16 @@ This tree describes the current app. Add future sync or desktop-platform modules
 - [ ] **P4-08** Package the stable web app for desktop; choose a desktop wrapper only if browser installation is insufficient.
   - Done when: the desktop delivery approach is documented and the app launches with its routes and local data working.
   - Learn: `docs/learn/37-tauri-desktop-wrapper.md`.
-- [!] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
-  - Deferred at the owner's request: install and offline PWA behavior are not currently needed.
+- [~] **P4-09** Verify mobile PWA installation and core workflows on supported mobile browsers.
+  - Re-scoped by the owner: implement an installable PWA with app-shell and asset caching while retaining dynamic Next.js routes.
+  - Production build and Chromium offline quiz/storage checks pass; real Android/iOS device verification remains.
   - Done when: users can install/open the PWA, use core quiz flows, retain local data, and load the app offline after a successful visit.
   - Learn: `docs/learn/10-pwa-and-offline.md`.
 - [ ] **P4-10** Revisit desktop and mobile delivery after testing real devices and browsers.
   - Done when: supported platforms, known PWA limitations, and any future native-app need are documented.
   - Learn: `docs/learn/10-pwa-and-offline.md`, `docs/learn/37-tauri-desktop-wrapper.md`.
 
-**Exit criteria:** P4-08 and P4-10 are `[x]`; P4-09 remains deferred unless mobile PWA support is re-scoped; `docs/learn/phase-4-recap.md` exists.
+**Exit criteria:** P4-08, P4-09 and P4-10 are `[x]`; `docs/learn/phase-4-recap.md` exists.
 
 ### Phase P5: Polish and extras
 
@@ -395,7 +396,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-06 | Soft deletes with tombstones                                 | Required so deletes sync correctly                                           |
 | 2026-10-06 | Gemini key never synced                                      | Per-device secret                                                            |
 | 2026-10-07 | React Router v7, library mode, `react-router` only           | Most documented; no server needed; avoids the old `react-router-dom` habit   |
-| 2026-10-07 | Start with browser routing                                   | The initial web release was also installable; PWA support is now deferred   |
+| 2026-10-07 | Start with browser routing                                   | The initial web release was also installable; PWA support was later paused  |
 | 2026-10-12 | Next.js App Router for the web app; browser remains data owner | Requested migration; Dexie and keys stay client-side; hosting needs Next.js |
 | 2026-10-12 | Web first, desktop second, mobile through PWA                 | Avoid native wrappers and store releases; reuse the responsive web app        |
 | 2026-10-12 | Native Capacitor work is out of scope for now                 | Avoid native-app complexity; mobile delivery is currently deferred          |
@@ -419,6 +420,8 @@ This tree describes the current app. Add future sync or desktop-platform modules
 | 2026-10-19 | Keep quiz score and spaced-repetition rules unchanged while improving the quiz interface | Quiz results derive from the runner's per-question correctness values; scoring and scheduling already have feature and data tests, so redesign should not alter these rules |
 | 2026-10-20 | Keep the app shell as the single source of truth for theme preference and expose it to nested Settings controls through React context | Settings can change the same persisted preference as the global toggle without duplicating browser-storage logic |
 | 2026-10-20 | Require an explicit Remove action and confirmation to clear a saved AI key | An empty “Save key” action is ambiguous; the dedicated Remove action prevents accidental key loss while leaving the underlying browser-storage behavior unchanged |
+| 2026-10-20 | Keep dynamic Next.js routes and use Serwist to cache the app shell/assets for PWA support | Preserves current URLs and avoids a static-export routing rewrite; offline use is strongest for previously visited routes and locally stored data |
+| 2026-10-20 | Reintroduce PWA install/offline support with Serwist's Turbopack integration and browser-managed persistent storage request | The owner re-scoped the previously deferred mobile PWA task; same-origin app assets and visited routes can work offline while Dexie remains local |
 | 2026-10-07 | Check docs for installed major versions                      | Agent training data is older than the libraries in use                       |
 | 2026-10-07 | No manual memoization by default                             | React Compiler is enabled                                                    |
 | 2026-10-07 | Keep tests under root `tests/`, mirroring `src/`             | Keeps production modules uncluttered and tests easy to locate                |
@@ -438,6 +441,7 @@ This tree describes the current app. Add future sync or desktop-platform modules
 
 Add the newest entry at the top. Format: `YYYY-MM-DD: done / next`.
 
+- 2026-10-20: Implemented PWA step 16 and re-scoped P4-09: added Serwist Turbopack integration, install metadata and icons, an offline fallback, and a Settings control for requesting persistent storage. Kept dynamic Next.js routes and verified the production worker/manifest, a visited quiz route and IndexedDB data offline, and the offline fallback for an unvisited URL in Chromium. The browser denied the optional persistence request and the UI reported that result; Android/iOS device testing remains before P4-09 is complete. Typecheck, lint, all 154 tests, and production build pass. `npm outdated` reports newer major `@types/node` (26.6.5) and TypeScript (7.0.2); neither was upgraded. Next: verify on supported mobile browsers, then resume P3-01.
 - 2026-10-20: Completed the final accessibility and responsive audit across all routes and the not-found page. Fixed the app-shell landmark structure, missing page headings, heading order, loading announcements, unlabeled mobile import action, undersized brand/topic targets, dialog Escape dismissal and focus restoration, and insufficient contrast on interactive control borders. Added a dedicated 3:1 `--control-line` token, updated design/learning guidance, and added UI regressions. Browser DOM checks covered 100 route/theme/viewport combinations (375, 768, 1024, 1440, 1920px; light and dark) with no horizontal overflow, missing names/labels/headings, or undersized targets. Inspected screenshots at 375px light and 1440px dark; keyboard-checked menus, dialogs, quiz completion, focus visibility, reduced motion, and linked validation feedback. All 149 tests, lint, typecheck, and production build pass. Removed only the temporary audit roadmap and its dependent records; the library is empty again. Next: resume P3-01.
 - 2026-10-20: Completed P5-28: grouped Settings into Appearance, AI assistance, and Study data; added accessible theme radios backed by the shell's existing preference, clarified key storage and removal, and improved backup, restore, import, and reset guidance, pending states, and outcome feedback. Restore/reset and AI-key removal require confirmation that states exactly what changes and what remains. Backup/archive formats, validation, storage, and import/export behavior remain unchanged. Added settings/data UI tests and the learning guide. All 147 tests pass; typecheck, lint, and production build pass; 375px mobile and 1280px desktop browser checks showed no horizontal overflow in both themes. `npm outdated` found major @types/node/TypeScript updates; none were installed. Next: resume P3-01.
 - 2026-10-20: Started P5-28: settings and data-management UX. Existing backup/import tests verify archive contents, validation, restore replacement, and reset behavior; dependency check found newer non-major PostCSS/typescript-eslint versions and newer major @types/node/TypeScript versions. No dependency changes. Next: improve appearance/key preferences, backup/import/restore feedback, and destructive-action clarity without altering storage behavior.

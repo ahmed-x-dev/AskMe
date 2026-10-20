@@ -13,7 +13,7 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [07 — Quiz modes and shuffling](./07-quiz-modes-and-shuffling.md): How the app filters questions by mode and randomizes their order for each quiz.
 - [08 — Quiz flow and scoring](./08-quiz-flow-and-scoring.md): How a quiz run tracks answers, reveals results, and totals the score.
 - [09 — JSON import and export](./09-json-import-export.md): How sets are exported as JSON and re-imported with schema validation.
-- [10 — PWA and offline (deferred)](./10-pwa-and-offline.md): What the former PWA setup did and how its service worker was removed while preserving local data.
+- [10 — PWA installation and offline support](./10-pwa-and-offline.md): The original PWA setup, later disabled and reintroduced in P4-09.
 - [11 — Responsive layout](./11-responsive-layout.md): How the UI starts phone-first and expands gracefully on larger screens.
 - [phase-1-recap](./phase-1-recap.md): A summary of the Phase 1 app and its key decisions.
 
@@ -30,6 +30,10 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 ## Phase 3: Next.js and Google Drive sync
 
 - [18 — Next.js App Router](./18-nextjs-app-router.md): How file-based routes, Server/Client Components, and browser-only data fit together in AskMe.
+
+## Phase 4: Desktop and mobile delivery
+
+- [10 — PWA installation and offline support](./10-pwa-and-offline.md): The current P4-09 PWA implementation and its dynamic-route offline limits.
 
 ## Phase 5: Polish and extras
 

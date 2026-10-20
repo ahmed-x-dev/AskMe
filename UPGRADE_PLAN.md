@@ -131,12 +131,12 @@ Other choices:
 13. **Import / export:** one roadmap as JSON (no progress), a full backup ZIP (everything), and a backup reminder. Add a "Reset all data" button in Settings.
 14. **Redesign and refactor:** apply the new UI / UX per screen while building it, and keep components small instead of repeating the 30 KB pages.
 15. **Optional:** new question types (true/false, fill in the blank, flashcard), then update the AI generator for them.
-16. **PWA / offline (last):** Serwist, manifest, icons, `navigator.storage.persist()`. Decide the route approach first (see risks).
+16. **PWA / offline (last, implementation complete):** Added Serwist's Turbopack integration, a web manifest, 192/512px and Apple touch icons, a precached offline fallback, and a Settings action that requests `navigator.storage.persist()`. Kept the dynamic Next.js routes and network-first app-shell/previously visited route caching rather than rewriting URLs for static export. Production-build and local Chromium offline quiz/storage checks pass; real-device Android/iOS installation verification remains tracked by P4-09 in `PLAN.md`.
 
 ## 6. Risks and things to watch
 
 - **API key in `localStorage`** is readable by any script on the page. Fine for personal use, but never put it in exports or backups.
-- **Dynamic routes and offline.** `/topic/[id]` cannot be statically exported because ids are unknown at build time. Before step 16, choose between a normal Next deployment with the service worker caching the app shell, or query-param routes (`/topic?id=`).
-- **Until step 16, the app needs internet to load.** Data is stored locally, but the app files come from the server or dev server.
+- **Dynamic routes and offline.** `/topic/[id]` cannot be statically exported because ids are unknown at build time. For step 16, the app kept dynamic routes and uses the service worker to cache the app shell and previously visited routes; an unvisited route can still need a network connection.
+- **Offline app files.** The service worker caches app assets and route responses after an online visit. Dexie keeps study data on-device independently of the service-worker cache.
 - **Browsers can clear IndexedDB** (especially Safari on iOS), so keep the backup feature (step 13) even without sync.
 - **Large components** get harder to change as features pile up, so split them as you port them.

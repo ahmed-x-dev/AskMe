@@ -1,44 +1,79 @@
-# PWA and offline support: currently deferred
+# PWA installation and offline support
 
-This lesson records the PWA approach that was prototyped in AskMe. Install and offline-cache behavior is currently disabled; AskMe runs as a regular web app.
+## Goal
+
+Learn how AskMe is installable and how its app shell and local study data remain usable after a successful visit.
 
 ## Why we need it
 
-A service worker can keep an old version of a page or JavaScript asset after deployment. During development, this made it harder to tell whether the browser was showing the newest code. The owner chose to remove PWA behavior for now.
+AskMe stores roadmaps, questions, attempts, and reviews in the browser. A service worker can cache the app code and previously visited routes so that losing the network does not automatically mean losing access to study. Browser storage can still be evicted, so users should keep using the backup feature.
 
 ## The concept, simply
 
-A PWA uses a web manifest for install metadata and can use a service worker to intercept requests, cache assets, and provide offline responses. A registered service worker can remain active in browsers after its registration code is removed, so disabling the feature also requires unregistering the old worker and removing its named cache.
+A web app manifest tells a browser the app's name, icon, start page, and standalone display mode. A service worker is a small browser-managed program that can cache app files and navigation responses. Serwist builds and registers that worker for the Next.js App Router.
+
+The worker caches application code, route responses, and eligible assets/GET requests, not Dexie records, provider keys, or AI request bodies. AskMe's AI requests use POST and are not cached. Dexie remains the source of local study data. The browser's `navigator.storage.persist()` API can request that the browser avoid automatic storage eviction, but the browser may deny the request and can still remove data in exceptional cases.
+
+AskMe keeps its dynamic Next.js routes. The home page and previously visited/prefetched routes can work offline after their app files have been cached. An unvisited dynamic URL may need a network connection to receive its first Next.js response; the worker shows the offline page when it cannot.
 
 ## In our code
 
-`src/components/AppShell.tsx` now looks for the previous `/sw.js` registration, unregisters it, removes the `askme-next-v1` cache, and reloads once when it successfully removes the worker. This is cleanup only; it does not register a service worker. `src/app/layout.tsx` no longer links a web manifest. `public/icon.svg` remains the browser tab icon.
+The App Router manifest lives in `src/app/manifest.ts`:
 
-## ❌ / ✅ examples
+```ts
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "AskMe",
+    short_name: "AskMe",
+    start_url: "/",
+    display: "standalone",
+    icons: [
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+  };
+}
+```
 
-- ❌ Removing the service-worker registration code and assuming all existing browser registrations disappeared.
-- ✅ Explicitly unregistering the app's old worker and deleting its named cache.
-- ❌ Treating this app as installable or offline-capable while PWA support is paused.
-- ✅ Use AskMe online as a regular web app until PWA support is intentionally reintroduced.
+The service worker in `src/app/sw.ts` uses Serwist's Next.js-aware cache rules. `src/app/serwist/[path]/route.ts` creates the worker at `/serwist/sw.js`, and the root layout's `SerwistProvider` registers it. Its `/offline` fallback is precached so the worker can display it without a network.
+
+In Settings, the local-data retention control calls `navigator.storage.persist()`. The result is reported to the user because storage persistence is a browser decision, not a guarantee made by the app.
+
+## ✅ / ❌ examples
+
+- ❌ Cache AI requests or API-key-bearing URLs in the service worker.
+- ✅ Cache only app assets and same-origin route responses; keep secrets and study records in their existing browser storage layers.
+- ❌ Assume installing the app or requesting persistent storage guarantees that every route and every record is available forever.
+- ✅ Visit/prefetch a route while online, keep backups, and explain that unvisited dynamic routes may need a connection.
+- ❌ Add a service worker without checking how its update behavior affects development.
+- ✅ Register the worker only in production; use HTTPS or localhost when testing installation.
 
 ## Try it yourself
 
-1. Open DevTools and confirm AskMe has no `/sw.js` service-worker registration after loading the app.
-2. Check that the old `askme-next-v1` cache is removed.
+1. Build and run AskMe over localhost or HTTPS, then inspect the manifest and service-worker registration in browser DevTools.
+2. Open a topic while online, switch DevTools to offline, reload that visited route, and confirm its data comes from IndexedDB.
+3. Open Settings and request persistent storage; read the browser's result rather than assuming it was granted.
 
 ## Quick Reference
 
-- Service workers can outlive the JavaScript that originally registered them.
-- `registration.unregister()` removes a service-worker registration.
-- `caches.delete(name)` removes a specific Cache Storage cache.
+- Manifest: app identity, installation icon, start URL, and display mode.
+- Service worker: cache/update and offline navigation behavior.
+- Dexie: local question and progress records; not the service-worker cache.
+- `navigator.storage.persist()`: best-effort request against automatic storage eviction.
+- Service workers require a secure context (HTTPS in production; localhost is trusted for development).
 
 ## Key Takeaways
 
-- PWA install and offline behavior are currently deferred.
-- Removing a worker requires cleaning up registrations that browsers already stored.
-- Local quiz data in IndexedDB is separate from the service-worker cache and is preserved.
+- Installing a PWA and enabling offline behavior are related but separate capabilities.
+- Cache the application shell and route responses, not secrets or user-data API traffic.
+- Dynamic routes are only reliably available offline after their route response and code have been cached.
+- Browser storage remains best-effort; maintain and test backups.
 
 ## Links to related files
 
-- `src/components/AppShell.tsx`
-- `src/app/layout.tsx`
+- [src/app/manifest.ts](../../src/app/manifest.ts)
+- [src/app/sw.ts](../../src/app/sw.ts)
+- [src/app/serwist/[path]/route.ts](../../src/app/serwist/[path]/route.ts)
+- [src/components/settings/SettingsPage.tsx](../../src/components/settings/SettingsPage.tsx)
+- [docs/learn/09-json-import-export.md](./09-json-import-export.md)

@@ -7,6 +7,7 @@ import { BackupReminder } from "../src/components/backup/BackupReminder";
 import { ImportRoadmapButton } from "../src/components/backup/ImportRoadmapButton";
 import { DataSection } from "../src/components/settings/DataSection";
 import { SettingsPage } from "../src/components/settings/SettingsPage";
+import { StoragePersistenceSection } from "../src/components/settings/StoragePersistenceSection";
 import { allTables, buildBackup, buildRoadmapFile, createRoadmap, db, resetAllData } from "../src/lib/data";
 import { createBackupArchive } from "../src/lib/libraryArchive";
 
@@ -27,6 +28,7 @@ let container: HTMLDivElement;
 let root: Root;
 let originalShowModal: PropertyDescriptor | undefined;
 let originalClose: PropertyDescriptor | undefined;
+let originalStorage: PropertyDescriptor | undefined;
 
 beforeEach(async () => {
   await db.transaction("rw", allTables(), async () => {
@@ -37,6 +39,7 @@ beforeEach(async () => {
   mockRoute.pathname = "/settings";
   originalShowModal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, "showModal");
   originalClose = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, "close");
+  originalStorage = Object.getOwnPropertyDescriptor(navigator, "storage");
   Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
     configurable: true,
     value(this: HTMLDialogElement) {
@@ -66,6 +69,11 @@ afterEach(() => {
     Object.defineProperty(HTMLDialogElement.prototype, "close", originalClose);
   } else {
     Reflect.deleteProperty(HTMLDialogElement.prototype, "close");
+  }
+  if (originalStorage) {
+    Object.defineProperty(navigator, "storage", originalStorage);
+  } else {
+    Reflect.deleteProperty(navigator, "storage");
   }
   vi.restoreAllMocks();
 });
@@ -100,11 +108,58 @@ describe("SettingsPage", () => {
 
     expect(container.querySelector("#appearance-heading")?.textContent).toBe("Appearance");
     expect(container.querySelector("#ai-key-heading")?.textContent).toBe("AI assistance");
+    expect(container.querySelector("#storage-persistence-heading")?.textContent).toBe("Local data retention");
     expect(container.querySelector("#data-heading")?.textContent).toBe("Study data");
     expect(container.querySelector<HTMLInputElement>('input[name="theme-preference"][value="light"]')?.checked).toBe(true);
 
     await click(container.querySelector<HTMLInputElement>('input[name="theme-preference"][value="dark"]')!);
     expect(setTheme).toHaveBeenCalledWith("dark");
+  });
+
+  it("reports when the browser grants persistent local storage", async () => {
+    const storage = {
+      persisted: vi.fn().mockResolvedValue(false),
+      persist: vi.fn().mockResolvedValue(true),
+    };
+    Object.defineProperty(navigator, "storage", { configurable: true, value: storage });
+    await act(async () => root.render(<StoragePersistenceSection />));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await click(button("Request persistent storage"));
+
+    expect(storage.persist).toHaveBeenCalledOnce();
+    expect(container.querySelector('[role="status"]')?.textContent).toContain("granted");
+    expect(button("Persistent storage granted")?.disabled).toBe(true);
+  });
+
+  it("clearly reports when the browser denies persistent local storage", async () => {
+    const storage = {
+      persisted: vi.fn().mockResolvedValue(false),
+      persist: vi.fn().mockResolvedValue(false),
+    };
+    Object.defineProperty(navigator, "storage", { configurable: true, value: storage });
+    await act(async () => root.render(<StoragePersistenceSection />));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    await click(button("Request persistent storage"));
+
+    expect(container.querySelector('[role="status"]')?.textContent).toContain("did not grant");
+    expect(container.textContent).toContain("Keep a backup");
+  });
+
+  it("explains when persistent local storage is unavailable", async () => {
+    Object.defineProperty(navigator, "storage", { configurable: true, value: undefined });
+    await act(async () => root.render(<StoragePersistenceSection />));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(container.textContent).toContain("not supported in this browser");
+    expect(button("Request persistent storage")?.disabled).toBe(true);
   });
 
   it("confirms before removing a saved AI key", async () => {

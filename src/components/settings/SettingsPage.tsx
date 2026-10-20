@@ -20,6 +20,7 @@ import {
   type AiProvider,
 } from "@/platform/secureStorage";
 import { DataSection } from "./DataSection";
+import { StoragePersistenceSection } from "./StoragePersistenceSection";
 
 const providerOptions: { value: AiProvider; label: string }[] = [
   { value: "gemini", label: "Gemini" },
@@ -292,7 +293,10 @@ export function SettingsPage() {
           <AppearanceSection />
           <AiKeySection />
         </div>
-        <DataSection />
+        <div className="flex flex-col gap-6">
+          <StoragePersistenceSection />
+          <DataSection />
+        </div>
       </div>
     </div>
   );
