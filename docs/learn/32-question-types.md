@@ -17,16 +17,21 @@ This is a good example of a discriminated union: one field chooses the shape, an
 ## In our code
 
 ```ts
-export type QuestionType = 'mcq' | 'essay' | 'true-false' | 'fill-blank' | 'flashcard'
+export type QuestionType =
+  | "mcq"
+  | "essay"
+  | "true-false"
+  | "fill-blank"
+  | "flashcard";
 
 export interface TrueFalseQuestion extends BaseQuestion {
-  type: 'true-false'
-  answer: boolean
+  type: "true-false";
+  answer: boolean;
 }
 
 export interface FillBlankQuestion extends BaseQuestion {
-  type: 'fill-blank'
-  answer: string
+  type: "fill-blank";
+  answer: string;
 }
 ```
 

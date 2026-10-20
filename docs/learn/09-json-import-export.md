@@ -17,12 +17,15 @@ A full backup is a ZIP with one JSON file per roadmap and a `progress.json` file
 `src/lib/schemas.ts` validates every stored question type and checks record relationships:
 
 ```ts
-export const questionSchema: z.ZodType<Question> = z.discriminatedUnion('type', [
-  // MCQ, essay, true/false, fill-blank, and flashcard shapes
-])
+export const questionSchema: z.ZodType<Question> = z.discriminatedUnion(
+  "type",
+  [
+    // MCQ, essay, true/false, fill-blank, and flashcard shapes
+  ],
+);
 
 if (file.questions.some((question) => question.roadmapId !== file.roadmap.id)) {
-  problems.push('A question belongs to a different roadmap.')
+  problems.push("A question belongs to a different roadmap.");
 }
 ```
 

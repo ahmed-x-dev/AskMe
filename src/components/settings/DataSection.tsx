@@ -2,10 +2,20 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, CheckCircle2, Download, TriangleAlert, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Download,
+  TriangleAlert,
+  Upload,
+} from "lucide-react";
 import { ImportRoadmapButton } from "@/components/backup/ImportRoadmapButton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { buttonDestructive, buttonPrimary, buttonSecondaryOnCard } from "@/components/ui/styles";
+import {
+  buttonDestructive,
+  buttonPrimary,
+  buttonSecondaryOnCard,
+} from "@/components/ui/styles";
 import { downloadBackup } from "@/lib/backupActions";
 import { resetAllData, restoreBackup } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -20,7 +30,11 @@ import { clearBackupState, useBackupState } from "@/platform/backupStorage";
 type Status = { kind: "success" | "error"; message: string; href?: string };
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  return new Date(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 /** Backup, restore, import and reset. Everything here works on the browser's local database. */
@@ -30,7 +44,9 @@ export function DataSection() {
   const [status, setStatus] = useState<Status | null>(null);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isReadingRestore, setIsReadingRestore] = useState(false);
-  const [pendingRestore, setPendingRestore] = useState<BackupContents | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<BackupContents | null>(
+    null,
+  );
   const [isResetOpen, setIsResetOpen] = useState(false);
 
   const handleBackup = async () => {
@@ -39,9 +55,18 @@ export function DataSection() {
 
     try {
       await downloadBackup();
-      setStatus({ kind: "success", message: "Backup downloaded. Keep the ZIP file somewhere safe." });
+      setStatus({
+        kind: "success",
+        message: "Backup downloaded. Keep the ZIP file somewhere safe.",
+      });
     } catch (error) {
-      setStatus({ kind: "error", message: error instanceof Error ? error.message : "The backup could not be created." });
+      setStatus({
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The backup could not be created.",
+      });
     } finally {
       setIsBackingUp(false);
     }
@@ -62,9 +87,17 @@ export function DataSection() {
     setStatus(null);
 
     try {
-      setPendingRestore(readBackupArchive(new Uint8Array(await file.arrayBuffer())));
+      setPendingRestore(
+        readBackupArchive(new Uint8Array(await file.arrayBuffer())),
+      );
     } catch (error) {
-      setStatus({ kind: "error", message: error instanceof Error ? error.message : "The backup could not be read." });
+      setStatus({
+        kind: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The backup could not be read.",
+      });
     } finally {
       setIsReadingRestore(false);
       if (restoreInputRef.current) restoreInputRef.current.value = "";
@@ -73,28 +106,45 @@ export function DataSection() {
 
   const restoreSummary = pendingRestore
     ? `${plural(pendingRestore.roadmaps.length, "roadmap")}, ${plural(
-        pendingRestore.roadmaps.reduce((sum, file) => sum + file.topics.length, 0),
+        pendingRestore.roadmaps.reduce(
+          (sum, file) => sum + file.topics.length,
+          0,
+        ),
         "topic",
       )} and ${plural(
-        pendingRestore.roadmaps.reduce((sum, file) => sum + file.questions.length, 0),
+        pendingRestore.roadmaps.reduce(
+          (sum, file) => sum + file.questions.length,
+          0,
+        ),
         "question",
       )}`
     : "";
 
   return (
-    <section aria-labelledby="data-heading" className="flex w-full flex-col gap-1 rounded-2xl bg-card p-4">
-      <h2 id="data-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+    <section
+      aria-labelledby="data-heading"
+      className="flex w-full flex-col gap-1 rounded-2xl bg-card p-4"
+    >
+      <h2
+        id="data-heading"
+        className="text-[18px] font-medium leading-[26px] text-fg"
+      >
         Study data
       </h2>
       <p className="mt-2 text-[16px] leading-6 text-muted">
-        Roadmaps and progress are stored in this browser, which may clear local data. A full backup is a ZIP containing
-        your roadmaps and progress; it never contains your AI key.
+        Roadmaps and progress are stored in this browser, which may clear local
+        data. A full backup is a ZIP containing your roadmaps and progress; it
+        never contains your AI key.
       </p>
 
-      <h3 className="mt-5 text-[16px] font-medium leading-6 text-fg">Full backup</h3>
+      <h3 className="mt-5 text-[16px] font-medium leading-6 text-fg">
+        Full backup
+      </h3>
       <p className="mt-1 text-[13px] leading-[18px] text-muted">
-        {lastBackupAt ? `Last downloaded: ${formatDate(lastBackupAt)}.` : "No backup downloaded yet."} Keep the ZIP in
-        a safe place outside this browser.
+        {lastBackupAt
+          ? `Last downloaded: ${formatDate(lastBackupAt)}.`
+          : "No backup downloaded yet."}{" "}
+        Keep the ZIP in a safe place outside this browser.
       </p>
       <div className="mt-3 flex flex-wrap gap-3">
         <button
@@ -127,10 +177,13 @@ export function DataSection() {
         </button>
       </div>
 
-      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">Share one roadmap</h3>
+      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">
+        Share one roadmap
+      </h3>
       <p className="mt-1 text-[13px] leading-[18px] text-muted">
-        Export a JSON file from a roadmap card on the home page. It includes topics, links, and questions but not
-        progress. Import adds a separate new roadmap; it does not replace existing data.
+        Export a JSON file from a roadmap card on the home page. It includes
+        topics, links, and questions but not progress. Import adds a separate
+        new roadmap; it does not replace existing data.
       </p>
       <div className="mt-3">
         <ImportRoadmapButton
@@ -152,14 +205,25 @@ export function DataSection() {
           className={`mt-3 flex items-start gap-2 text-[13px] leading-[18px] ${status.kind === "error" ? "text-bad-fg" : "text-accent-text"}`}
         >
           {status.kind === "error" ? (
-            <AlertCircle aria-hidden="true" className="mt-px h-4 w-4 shrink-0" strokeWidth={1.5} />
+            <AlertCircle
+              aria-hidden="true"
+              className="mt-px h-4 w-4 shrink-0"
+              strokeWidth={1.5}
+            />
           ) : (
-            <CheckCircle2 aria-hidden="true" className="mt-px h-4 w-4 shrink-0" strokeWidth={1.5} />
+            <CheckCircle2
+              aria-hidden="true"
+              className="mt-px h-4 w-4 shrink-0"
+              strokeWidth={1.5}
+            />
           )}
           <p className="min-w-0 wrap-break-word">
             {status.message}{" "}
             {status.href ? (
-              <Link href={status.href} className="font-medium underline underline-offset-2">
+              <Link
+                href={status.href}
+                className="font-medium underline underline-offset-2"
+              >
                 Open it
               </Link>
             ) : null}
@@ -167,14 +231,25 @@ export function DataSection() {
         </div>
       ) : null}
 
-      <section aria-labelledby="reset-data-heading" className="mt-7 rounded-2xl bg-bg p-4">
-        <h3 id="reset-data-heading" className="flex items-center gap-2 text-[16px] font-medium leading-6 text-bad-fg">
-          <TriangleAlert aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+      <section
+        aria-labelledby="reset-data-heading"
+        className="mt-7 rounded-2xl bg-bg p-4"
+      >
+        <h3
+          id="reset-data-heading"
+          className="flex items-center gap-2 text-[16px] font-medium leading-6 text-bad-fg"
+        >
+          <TriangleAlert
+            aria-hidden="true"
+            className="h-5 w-5 shrink-0"
+            strokeWidth={1.5}
+          />
           Reset all data
         </h3>
         <p className="mt-2 text-[13px] leading-[18px] text-muted">
-          Permanently deletes all roadmaps, topics, questions, and study progress from this browser. Your AI key and
-          theme preference stay. This cannot be undone.
+          Permanently deletes all roadmaps, topics, questions, and study
+          progress from this browser. Your AI key and theme preference stay.
+          This cannot be undone.
         </p>
         <button
           type="button"
@@ -193,7 +268,10 @@ export function DataSection() {
           busyLabel="Restoring…"
           onConfirm={async () => {
             await restoreBackup(pendingRestore);
-            setStatus({ kind: "success", message: `Backup restored: ${restoreSummary}.` });
+            setStatus({
+              kind: "success",
+              message: `Backup restored: ${restoreSummary}.`,
+            });
           }}
           onClose={() => setPendingRestore(null)}
         />
