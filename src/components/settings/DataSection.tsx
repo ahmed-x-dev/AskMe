@@ -9,7 +9,12 @@ import { buttonDestructive, buttonPrimary, buttonSecondaryOnCard } from "@/compo
 import { downloadBackup } from "@/lib/backupActions";
 import { resetAllData, restoreBackup } from "@/lib/data";
 import { plural } from "@/lib/format";
-import { readBackupArchive, type BackupContents } from "@/lib/libraryArchive";
+import {
+  MAX_BACKUP_ARCHIVE_BYTES,
+  MAX_BACKUP_ARCHIVE_SIZE_MB,
+  readBackupArchive,
+  type BackupContents,
+} from "@/lib/libraryArchive";
 import { clearBackupState, useBackupState } from "@/platform/backupStorage";
 
 type Status = { kind: "success" | "error"; message: string; href?: string };
@@ -44,6 +49,14 @@ export function DataSection() {
 
   const handleRestoreFile = async (file: File | undefined) => {
     if (!file) return;
+
+    if (file.size > MAX_BACKUP_ARCHIVE_BYTES) {
+      setStatus({
+        kind: "error",
+        message: `The backup ZIP is too large. Choose a file no larger than ${MAX_BACKUP_ARCHIVE_SIZE_MB} MB.`,
+      });
+      return;
+    }
 
     setIsReadingRestore(true);
     setStatus(null);

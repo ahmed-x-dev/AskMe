@@ -72,6 +72,21 @@ export const questionSchema: z.ZodType<Question> = z.discriminatedUnion('type', 
     type: z.literal('essay'),
     referenceAnswer: z.string().optional(),
   }),
+  z.object({
+    ...questionBase,
+    type: z.literal('true-false'),
+    answer: z.boolean(),
+  }),
+  z.object({
+    ...questionBase,
+    type: z.literal('fill-blank'),
+    answer: z.string().min(1),
+  }),
+  z.object({
+    ...questionBase,
+    type: z.literal('flashcard'),
+    answer: z.string().min(1),
+  }),
 ])
 
 export const attemptSchema: z.ZodType<Attempt> = z.object({
@@ -128,6 +143,10 @@ export const roadmapFileSchema = z
 
     if (file.questions.some((question) => !topicIds.has(question.topicId))) {
       problems.push('A question points to a topic that is not in the file.')
+    }
+
+    if (file.questions.some((question) => question.roadmapId !== file.roadmap.id)) {
+      problems.push('A question belongs to a different roadmap.')
     }
 
     for (const message of problems) {

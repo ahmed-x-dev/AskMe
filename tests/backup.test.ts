@@ -1,14 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  addQuestion, allTables, buildBackup, buildRoadmapFile, addResource, createGroup, createRoadmap, createTopic,
+  addQuestion, addQuestions, allTables, buildBackup, buildRoadmapFile, addResource, createGroup, createRoadmap, createTopic,
   db, importRoadmapFile, recordAttempt, resetAllData, restoreBackup, setTopicStatus,
 } from '../src/lib/data'
 import { shouldRemindBackup } from '../src/lib/backupReminder'
 import {
   cloneWithNewIds, parseProgressFile, parseRoadmapFile, slugify, stringifyFile, validateBackup,
 } from '../src/lib/importExport'
-import { createBackupArchive, readBackupArchive } from '../src/lib/libraryArchive'
+import {
+  createBackupArchive,
+  MAX_BACKUP_ARCHIVE_BYTES,
+  MAX_BACKUP_UNCOMPRESSED_BYTES,
+  readBackupArchive,
+} from '../src/lib/libraryArchive'
+import { zipSync } from 'fflate'
 import { clearAiApiKey, saveAiApiKey } from '../src/platform/secureStorage'
 
 const mcq = (text: string) => ({
@@ -53,6 +59,23 @@ describe('roadmap file', () => {
     expect(parseRoadmapFile(stringifyFile(file))).toEqual(file)
   })
 
+  it('round-trips every supported question type', async () => {
+    const roadmap = await createRoadmap({ title: 'All types' })
+    const topic = await createTopic({ roadmapId: roadmap.id, title: 'Question variants' })
+    await addQuestions(topic.id, [
+      mcq('Choose one'),
+      { type: 'essay', text: 'Explain it' },
+      { type: 'true-false', text: 'It is true', answer: true },
+      { type: 'fill-blank', text: 'Complete this', answer: 'answer' },
+      { type: 'flashcard', text: 'Front', answer: 'Back' },
+    ])
+    const file = (await buildRoadmapFile(roadmap.id))!
+
+    expect(parseRoadmapFile(stringifyFile(file)).questions.map((question) => question.type).sort()).toEqual([
+      'essay', 'fill-blank', 'flashcard', 'mcq', 'true-false',
+    ])
+  })
+
   it('imports as a new roadmap with new ids, keeping the links between records', async () => {
     const { roadmap } = await seed()
     const file = (await buildRoadmapFile(roadmap.id))!
@@ -94,6 +117,8 @@ describe('roadmap file', () => {
     const file = (await buildRoadmapFile(roadmap.id))!
     const broken = { ...file, questions: [{ ...file.questions[0], topicId: 'nope' }] }
     expect(() => parseRoadmapFile(JSON.stringify(broken))).toThrow('A question points to a topic that is not in the file.')
+    const wrongRoadmap = { ...file, questions: [{ ...file.questions[0], roadmapId: 'elsewhere' }] }
+    expect(() => parseRoadmapFile(JSON.stringify(wrongRoadmap))).toThrow('A question belongs to a different roadmap.')
     const badUrl = { ...file, resources: [{ ...file.resources[0], url: 'javascript:alert(1)' }] }
     expect(() => parseRoadmapFile(JSON.stringify(badUrl))).toThrow('not a valid AskMe roadmap file')
   })
@@ -162,6 +187,18 @@ describe('full backup', () => {
     expect(() => readBackupArchive(new Uint8Array([1, 2, 3]))).toThrow('not a readable ZIP')
     expect(() => readBackupArchive(createBackupArchiveWithoutProgress())).toThrow('progress.json is missing')
     expect(() => parseProgressFile('{"format":"askme-progress","version":1}')).toThrow('not a valid AskMe progress file')
+  })
+
+  it('rejects oversized archives before reading their contents', () => {
+    expect(() => readBackupArchive(new Uint8Array(MAX_BACKUP_ARCHIVE_BYTES + 1))).toThrow('no larger than')
+  })
+
+  it('stops extracting when the expanded backup exceeds its size limit', () => {
+    const oversized = zipSync({
+      'progress.json': new Uint8Array(MAX_BACKUP_UNCOMPRESSED_BYTES + 1),
+    })
+
+    expect(() => readBackupArchive(oversized)).toThrow('restore size limit')
   })
 })
 

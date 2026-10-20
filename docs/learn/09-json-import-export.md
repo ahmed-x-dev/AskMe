@@ -1,85 +1,72 @@
-# JSON import and export: a portable set format
+# Importing and exporting roadmaps
 
-The app stores each quiz set as a single JSON document, which makes backup, transfer, and validation straightforward.
+**Goal:** Understand how AskMe validates portable roadmaps and bounds full-backup restores.
 
 ## Why we need it
 
-A local database is great for app use, but users also need a way to move a set out of the app or restore it later. Plain JSON files give per-set portability; a ZIP archive gives users one backup containing the whole library without needing a backend.
+AskMe stores study data in this browser. Roadmap JSON lets a learner share content, while a ZIP backup carries every roadmap and study progress to another browser. Imported files are untrusted input, so validation must finish before records are written.
 
 ## The concept, simply
 
-A set export is just a snapshot of a valid quiz set. When the app imports it later, it validates the shape before saving the new record. Schema version 2 added difficulty and tags to each question. Schema version 3 renames `normal` to `medium`; imports from versions 1 and 2 are still supported. A library backup is a ZIP file containing one set JSON document per entry. The app can also import several selected JSON files together.
+A roadmap file is JSON with one roadmap and its groups, topics, resources, and questions. Zod checks each record's shape, including the question-specific fields. A second check verifies that linked records belong together, such as questions pointing to topics in the same roadmap.
 
-This is important because an invalid file should fail clearly instead of silently corrupting the database. The library validates every selected set before writing any of them, then saves the batch in one IndexedDB transaction. A bad file therefore does not leave a half-imported library.
+A full backup is a ZIP with one JSON file per roadmap and a `progress.json` file. ZIP size alone is not enough: a small compressed file can expand dramatically. Restore therefore limits the selected ZIP to 25 MB, limits expanded content to 50 MiB, and streams it in 64 KiB chunks before parsing it. The database replacement happens in one transaction only after all files validate.
 
 ## In our code
 
-`src/data/importExport.ts` validates the structure and converts raw JSON into the app's `QuizSet` type.
+`src/lib/schemas.ts` validates every stored question type and checks record relationships:
 
 ```ts
-if (
-  typeof parsed.schemaVersion !== 'number' ||
-  !SUPPORTED_SCHEMA_VERSIONS.includes(parsed.schemaVersion)
-) {
-  throw new Error(`Unsupported schema version: ${String(parsed.schemaVersion ?? 'unknown')}.`)
+export const questionSchema: z.ZodType<Question> = z.discriminatedUnion('type', [
+  // MCQ, essay, true/false, fill-blank, and flashcard shapes
+])
+
+if (file.questions.some((question) => question.roadmapId !== file.roadmap.id)) {
+  problems.push('A question belongs to a different roadmap.')
 }
 ```
 
-The repository persists the validated set through `importSetFromJson`, ensuring only valid content is written.
+The `type` field selects the right question shape. The refinement rejects a question whose roadmap differs from the file's roadmap; the topic reference is checked separately.
 
-Version 1 local sets receive a default `difficulty: "medium"` and `tags: []`. The version 3 Dexie migration changes stored `normal` difficulty values to `medium`. JSON import applies the same normalization, so old files remain usable.
+`src/lib/libraryArchive.ts` uses `fflate`'s streaming `Unzip` API. It counts actual output bytes instead of trusting the ZIP's declared sizes, ignores entries that are not roadmap JSON or `progress.json`, and parses each relevant file before returning it. `src/components/settings/DataSection.tsx` checks `File.size` before calling `arrayBuffer()`, avoiding a large allocation for an oversized selection.
 
-`src/data/libraryArchive.ts` uses the small `fflate` library to collect the per-set JSON documents into a ZIP and read JSON documents back out of one. Archive entries are treated as file contents only; their paths are never written to the device. The library action can import one ZIP or multiple JSON files, and asks for confirmation when imported IDs would replace existing sets.
-
-On the library page, **Export library** downloads every active set in a ZIP archive. **Import library** accepts a ZIP or multiple full-set JSON files. On a set page, **Import questions** accepts one `Question`, an array of questions, or a full set export. It validates the question fields and appends copies to the open set; it does not replace the destination set or its existing questions. New question IDs prevent collisions when a file is imported more than once. Both flows show success or validation feedback.
-
-The browser does not create genuine RAR archives. ZIP is used for whole-library backups because it is a standard archive format that can be generated locally in the browser.
+`src/lib/data/backup.ts` validates the backup, then replaces all tables in one Dexie transaction. A validation or write failure leaves the previous database contents intact. The AI key is not included in the archive.
 
 ## ❌ / ✅ examples
 
-- ❌ Importing a file with `schemaVersion: 99` and expecting it to work.
-- ✅ Rejecting it with a clear validation error.
-- ❌ Saving valid files from a multi-file selection before discovering a later invalid file.
-- ✅ Validating the whole batch first and writing all sets in one transaction.
-- ❌ Trusting the file paths inside an uploaded ZIP.
-- ✅ Reading JSON entry contents without extracting paths to the filesystem.
-- ❌ Saving a set without an `id` or `questions` array.
-- ✅ Blocking unsafe input before it hits Dexie.
-- ❌ Rejecting every older set after adding new question fields.
-- ✅ Migrating version 1 questions to medium difficulty and an empty tag list, and version 2 `normal` values to `medium`.
-- ❌ Hiding a parse failure after the user selects a file.
-- ✅ Showing the validation message next to the library actions.
-- ❌ Replacing a destination set when the goal is to add questions.
-- ✅ Extracting and validating questions, then appending them to the selected set.
+- Incorrect: accept only MCQ and essay after adding more question types.
+- Correct: keep the import schema aligned with every stored `Question` variant.
+- Incorrect: trust a question's `roadmapId` because its `topicId` exists.
+- Correct: validate both the topic link and roadmap ownership before import.
+- Incorrect: call `unzipSync` on an unbounded user-selected archive.
+- Correct: reject oversized input before reading it, then cap actual expanded output while streaming.
+- Incorrect: clear existing tables before validating a restore.
+- Correct: validate first and perform the replacement in one transaction.
 
 ## Try it yourself
 
-1. Export the library and inspect the ZIP: it contains one JSON file per active set.
-2. Import several set JSON files together, then try again with one invalid file and confirm none are imported.
-3. Change a set's `schemaVersion` to a wrong value and re-import it.
-4. On a set page, import a single Question object or a full set export; confirm only questions are appended.
-5. Import a version 1 set and confirm its questions become medium difficulty with no tags; import a version 2 set and confirm `normal` becomes `medium`.
+1. Export a roadmap containing all five question types, then import it and check each question is still present.
+2. Change a question's `roadmapId` in an exported JSON file and confirm import rejects it.
+3. Select a ZIP larger than 25 MB and confirm the app rejects it without reading its contents.
 
 ## Quick Reference
 
-- `schemaVersion` tells the app which data format the file is built for.
-- Version 2 added `difficulty` and `tags`; version 3 renames `normal` to `medium`.
-- `parseSetJson` accepts versions 1, 2, and 3, migrating older question records.
-- `parseSetJson` validates and normalizes raw JSON.
-- `exportSetJson` produces a portable, human-readable file.
-- `createLibraryArchive` and `readLibraryArchive` write and read ZIP backups.
-- `importSetsFromJson` validates a batch, then commits it atomically.
-- `parseQuestionsJson` validates a Question, a question array, or questions inside a set export.
-- `importQuestionsFromJson` gives imported questions fresh IDs and appends them to an existing set.
+- `parseRoadmapFile` parses JSON and validates the roadmap schema.
+- `questionSchema` must cover every member of the shared `Question` union.
+- `readBackupArchive` caps input at 25 MB, expanded content at 50 MiB, and entries at 1,000.
+- Full restore validates all data before its atomic Dexie transaction.
+- The AI key is not included in a backup.
 
 ## Key Takeaways
 
-- JSON exports are a backup and portability tool, not the database itself.
-- Version checks prevent old or malformed files from being accepted.
-- Validation should happen as early as possible.
+- Validate imported shape and cross-record ownership, not just individual fields.
+- Apply limits before file reads and while decompression produces output.
+- Keep restore atomic so invalid backups cannot partially replace local data.
 
 ## Links to related files
 
-- `src/data/importExport.ts`
-- `src/data/repository.ts`
-- `src/types/quiz.ts`
+- [src/lib/schemas.ts](../../src/lib/schemas.ts)
+- [src/lib/importExport.ts](../../src/lib/importExport.ts)
+- [src/lib/libraryArchive.ts](../../src/lib/libraryArchive.ts)
+- [src/lib/data/backup.ts](../../src/lib/data/backup.ts)
+- [tests/backup.test.ts](../../tests/backup.test.ts)

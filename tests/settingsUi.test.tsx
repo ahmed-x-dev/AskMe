@@ -9,7 +9,7 @@ import { DataSection } from "../src/components/settings/DataSection";
 import { SettingsPage } from "../src/components/settings/SettingsPage";
 import { StoragePersistenceSection } from "../src/components/settings/StoragePersistenceSection";
 import { allTables, buildBackup, buildRoadmapFile, createRoadmap, db, resetAllData } from "../src/lib/data";
-import { createBackupArchive } from "../src/lib/libraryArchive";
+import { createBackupArchive, MAX_BACKUP_ARCHIVE_BYTES } from "../src/lib/libraryArchive";
 
 const mockDownloadBackup = vi.hoisted(() => vi.fn<() => Promise<void>>());
 const mockRoute = vi.hoisted(() => ({ pathname: "/settings" }));
@@ -296,6 +296,25 @@ describe("SettingsPage", () => {
     });
 
     expect(container.querySelector('[role="alert"]')?.textContent).toContain("not a readable ZIP");
+    expect(container.querySelector("dialog")).toBeNull();
+  });
+
+  it("rejects an oversized restore before reading the file into memory", async () => {
+    await act(async () => root.render(<DataSection />));
+    const input = container.querySelector<HTMLInputElement>('[data-testid="restore-input"]')!;
+    const file = new File([], "oversized.zip", { type: "application/zip" });
+    const arrayBuffer = vi.fn(async () => new ArrayBuffer(0));
+    Object.defineProperty(file, "size", { configurable: true, value: MAX_BACKUP_ARCHIVE_BYTES + 1 });
+    Object.defineProperty(file, "arrayBuffer", { configurable: true, value: arrayBuffer });
+    Object.defineProperty(input, "files", { configurable: true, value: [file] });
+
+    await act(async () => {
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(arrayBuffer).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain("no larger than 25 MB");
     expect(container.querySelector("dialog")).toBeNull();
   });
 

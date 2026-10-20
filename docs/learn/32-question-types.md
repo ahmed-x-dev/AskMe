@@ -6,7 +6,7 @@ Expand the question model beyond MCQ and essay so the app can handle true/false,
 
 ## Why we need it
 
-The current quiz engine is built around a shared question shape, but it only has two concrete variants. Adding more variants lets the app grow without rewriting all input and output code. The key is to keep the storage rules and validation strict while letting each type carry the fields it actually needs.
+The quiz engine uses a shared question shape with five concrete variants. Keeping the storage and import schemas aligned lets the app grow without losing newer question types during export or backup restore.
 
 ## The concept, simply
 
@@ -30,7 +30,7 @@ export interface FillBlankQuestion extends BaseQuestion {
 }
 ```
 
-The union in [src/types/study.ts](../../src/types/study.ts) is the source of truth. The repository layer in [src/lib/data/questions.ts](../../src/lib/data/questions.ts) normalizes each input before writing it; the AI validator in [src/features/ai/index.ts](../../src/features/ai/index.ts) accepts the new data shapes too, so generated questions behave the same as user-written ones.
+The union in [src/types/study.ts](../../src/types/study.ts) is the source of truth. [src/lib/schemas.ts](../../src/lib/schemas.ts) validates those variants when roadmap files and backups are imported. The repository layer in [src/lib/data/questions.ts](../../src/lib/data/questions.ts) normalizes each input before writing it; the AI validator in [src/features/ai/index.ts](../../src/features/ai/index.ts) accepts the same data shapes, so generated questions behave like user-written ones.
 
 ## ✅ / ❌ examples
 
@@ -59,6 +59,7 @@ The union in [src/types/study.ts](../../src/types/study.ts) is the source of tru
 ## Links to related files
 
 - [src/types/study.ts](../../src/types/study.ts)
+- [src/lib/schemas.ts](../../src/lib/schemas.ts)
 - [src/lib/data/questions.ts](../../src/lib/data/questions.ts)
 - [src/features/ai/index.ts](../../src/features/ai/index.ts)
 - [src/components/questions/QuestionEditorForm.tsx](../../src/components/questions/QuestionEditorForm.tsx)

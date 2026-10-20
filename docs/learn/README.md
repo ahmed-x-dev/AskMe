@@ -12,7 +12,7 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [06 — Question editor](./06-question-editor.md): How a controlled form validates and saves MCQ and essay data before it reaches the repository.
 - [07 — Quiz modes and shuffling](./07-quiz-modes-and-shuffling.md): How the app filters questions by mode and randomizes their order for each quiz.
 - [08 — Quiz flow and scoring](./08-quiz-flow-and-scoring.md): How a quiz run tracks answers, reveals results, and totals the score.
-- [09 — JSON import and export](./09-json-import-export.md): How sets are exported as JSON and re-imported with schema validation.
+- [09 — Roadmap import and export](./09-json-import-export.md): How roadmap files and full backups are validated, size-limited, and restored atomically.
 - [10 — PWA installation and offline support](./10-pwa-and-offline.md): The original PWA setup, later disabled and reintroduced in P4-09.
 - [11 — Responsive layout](./11-responsive-layout.md): How the UI starts phone-first and expands gracefully on larger screens.
 - [phase-1-recap](./phase-1-recap.md): A summary of the Phase 1 app and its key decisions.
