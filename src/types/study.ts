@@ -1,5 +1,5 @@
 /** Discriminator for the supported question variants. */
-export type QuestionType = 'mcq' | 'essay'
+export type QuestionType = 'mcq' | 'essay' | 'true-false' | 'fill-blank' | 'flashcard'
 
 /** Difficulty label saved with each question. */
 export type QuestionDifficulty = 'easy' | 'medium' | 'hard'
@@ -88,8 +88,26 @@ export interface EssayQuestion extends BaseQuestion {
   referenceAnswer?: string
 }
 
+/** A true/false question, where the stored answer is the correct boolean. */
+export interface TrueFalseQuestion extends BaseQuestion {
+  type: 'true-false'
+  answer: boolean
+}
+
+/** A short-answer fill-in-the-blank question with one expected answer. */
+export interface FillBlankQuestion extends BaseQuestion {
+  type: 'fill-blank'
+  answer: string
+}
+
+/** A flashcard prompt and one correct back side. */
+export interface FlashcardQuestion extends BaseQuestion {
+  type: 'flashcard'
+  answer: string
+}
+
 /** Union of all stored question records. */
-export type Question = McqQuestion | EssayQuestion
+export type Question = McqQuestion | EssayQuestion | TrueFalseQuestion | FillBlankQuestion | FlashcardQuestion
 
 /** One answered question, saved so mistakes and progress can be computed. */
 export interface Attempt {

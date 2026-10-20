@@ -1,6 +1,6 @@
 import type { Question, QuestionDifficulty } from '@/types/study'
 
-export type QuizQuestionType = 'all' | 'mcq' | 'essay'
+export type QuizQuestionType = 'all' | 'mcq' | 'essay' | 'true-false' | 'fill-blank' | 'flashcard'
 
 export interface QuizQueueFilters {
   questionType?: QuizQuestionType

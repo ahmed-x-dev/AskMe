@@ -9,8 +9,8 @@ import type { Question } from "@/types/study";
 
 type QuestionAiHelpProps = {
   question: Question;
-  /** The learner's choice (MCQ) or written answer (essay). */
-  answer: string | number | undefined;
+  /** The learner's choice (MCQ), boolean answer (true/false), or written answer (essay/short answer). */
+  answer: string | number | boolean | undefined;
   isAnswered: boolean;
 };
 

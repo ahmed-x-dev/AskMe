@@ -36,9 +36,25 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
       <div className="rounded-2xl bg-card p-4">
         <div className="flex flex-wrap gap-2">
           <span
-            className={`${chipClassName} ${question.type === "mcq" ? "bg-ok-bg text-ok-fg" : "bg-essay-bg text-essay-fg"}`}
+            className={`${chipClassName} ${
+              question.type === "mcq"
+                ? "bg-ok-bg text-ok-fg"
+                : question.type === "true-false"
+                  ? "bg-ok-bg text-ok-fg"
+                  : question.type === "fill-blank" || question.type === "flashcard"
+                    ? "bg-card text-fg"
+                    : "bg-essay-bg text-essay-fg"
+            }`}
           >
-            {question.type === "mcq" ? "MCQ" : "Essay"}
+            {question.type === "mcq"
+              ? "MCQ"
+              : question.type === "true-false"
+                ? "True/False"
+                : question.type === "fill-blank"
+                  ? "Fill blank"
+                  : question.type === "flashcard"
+                    ? "Flashcard"
+                    : "Essay"}
           </span>
           <span className={`${chipClassName} bg-bg text-muted`}>{capitalize(question.difficulty)}</span>
           {question.tags.map((tag) => (
@@ -107,6 +123,63 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
               </button>
             );
           })}
+        </div>
+      ) : question.type === "true-false" ? (
+        <div className="grid grid-cols-2 gap-3">
+          {([true, false] as const).map((value) => {
+            const isChosen = selected === Number(value);
+            const isRight = isAnswered && value === question.answer;
+            const isWrong = isAnswered && isChosen && value !== question.answer;
+
+            return (
+              <button
+                key={String(value)}
+                type="button"
+                aria-pressed={isChosen}
+                disabled={isAnswered}
+                onClick={() => {
+                  if (isAnswered) return;
+
+                  setSelected(Number(value));
+                  onAnswer(value === question.answer);
+                }}
+                className={`min-h-12 rounded-[14px] border border-control-line px-3 py-3 text-[16px] font-medium leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
+                  isRight
+                    ? "bg-ok-bg text-ok-fg"
+                    : isWrong
+                      ? "bg-bad-bg text-bad-fg"
+                      : isAnswered
+                        ? "bg-card text-muted"
+                        : "bg-card text-fg hover:bg-card-hover"
+                }`}
+              >
+                {value ? "True" : "False"}
+              </button>
+            );
+          })}
+        </div>
+      ) : question.type === "fill-blank" || question.type === "flashcard" ? (
+        <div className="flex flex-col gap-4">
+          <textarea
+            value={essayText}
+            onChange={(event) => setEssayText(event.target.value)}
+            disabled={isAnswered}
+            rows={3}
+            aria-label="Your answer"
+            placeholder="Type your answer here…"
+            className={`resize-y py-3 ${fieldClassName}`}
+          />
+
+          {!isAnswered ? (
+            <button type="button" onClick={() => onAnswer(essayText.trim().toLowerCase() === question.answer.trim().toLowerCase())} className={buttonPrimary}>
+              Check answer
+            </button>
+          ) : (
+            <p role="status" className={`inline-flex items-center gap-2 text-[16px] font-medium leading-6 ${result ? "text-ok-fg" : "text-bad-fg"}`}>
+              {result ? <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} /> : <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />}
+              {result ? "Correct answer" : `Correct answer: ${question.answer}`}
+            </p>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -187,7 +260,17 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
       ) : null}
 
       {isAnswered ? (
-        <QuestionAiHelp question={question} answer={question.type === "mcq" ? (selected ?? undefined) : essayText} isAnswered />
+        <QuestionAiHelp
+          question={question}
+          answer={
+            question.type === "mcq"
+              ? (selected ?? undefined)
+              : question.type === "true-false"
+                ? (selected !== null ? selected === 1 : undefined)
+                : essayText
+          }
+          isAnswered
+        />
       ) : null}
     </div>
   );

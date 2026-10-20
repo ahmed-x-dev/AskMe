@@ -34,6 +34,20 @@ describe('AI schema validation', () => {
     expect(result[0].tags).toEqual([])
   })
 
+  it('accepts true/false and fill-blank questions', () => {
+    const result = validateGeneratedQuestions({
+      questions: [
+        { type: 'true-false', text: 'The moon orbits Earth.', answer: true },
+        { type: 'fill-blank', text: 'The capital of France is _____.', answer: 'Paris' },
+      ],
+    })
+
+    expect(result).toEqual([
+      { type: 'true-false', text: 'The moon orbits Earth.', difficulty: 'medium', tags: [], answer: true },
+      { type: 'fill-blank', text: 'The capital of France is _____.', difficulty: 'medium', tags: [], answer: 'Paris' },
+    ])
+  })
+
   it('skips unusable questions and keeps the good ones', () => {
     const result = validateGeneratedQuestions({
       questions: [

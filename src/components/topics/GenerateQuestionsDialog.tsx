@@ -180,6 +180,14 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                             </span>
                           ))}
                         </span>
+                      ) : question.type === "true-false" ? (
+                        <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
+                          Correct answer: {question.answer ? "True" : "False"}
+                        </span>
+                      ) : question.type === "fill-blank" || question.type === "flashcard" ? (
+                        <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
+                          Answer: {question.answer}
+                        </span>
                       ) : question.referenceAnswer ? (
                         <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
                           {question.referenceAnswer}
@@ -193,8 +201,8 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </>
         ) : (
           <>
-            <div role="group" aria-label="Question type" className="flex gap-1 rounded-[14px] bg-card p-[3px]">
-              {(["mcq", "essay"] as const).map((value) => (
+            <div role="group" aria-label="Question type" className="flex flex-wrap gap-1 rounded-[14px] bg-card p-[3px]">
+              {(["mcq", "true-false", "fill-blank", "flashcard", "essay"] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
@@ -205,7 +213,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                     type === value ? "bg-accent text-on-accent" : "text-muted hover:bg-card-hover hover:text-fg"
                   }`}
                 >
-                  {value === "mcq" ? "MCQ" : "Essay"}
+                  {value === "mcq" ? "MCQ" : value === "true-false" ? "True/False" : value === "fill-blank" ? "Fill blank" : value === "flashcard" ? "Flashcard" : "Essay"}
                 </button>
               ))}
             </div>

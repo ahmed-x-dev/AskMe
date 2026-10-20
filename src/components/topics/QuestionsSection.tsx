@@ -11,6 +11,9 @@ import { GenerateQuestionsDialog, type GenerationContext } from "./GenerateQuest
 const TYPE_BADGE: Record<Question["type"], { label: string; className: string }> = {
   mcq: { label: "MCQ", className: "bg-ok-bg text-ok-fg" },
   essay: { label: "Essay", className: "bg-essay-bg text-essay-fg" },
+  "true-false": { label: "True/False", className: "bg-ok-bg text-ok-fg" },
+  "fill-blank": { label: "Fill blank", className: "bg-card text-fg" },
+  flashcard: { label: "Flashcard", className: "bg-card text-fg" },
 };
 
 type QuestionsSectionProps = {
@@ -28,7 +31,7 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
       counts[question.type] += 1;
       return counts;
     },
-    { mcq: 0, essay: 0 },
+    { mcq: 0, essay: 0, "true-false": 0, "fill-blank": 0, flashcard: 0 },
   );
 
   return (

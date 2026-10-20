@@ -16,7 +16,9 @@ export type GeneratedQuestion = QuestionInput;
 /** The part of a stored question that the explain prompt needs. */
 export type ExplainableQuestion =
   | { type: "mcq"; text: string; options: readonly string[]; answerIndex: number }
-  | { type: "essay"; text: string; referenceAnswer?: string };
+  | { type: "essay"; text: string; referenceAnswer?: string }
+  | { type: "true-false"; text: string; answer: boolean }
+  | { type: "fill-blank" | "flashcard"; text: string; answer: string };
 
 const DIFFICULTIES: readonly QuestionDifficulty[] = ["easy", "medium", "hard"];
 const MAX_NOTES_CHARS = 4000;
@@ -121,6 +123,27 @@ function isDifficulty(value: unknown): value is QuestionDifficulty {
   return DIFFICULTIES.includes(value as QuestionDifficulty);
 }
 
+function normalizeQuestionType(rawType: unknown): QuestionType {
+  const value = typeof rawType === "string" ? rawType.trim().toLowerCase() : "";
+
+  switch (value) {
+    case "multiple-choice":
+    case "multiple choice":
+      return "mcq";
+    case "true/false":
+    case "true_false":
+    case "truefalse":
+      return "true-false";
+    case "fill in the blank":
+    case "fill-in-the-blank":
+    case "fill_in_blank":
+    case "fillblank":
+      return "fill-blank";
+    default:
+      return value as QuestionType;
+  }
+}
+
 /** Validates one generated question. Throws a readable error when it cannot be used. */
 function validateGeneratedQuestion(
   rawQuestion: unknown,
@@ -134,8 +157,9 @@ function validateGeneratedQuestion(
   const difficulty = isDifficulty(rawQuestion.difficulty)
     ? rawQuestion.difficulty
     : fallbackDifficulty;
+  const type = normalizeQuestionType(rawQuestion.type);
 
-  if (rawQuestion.type === "mcq") {
+  if (type === "mcq") {
     const text = ensureValidText(rawQuestion.text, "question text");
     const options = Array.isArray(rawQuestion.options) ? rawQuestion.options : [];
     const answerIndex = Number(rawQuestion.answerIndex);
@@ -168,7 +192,7 @@ function validateGeneratedQuestion(
     };
   }
 
-  if (rawQuestion.type === "essay") {
+  if (type === "essay") {
     const text = ensureValidText(rawQuestion.text, "essay prompt");
     const referenceAnswer =
       typeof rawQuestion.referenceAnswer === "string" ? rawQuestion.referenceAnswer.trim() : "";
@@ -179,6 +203,49 @@ function validateGeneratedQuestion(
       difficulty,
       tags: [],
       referenceAnswer: referenceAnswer || undefined,
+    };
+  }
+
+  if (type === "true-false") {
+    const text = ensureValidText(rawQuestion.text, "question text");
+    const candidate = rawQuestion.answer;
+
+    if (typeof candidate === "boolean") {
+      return { type: "true-false", text, difficulty, tags: [], answer: candidate };
+    }
+
+    if (typeof candidate === "string") {
+      const normalized = candidate.trim().toLowerCase();
+      if (normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1") {
+        return { type: "true-false", text, difficulty, tags: [], answer: true };
+      }
+      if (normalized === "false" || normalized === "no" || normalized === "n" || normalized === "0") {
+        return { type: "true-false", text, difficulty, tags: [], answer: false };
+      }
+    }
+
+    throw new Error(`Question ${questionIndex + 1} has an invalid true/false answer.`);
+  }
+
+  if (type === "fill-blank" || type === "flashcard") {
+    const text = ensureValidText(rawQuestion.text, "question text");
+    const answerValue =
+      typeof rawQuestion.answer === "string"
+        ? rawQuestion.answer.trim()
+        : typeof rawQuestion.answer === "number"
+          ? String(rawQuestion.answer)
+          : "";
+
+    if (!answerValue) {
+      throw new Error(`Question ${questionIndex + 1} needs a valid answer.`);
+    }
+
+    return {
+      type,
+      text,
+      difficulty,
+      tags: [],
+      answer: answerValue,
     };
   }
 
@@ -432,6 +499,16 @@ export function buildGenerationPrompt({
   prompt,
 }: GenerateQuestionsOptions): string {
   const safeCount = Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1));
+  const typeLabel =
+    type === "mcq"
+      ? "multiple-choice"
+      : type === "true-false"
+        ? "true/false"
+        : type === "fill-blank"
+          ? "fill in the blank"
+          : type === "flashcard"
+            ? "flashcard"
+            : "essay";
   const context = [
     topicTitle?.trim() ? `Topic: ${topicTitle.trim()}` : "",
     groupTitle?.trim() ? `Part of the group: ${groupTitle.trim()}` : "",
@@ -444,9 +521,20 @@ export function buildGenerationPrompt({
     .slice(0, MAX_EXISTING_QUESTIONS)
     .map((text) => `- ${limitText(text, MAX_EXISTING_QUESTION_CHARS)}`);
 
+  const exampleShape =
+    type === "mcq"
+      ? '{"type":"mcq","text":"...","options":["...","...","...","..."],"answerIndex":0}'
+      : type === "true-false"
+        ? '{"type":"true-false","text":"...","answer":true}'
+        : type === "fill-blank"
+          ? '{"type":"fill-blank","text":"...","answer":"..."}'
+          : type === "flashcard"
+            ? '{"type":"flashcard","text":"...","answer":"..."}'
+            : '{"type":"essay","text":"...","referenceAnswer":"..."}';
+
   return [
     "Return valid JSON only. Do not add markdown fences or prose.",
-    `Create exactly ${safeCount} ${type === "mcq" ? "multiple-choice" : "essay"} questions`,
+    `Create exactly ${safeCount} ${typeLabel} questions`,
     context.length > 0 ? "for a learner studying this topic." : "for a revision quiz.",
     ...context,
     safeNotes
@@ -458,10 +546,14 @@ export function buildGenerationPrompt({
     difficulty ? `Make every question ${difficulty} difficulty.` : "",
     "Write the questions in the same language as the topic title and notes.",
     "Each item must use this shape:",
+    exampleShape,
     type === "mcq"
-      ? '{"type":"mcq","text":"...","options":["...","...","...","..."],"answerIndex":0}'
-      : '{"type":"essay","text":"...","referenceAnswer":"..."}',
-    "MCQ options must be four different answers and exactly one must be correct.",
+      ? "MCQ options must be four different answers and exactly one must be correct."
+      : type === "true-false"
+        ? "The answer must be a boolean true or false."
+        : type === "fill-blank" || type === "flashcard"
+          ? "The answer should be exactly one clear correct response."
+          : "",
     "Keep the questions clear and suitable for short revision study.",
     prompt?.trim() ? `Extra guidance: ${limitText(prompt, 500)}` : "",
     'Return a top-level object with a "questions" array.',
@@ -516,7 +608,7 @@ export async function explainQuestionAnswer({
   provider = getAiProvider(),
 }: {
   question: ExplainableQuestion;
-  userAnswer?: string | number;
+  userAnswer?: string | number | boolean;
   provider?: AiProvider;
 }): Promise<string> {
   const questionDetails =
@@ -526,16 +618,31 @@ export async function explainQuestionAnswer({
           `Correct answer: ${question.options[question.answerIndex]}`,
           `Learner selected: ${typeof userAnswer === "number" ? question.options[userAnswer] ?? "No answer selected." : "No answer selected."}`,
         ]
-      : [
-          `Reference answer: ${question.referenceAnswer?.trim() || "No reference answer was supplied."}`,
-          `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
-        ];
+      : question.type === "true-false"
+        ? [
+            `Correct answer: ${question.answer ? "True" : "False"}`,
+            `Learner selected: ${typeof userAnswer === "boolean" ? (userAnswer ? "True" : "False") : "No answer selected."}`,
+          ]
+        : question.type === "fill-blank" || question.type === "flashcard"
+          ? [
+              `Correct answer: ${question.answer}`,
+              `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
+            ]
+          : (() => {
+              const essayQuestion = question as { type: "essay"; referenceAnswer?: string };
+
+              return [
+                `Reference answer: ${essayQuestion.referenceAnswer?.trim() || "No reference answer was supplied."}`,
+                `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
+              ];
+            })();
 
   const prompt = [
     "Return valid JSON only. Do not add markdown fences or prose.",
     "Explain the answer to this revision question in clear, concise language.",
     "For a multiple-choice question, explain why the correct answer is right and address the learner's choice if provided.",
-    "For an essay question, explain the key ideas in the reference answer and any useful feedback on the learner's answer.",
+    "For a true/false question, explain why the correct boolean is right and address the learner's choice if provided.",
+    "For a short-answer question, explain the key idea and the accepted answer.",
     `Question: ${question.text}`,
     ...questionDetails,
     'Return a top-level object with an "explanation" string.',

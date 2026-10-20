@@ -58,6 +58,14 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
   const [referenceAnswer, setReferenceAnswer] = useState(
     existingQuestion?.type === 'essay' ? (existingQuestion.referenceAnswer ?? '') : '',
   )
+  const [booleanAnswer, setBooleanAnswer] = useState(
+    existingQuestion?.type === 'true-false' ? existingQuestion.answer : true,
+  )
+  const [shortAnswer, setShortAnswer] = useState(
+    existingQuestion?.type === 'fill-blank' || existingQuestion?.type === 'flashcard'
+      ? existingQuestion.answer
+      : '',
+  )
   const [errorMessage, setErrorMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -75,9 +83,19 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
   const buildInput = (): QuestionInput => {
     const base = { text, difficulty, tags: tagsText.split(/\r?\n/) }
 
-    return activeType === 'mcq'
-      ? { ...base, type: 'mcq', options, answerIndex }
-      : { ...base, type: 'essay', referenceAnswer }
+    if (activeType === 'mcq') {
+      return { ...base, type: 'mcq', options, answerIndex }
+    }
+
+    if (activeType === 'essay') {
+      return { ...base, type: 'essay', referenceAnswer }
+    }
+
+    if (activeType === 'true-false') {
+      return { ...base, type: 'true-false', answer: booleanAnswer }
+    }
+
+    return { ...base, type: activeType, answer: shortAnswer }
   }
 
   const handleSave = async () => {
@@ -135,8 +153,8 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
         </button>
       </div>
 
-      <div className={segmentContainer}>
-        {(['mcq', 'essay'] as const).map((type) => (
+      <div className={`${segmentContainer} flex-wrap`}>
+        {(['mcq', 'true-false', 'fill-blank', 'flashcard', 'essay'] as const).map((type) => (
           <button
             key={type}
             type="button"
@@ -144,7 +162,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
             aria-pressed={activeType === type}
             className={`${segmentBase} ${activeType === type ? segmentActive : segmentInactive}`}
           >
-            {type === 'mcq' ? 'MCQ' : 'Essay'}
+            {type === 'mcq' ? 'MCQ' : type === 'true-false' ? 'True/False' : type === 'fill-blank' ? 'Fill blank' : type === 'flashcard' ? 'Flashcard' : 'Essay'}
           </button>
         ))}
       </div>
@@ -206,6 +224,36 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
           onOptionChange={handleOptionChange}
           onAnswerChange={setAnswerIndex}
         />
+      ) : activeType === 'true-false' ? (
+        <fieldset>
+          <legend className="text-[13px] font-medium leading-[18px] text-muted">Correct answer</legend>
+          <div className={`mt-2 ${segmentContainer}`}>
+            {([true, false] as const).map((value) => (
+              <button
+                key={String(value)}
+                type="button"
+                onClick={() => setBooleanAnswer(value)}
+                aria-pressed={booleanAnswer === value}
+                className={`${segmentBase} ${booleanAnswer === value ? segmentActive : segmentInactive}`}
+              >
+                {value ? 'True' : 'False'}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : activeType === 'fill-blank' || activeType === 'flashcard' ? (
+        <div>
+          <label htmlFor="question-answer" className="block text-[13px] font-medium leading-[18px] text-muted">
+            {activeType === 'fill-blank' ? 'Expected answer' : 'Flashcard answer'}
+          </label>
+          <input
+            id="question-answer"
+            value={shortAnswer}
+            onChange={(event) => setShortAnswer(event.target.value)}
+            placeholder={activeType === 'fill-blank' ? 'The capital of France.' : 'Paris'}
+            className={`mt-2 ${fieldOnCardClassName}`}
+          />
+        </div>
       ) : (
         <EssayFields referenceAnswer={referenceAnswer} onChange={setReferenceAnswer} />
       )}

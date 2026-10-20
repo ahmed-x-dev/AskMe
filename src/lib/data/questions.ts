@@ -19,11 +19,46 @@ export interface EssayInput extends QuestionInputBase {
   referenceAnswer?: string
 }
 
+export interface TrueFalseInput extends QuestionInputBase {
+  type: 'true-false'
+  answer: boolean | 'true' | 'false' | 'yes' | 'no' | 0 | 1
+}
+
+export interface FillBlankInput extends QuestionInputBase {
+  type: 'fill-blank'
+  answer: string
+}
+
+export interface FlashcardInput extends QuestionInputBase {
+  type: 'flashcard'
+  answer: string
+}
+
 /** Question content as entered by the user or produced by the AI generator. */
-export type QuestionInput = McqInput | EssayInput
+export type QuestionInput = McqInput | EssayInput | TrueFalseInput | FillBlankInput | FlashcardInput
+
+function normalizeQuestionType(type: QuestionInput['type'] | string): QuestionInput['type'] {
+  const normalized = type.trim().toLowerCase()
+
+  if (normalized === 'true/false' || normalized === 'true_false' || normalized === 'truefalse') {
+    return 'true-false'
+  }
+
+  if (
+    normalized === 'fill in the blank' ||
+    normalized === 'fill-in-the-blank' ||
+    normalized === 'fill_in_blank' ||
+    normalized === 'fillblank'
+  ) {
+    return 'fill-blank'
+  }
+
+  return normalized as QuestionInput['type']
+}
 
 /** Validates and normalizes question content, returning the fields shared by all variants. */
 function normalize(input: QuestionInput) {
+  const type = normalizeQuestionType(input.type)
   const text = input.text.trim()
 
   if (!text) {
@@ -33,15 +68,49 @@ function normalize(input: QuestionInput) {
   const tags = [...new Set((input.tags ?? []).map((tag) => tag.trim()).filter(Boolean))]
   const base = { text, difficulty: input.difficulty ?? 'medium', tags }
 
-  if (input.type === 'essay') {
-    const referenceAnswer = input.referenceAnswer?.trim()
+  if (type === 'essay') {
+    const essayInput = input as EssayInput
+    const referenceAnswer = essayInput.referenceAnswer?.trim()
 
     return { ...base, type: 'essay' as const, referenceAnswer: referenceAnswer || undefined }
   }
 
-  const options = input.options.map((option) => option.trim())
+  if (type === 'true-false') {
+    const trueFalseInput = input as TrueFalseInput
+    const value = trueFalseInput.answer
+    const answer =
+      typeof value === 'boolean'
+        ? value
+        : typeof value === 'string'
+          ? ['true', 'yes', 'y', '1'].includes(value.trim().toLowerCase())
+          : value === 1
 
-  if (options.length !== 4 || options.some((option) => !option)) {
+    if (value === undefined || value === null) {
+      throw new Error('The true/false answer cannot be blank.')
+    }
+
+    return { ...base, type: 'true-false' as const, answer }
+  }
+
+  if (type === 'fill-blank' || type === 'flashcard') {
+    const answerInput = input as FillBlankInput | FlashcardInput
+    const answer = typeof answerInput.answer === 'string' ? answerInput.answer.trim() : ''
+
+    if (!answer) {
+      throw new Error('The answer cannot be blank.')
+    }
+
+    return {
+      ...base,
+      type,
+      answer,
+    }
+  }
+
+  const mcqInput = input as McqInput
+  const options = mcqInput.options.map((option: string) => option.trim())
+
+  if (options.length !== 4 || options.some((option: string) => !option)) {
     throw new Error('A multiple-choice question needs four non-empty options.')
   }
 
@@ -49,7 +118,7 @@ function normalize(input: QuestionInput) {
     throw new Error('The four options must be different from each other.')
   }
 
-  if (!Number.isInteger(input.answerIndex) || input.answerIndex < 0 || input.answerIndex > 3) {
+  if (!Number.isInteger(mcqInput.answerIndex) || mcqInput.answerIndex < 0 || mcqInput.answerIndex > 3) {
     throw new Error('Choose which option is correct.')
   }
 
@@ -57,7 +126,7 @@ function normalize(input: QuestionInput) {
     ...base,
     type: 'mcq' as const,
     options: options as [string, string, string, string],
-    answerIndex: input.answerIndex,
+    answerIndex: mcqInput.answerIndex,
   }
 }
 
