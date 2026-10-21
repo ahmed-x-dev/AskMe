@@ -1,6 +1,6 @@
 # DESIGN.md: Revision Quiz App
 
-Design system for the app described in `PLAN.md`. Style name: **Soft cards**.
+Design system for the current AskMe product described in [docs/project-overview.md](docs/project-overview.md). Style name: **Soft cards**.
 Agents: use only the tokens in this file. Do not invent new colors, radii or font sizes. If something is missing, add it here first.
 
 ## 1. Principles

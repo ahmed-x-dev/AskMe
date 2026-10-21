@@ -2,6 +2,8 @@
 
 Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 
+Some early guides describe previous implementations. For the current product scope and architecture, see [the project overview](../project-overview.md).
+
 ## Phase 1: Local app (web)
 
 - [01 — Vite, React, and TypeScript](./01-vite-react-typescript.md): How the original Vite scaffold worked and how the current app is started with Next.js.
@@ -27,13 +29,13 @@ Step-by-step notes about the tools, concepts, and patterns used in AskMe.
 - [17 — AI provider abstraction](./17-ai-provider-abstraction.md): How the app keeps provider-specific API keys separate and lets the same AI flow run against Gemini or OpenAI.
 - [phase-2-recap](./phase-2-recap.md): A summary of the Phase 2 Gemini integration and the key guardrails it introduced.
 
-## Phase 3: Next.js and Google Drive sync
+## Phase 3: Next.js architecture
 
 - [18 — Next.js App Router](./18-nextjs-app-router.md): How file-based routes, Server/Client Components, and browser-only data fit together in AskMe.
 
-## Phase 4: Desktop and mobile delivery
+## Phase 4: PWA and offline use
 
-- [10 — PWA installation and offline support](./10-pwa-and-offline.md): The current P4-09 PWA implementation and its dynamic-route offline limits.
+- [10 — PWA installation and offline support](./10-pwa-and-offline.md): Installability, service-worker behavior, and current dynamic-route offline limits.
 
 ## Phase 5: Polish and extras
 

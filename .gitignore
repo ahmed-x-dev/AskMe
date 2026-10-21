@@ -28,12 +28,5 @@ next-env.d.ts
 *.sw?
 
 docs/*
-!docs/learn/
-docs/learn/*
-!docs/learn/26-icon-components.md
-!docs/learn/27-set-groups-and-touch-dragging.md
-!docs/learn/28-shared-ui-interactions.md
-!docs/learn/29-topic-learning-experience.md
-!docs/learn/30-focused-quiz-and-review.md
-!docs/learn/31-settings-and-data-management.md
-!docs/learn/32-question-types.md
+!docs/project-overview.md
+

@@ -1,153 +1,78 @@
 # AGENTS.md
 
-Instructions for AI coding agents working on this repo. Read this file first, then `PLAN.md`.
+Instructions for AI coding agents working on this repository. Read this file first, then `README.md` and `docs/project-overview.md`.
 
-## What this project is
+## Project
 
-A responsive revision quiz app (MCQ and essay questions) built with Next.js App Router, React, and TypeScript. Delivery is web first, desktop second, and mobile through the installable PWA; native Capacitor apps are not currently planned. Data is stored locally in Dexie (IndexedDB) and is planned to sync through the user's Google Drive. Next.js serves the app; there is no application backend. Full details are in `PLAN.md`.
+AskMe is a local-first study app built with Next.js App Router, React, and TypeScript. Study content and progress are stored in browser IndexedDB through Dexie. There is no application backend or automatic cloud sync. The current product scope and architecture are described in `docs/project-overview.md`.
 
-## Start-of-session checklist
+## Start of a task
 
-1. Read `PLAN.md`, starting with the **Status** block at the top.
-2. Find the current phase and the first task that is not `[x]`.
-3. If a task is `[~]` (in progress), continue it. Do not start another task.
-4. Read the **Decisions Log** so you do not reverse a decision without cause.
-5. Run `npm outdated` and note any new major versions in the Changelog. Do not upgrade without asking.
-6. Read `docs/learn/README.md` so you know which explanation files already exist.
+1. Read `docs/project-overview.md` for current product scope and architecture.
+2. Read `DESIGN.md` before changing interface styles.
+3. Read `docs/learn/README.md` before adding a learning guide.
+4. Inspect the relevant implementation and tests before editing.
+5. For dependency work, check installed versions and `npm outdated`; do not upgrade without asking.
 
-## How to track progress
+There is no active milestone plan in this repository. Work from the user's current request and relevant code/tests; do not infer unfinished work from old phase numbers or historical learning guides. Keep `docs/project-overview.md` accurate when product scope or high-level structure changes. Record technical decisions in relevant documentation when they affect future work.
 
-`PLAN.md` is the single source of truth for progress. Keep it up to date as you work.
+## Engineering conventions
 
-**Task markers**
+- **Language:** TypeScript with `strict: true`. Avoid `any` unless there is a documented reason.
+- **Data access:** persistence lives under `src/lib/data/`. UI code uses exported data functions and never imports Dexie directly.
+- **Domain types:** shared study models live in `src/types/`.
+- **Platform APIs:** browser platform adapters live under `src/platform/`.
+- **IDs:** use UUIDs (`crypto.randomUUID()`), never auto-incrementing IDs.
+- **Data lifecycle:** preserve existing soft-delete and timestamp behavior. Timestamps are ISO 8601 UTC strings.
+- **Secrets:** AI provider keys are stored in browser `localStorage`, which is not encrypted secure storage. Never write keys to study data, backups, logs, or git.
+- **Themes:** light and dark only, using CSS variables.
+- **Dependencies:** prefer few, well-maintained packages. Do not upgrade or add a dependency without the user's approval; record approved dependency decisions in documentation.
+- **Routing:** use Next.js App Router under `src/app/`, `Link` from `next/link`, and navigation hooks from `next/navigation`. Keep browser-only UI and IndexedDB access in Client Components. Do not move user data or API keys to server storage.
+- **React:** function components only. No `React.FC` or `forwardRef`; React 19 accepts `ref` as a normal prop. The React Compiler is enabled, so do not add `useMemo`, `useCallback`, or `React.memo` unless a measured problem justifies it.
+- **Tooling:** ESLint uses flat config. Tailwind v4 uses its PostCSS plugin; theme tokens are in CSS and documented in `DESIGN.md`. Keep the React Compiler enabled through `next.config.ts`.
+- **Design:** `DESIGN.md` is authoritative for app styling, including colors, typography, spacing, shape, motion, and component states. Use its tokens. If a required style is missing, update the design guide and implementation together.
+- **Tests:** keep tests under `tests/`, grouped by the behavior or feature they cover. Shared test setup is in `tests/setup.ts`.
+- **Documentation:** add concise JSDoc to exported functions, classes, and public types when it clarifies behavior or contracts. Add inline comments only for non-obvious reasoning.
 
-| Marker | Meaning |
-|---|---|
-| `[ ]` | Not started |
-| `[~]` | In progress (only one task at a time) |
-| `[x]` | Done and verified against its "Done when" line |
-| `[!]` | Blocked (add a reason on the line below) |
+## Keeping code current
 
-**Rules**
-- Mark a task `[~]` before you start it and `[x]` only after its **Done when** condition is met.
-- Update the **Status** block (`current_phase`, `current_task`, `last_updated`) every time a task changes state.
-- When all tasks in a phase are `[x]` and its **Exit criteria** pass, set the phase status to `done` and move `current_phase` to the next phase.
-- Never skip ahead to a later phase while an earlier phase is not `done`, unless the user says so.
-- Add a line to the **Changelog** at the end of each session: date, what was done, what is next.
-- If you make a technical decision (library, schema change, trade-off), add it to the **Decisions Log** with a reason.
-- If you find a new needed task, add it to the right phase with the next free ID. Do not delete tasks; mark them `[!]` or note why they were dropped.
+The installed versions in `package.json` are authoritative. Before using APIs from React, Next.js, Dexie, Tailwind, Vitest, ESLint, or TypeScript, check the official documentation for the installed major version. Do not rely on examples for older major versions. Treat deprecation warnings and type-check hints as issues to resolve.
 
-## Conventions
+## Learning guides
 
-- **Language:** TypeScript with `strict: true`. No `any` unless commented with a reason.
-- **Data access:** only through `src/data/repository.ts`. UI code never imports Dexie directly.
-- **Domain types:** shared domain models live under `src/types/`, grouped by domain.
-- **Platform APIs** (secure storage, share, notifications, OAuth): only through `src/platform/`.
-- **IDs:** UUIDs (`crypto.randomUUID()`). Never auto-increment.
-- **Deletes:** soft delete only (`deleted: true` and a new `updatedAt`). Never remove rows during normal use.
-- **Timestamps:** ISO 8601 UTC strings.
-- **Secrets:** AI provider keys currently live in browser `localStorage` (not encrypted secure storage). Never write them to Dexie, sync files, logs, or git.
-- **Themes:** light and dark only, using CSS variables. No third theme.
-- **Dependencies:** prefer few, well-maintained packages. Mention any new dependency in the Decisions Log.
-- **Routing:** Next.js App Router. Define routes with `app/**/page.tsx`, use `Link` from `"next/link"` and navigation hooks from `"next/navigation"`. Keep browser-only UI and Dexie access in Client Components; do not move user data or API keys to server storage.
-- **React:** function components only. No `React.FC`, no `forwardRef` (`ref` is a normal prop in React 19). The React Compiler is enabled, so do not add `useMemo`, `useCallback` or `React.memo` unless you have measured a problem.
-- **Tooling:** ESLint uses flat config (`eslint.config.js`). Tailwind v4 uses the PostCSS plugin with Next.js; theme tokens live in CSS (`@theme`) as described in `DESIGN.md`. Keep the React Compiler enabled through `next.config.ts`.
-- **Design source of truth:** `DESIGN.md` is authoritative for all app styling, including colors, typography, spacing, shape, motion, and component states. Use its tokens and rules in every screen; never invent visual values or use unrelated defaults. If a needed style is missing, update `DESIGN.md` first, then implement it. Keep CSS variables and Tailwind `@theme` mappings in sync with its token tables and skeleton.
-- **Tests:** keep tests under `tests/`, mirroring the relevant `src/` area (for example, `tests/data/repository.test.ts` for `src/data/repository.ts`). Put shared test setup in `tests/setup.ts`.
-- **Comments and docs:** add concise JSDoc to exported functions, classes, and public types when it clarifies purpose, behavior, or contracts (especially null/error behavior, units, indexing, and persistence rules). Add inline comments only for non-obvious reasoning. Do not write comments that merely repeat the code.
+The owner is building this project to learn. Keep general project documentation in `docs/` and step-by-step explanations in `docs/learn/`.
 
-## Keeping code up to date
-
-Your training data is older than the libraries in this repo. Do not rely on memory for library APIs.
-
-- The installed versions in `package.json` are the source of truth. If a doc, example or your memory disagrees, follow the installed version.
-- Before using an API from React, Next.js, Dexie, Tailwind, Vitest, ESLint, or TypeScript, check the official docs for the installed major version (docs tools, Context7 or web search if available).
-- Install packages with `npm install <pkg>@latest`. Never copy a version number from memory.
-- When you add Dexie or any other new package, read its current docs first and do not assume patterns from older major versions.
-- Treat deprecation warnings, ESLint warnings and TypeScript deprecation hints as bugs. Fix them before marking a task `[x]`.
-- If you are unsure whether an API still exists, verify it, and note the uncertainty in the Changelog.
-
-## Learning documentation (`docs/learn/`)
-
-The owner is building this project to learn. Alongside the code, maintain the learning guides in `docs/learn/`. Keep general project documentation directly in `docs/`. Explain everything we introduce, step by step.
-
-### Core rule
-Every time we add or use something new (a library, a tool, a concept, a pattern, a piece of logic), create or update an explanation file for it BEFORE or right as we use it. Nothing new goes into the code without a matching explanation.
-
-### Folder structure
-```
-docs/learn/
-  README.md            <- learning index: list of lessons, in order, with one-line summaries
-  01-<topic>.md
-  02-<topic>.md
-  ...
-  phase-1-recap.md     <- one per finished phase
-```
-- Number files in the order things appear in the project: 01, 02, 03... No reserved ranges per phase, because phases need different numbers of files. Group the index in `docs/learn/README.md` by phase.
-- Never renumber existing files. Add new ones at the end.
-- Work done before this folder existed (P1-01 to P1-04) is backfilled first, as task P1-12. Do not start any other task until the backfill is written.
-
-### What counts as "new"
-- A new technology or library (what it is, why we picked it over alternatives)
-- A new concept (for example controlled inputs, derived state, memoization)
-- A new logic, algorithm or pattern in our own code (for example how scoring works)
-- A config or tooling decision (a tsconfig option, a Next.js setting, a Tailwind setting)
-- A bug we hit and fixed (what went wrong, why, how to spot it next time)
-
-### Format of every file (keep consistent)
-1. **Title + one-line goal:** what this file teaches.
-2. **Why we need it:** the problem it solves in THIS project.
-3. **The concept, simply:** plain-language explanation first, jargon after. Build understanding in layers: basics before abstractions.
-4. **In our code:** a small snippet from the actual project, with the file path and a line-by-line walkthrough of what it does.
-5. **❌ / ✅ examples:** a common mistake versus the correct way.
-6. **Try it yourself:** 1 to 3 small exercises the owner can do without help.
-7. **Quick Reference:** cheat sheet of syntax and commands.
-8. **Key Takeaways:** 3 to 5 bullets.
-9. **Links to related files:** for example "builds on 03-state.md".
-
-### Style rules
-- Minimal and practical: only what a working developer actually needs. No giant roadmaps, no over-engineering, no tangents.
-- Short sentences. Explain like the owner is smart but new to this specific thing.
-- Use analogies where they genuinely help, not everywhere.
-- Do not repeat what an earlier file already covers; link to it.
-- Keep each file focused on ONE idea (aim for under about 150 lines).
-
-### How we work together
-- The owner writes the code, or describes their approach first. You review it and give targeted feedback instead of rewriting everything or pasting full files. Write code yourself only when the owner asks. You still keep `PLAN.md` up to date and run the checks.
-- When the owner makes a decision, explain the tradeoff in the matching learn file.
-- After each step, tell the owner which learn file(s) you created or updated and what to read before moving on.
-- If something the owner wrote works but is not ideal, say so and explain why in the learn file rather than silently fixing it.
-- At the end of each phase, add `docs/learn/phase-N-recap.md` summarizing what was learned, plus 5 quiz-style questions with the answers hidden at the bottom. A phase is not `done` until its recap exists.
+- When introducing a library, concept, logic pattern, or configuration in code, create or update a matching learning guide before or alongside that code change.
+- Keep `docs/learn/README.md` as the index. Add guides at the end; do not renumber existing lessons.
+- Keep each guide focused and practical, normally under 150 lines. Explain the problem, the concept, how it appears in this project, a common mistake, a small exercise, and key takeaways.
+- Keep old guides as learning history. They may explain earlier implementations; current architecture belongs in `docs/project-overview.md`.
+- At the end of a learning phase, add a recap with five quiz questions and answers hidden at the bottom.
 
 ## Commands
 
-The development scripts are maintained in `package.json`:
-
-```
-npm run dev        # start dev server
-npm run build      # production build
-npm run lint       # eslint
-npm run typecheck  # tsc --noEmit
-npm run test       # unit tests
+```sh
+npm run dev
+npm run typecheck
+npm run lint
+npm test
+npm run build
 ```
 
-Before marking a task `[x]`, run `typecheck`, `lint` and `test` (when they exist), make sure they pass, and make sure the matching `docs/learn/` file(s) exist.
+Run relevant checks for code changes. Documentation-only changes do not require application test suites, but should be checked for stale statements, broken links, and whitespace issues.
 
 ## Do not
 
-- Do not add a backend or a server dependency.
-- Do not sync or log AI provider keys.
-- Do not hard-delete synced data.
-- Do not change the JSON set format without bumping a `schemaVersion` and adding a migration.
-- Do not rewrite or delete `PLAN.md` sections to hide unfinished work.
-- Do not put a new library, concept, pattern or config decision into the code without a matching guide in `docs/learn/`.
+- Add a backend or server dependency.
+- Sync or log AI provider keys.
+- Change the JSON set format without bumping `schemaVersion` and adding a migration.
+- Put a new library, concept, pattern, or config decision into code without a matching learning guide.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes -- APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` -- verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
