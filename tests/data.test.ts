@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import Dexie from 'dexie'
 import {
-  addQuestion, addResource, allTables, applyTopicMove, buildSections, createGroup, createRoadmap,
+  addQuestion, addLesson, addLessonResource, allTables, applyTopicMove, buildSections, createGroup, createRoadmap,
   createTopic, db, deleteGroup, deleteRoadmap, deleteTopic, getProgress, getRoadmapOverviews,
   getRoadmapPage, listGroups, listTopics, moveTopic, moveTopicToRoadmap, recordAttempt,
   reorderGroups, reorderRoadmaps, setTopicStatus, updateRoadmap, updateTopic, listRoadmaps,
-  deleteQuestion, updateQuestion, listMistakeQuestionIds,
+  deleteQuestion, updateQuestion, listMistakeQuestionIds, StudyDatabase,
 } from '../src/lib/data'
-import { roadmapFileSchema, topicSchema, roadmapSchema, groupSchema, questionSchema, resourceSchema } from '../src/lib/schemas'
+import { lessonSchema, roadmapFileSchema, topicSchema, roadmapSchema, groupSchema, questionSchema } from '../src/lib/schemas'
 
 const mcq = { type: 'mcq' as const, text: 'Q?', options: ['a', 'b', 'c', 'd'] as [string, string, string, string], answerIndex: 1 }
 const titles = async (rid: string, gid?: string) =>
@@ -29,20 +30,79 @@ describe('roadmaps', () => {
     await expect(createRoadmap({ title: 'x'.repeat(101) })).rejects.toThrow()
     await expect(updateRoadmap('nope', { title: 'x' })).rejects.toThrow('not found')
   })
+
+  describe('database migration', () => {
+    it('converts existing topic resources into one-resource lessons', async () => {
+      const databaseName = 'askme-lesson-migration-test'
+      await Dexie.delete(databaseName)
+      const oldDb = new Dexie(databaseName)
+      oldDb.version(1).stores({
+        roadmaps: '&id, order',
+        groups: '&id, roadmapId',
+        topics: '&id, roadmapId, groupId',
+        resources: '&id, topicId',
+        questions: '&id, topicId, roadmapId',
+        attempts: '&id, questionId, topicId, roadmapId, at',
+        reviews: '&questionId, topicId, due',
+      })
+      await oldDb.table('resources').add({
+        id: 'old-resource',
+        topicId: 'topic',
+        title: 'Existing docs',
+        url: 'https://react.dev',
+        kind: 'docs',
+        done: true,
+        order: 3,
+      })
+      oldDb.close()
+
+      const upgradedDb = new StudyDatabase(databaseName)
+      try {
+        await upgradedDb.open()
+        expect(await upgradedDb.table('lessons').toArray()).toEqual([
+          expect.objectContaining({
+            id: 'old-resource',
+            topicId: 'topic',
+            title: 'Existing docs',
+            done: true,
+            order: 3,
+            resources: [
+              expect.objectContaining({
+                title: 'Existing docs',
+                source: 'link',
+                url: 'https://react.dev',
+              }),
+            ],
+          }),
+        ])
+        expect(upgradedDb.backendDB().objectStoreNames.contains('resources')).toBe(false)
+      } finally {
+        upgradedDb.close()
+        await Dexie.delete(databaseName)
+      }
+    })
+  })
   it('stored records pass the zod schemas', async () => {
     const r = await createRoadmap({ title: 'R', color: '#fff' })
     const g = await createGroup(r.id, 'G')
     const t = await createTopic({ roadmapId: r.id, groupId: g.id, title: 'T' })
     const q = await addQuestion(t.id, mcq)
     const e = await addQuestion(t.id, { type: 'essay', text: 'Essay', referenceAnswer: 'ref' })
-    const res = await addResource({ topicId: t.id, url: 'https://react.dev/learn' })
+    const lesson = await addLesson(t.id, 'Read the React guide')
+    await addLessonResource(lesson.id, {
+      source: 'link',
+      title: 'React docs',
+      kind: 'docs',
+      url: 'https://react.dev/learn',
+    })
+    const savedLesson = (await db.lessons.get(lesson.id))!
     expect(roadmapSchema.safeParse(r).success).toBe(true)
     expect(groupSchema.safeParse(g).success).toBe(true)
     expect(topicSchema.safeParse(await db.topics.get(t.id)).success).toBe(true)
     expect(questionSchema.safeParse(q).success).toBe(true)
     expect(questionSchema.safeParse(e).success).toBe(true)
-    expect(resourceSchema.safeParse(res).success).toBe(true)
-    const file = { format: 'askme-roadmap', version: 1, exportedAt: new Date().toISOString(), roadmap: r, groups: [g], topics: [await db.topics.get(t.id)], resources: [res], questions: [q, e] }
+    expect(lessonSchema.safeParse(savedLesson).success).toBe(true)
+    const file = { format: 'askme-roadmap', version: 2, exportedAt: new Date().toISOString(), roadmap: r, groups: [g], topics: [await db.topics.get(t.id)], lessons: [savedLesson], questions: [q, e] }
     expect(roadmapFileSchema.safeParse(file).success).toBe(true)
     const bad = { ...file, topics: [{ ...(await db.topics.get(t.id)), groupId: 'missing' }] }
     expect(roadmapFileSchema.safeParse(bad).success).toBe(false)
@@ -151,13 +211,13 @@ describe('cross-roadmap move and cascades', () => {
     const r = await createRoadmap({ title: 'R' }); const other = await createRoadmap({ title: 'Other' })
     const t = await createTopic({ roadmapId: r.id, title: 't' }); const t2 = await createTopic({ roadmapId: r.id, title: 't2' })
     const ot = await createTopic({ roadmapId: other.id, title: 'ot' }); const oq = await addQuestion(ot.id, mcq)
-    const q = await addQuestion(t.id, mcq); await addQuestion(t2.id, mcq); await addResource({ topicId: t.id, url: 'https://a.com' })
+    const q = await addQuestion(t.id, mcq); await addQuestion(t2.id, mcq)
     await recordAttempt(q.id, true)
     expect(await db.reviews.count()).toBe(1) // recordAttempt scheduled it
     await deleteTopic(t.id)
     expect(await titles(r.id)).toEqual(['t2:0'])
     expect(await db.questions.get(q.id)).toBeUndefined()
-    expect(await db.reviews.count()).toBe(0); expect(await db.attempts.count()).toBe(0); expect(await db.resources.count()).toBe(0)
+    expect(await db.reviews.count()).toBe(0); expect(await db.attempts.count()).toBe(0); expect(await db.lessons.count()).toBe(0)
     await deleteRoadmap(r.id)
     expect(await db.topics.where('roadmapId').equals(r.id).count()).toBe(0)
     expect(await db.questions.get(oq.id)).toBeDefined()

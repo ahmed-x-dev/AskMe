@@ -376,7 +376,7 @@ Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 
 |---|---|---|
 | Roadmaps (home) | `/` | Backup reminder, "Today" summary, roadmap cards (icon, title, topic/question counts, due badge, overflow menu), "New roadmap" primary button, empty state |
 | Roadmap detail | `/roadmap/:id` | Roadmap header (icon, title, counts, progress), "Quiz all topics" and "New group" actions, group sections with draggable topic rows, "Add topic" inline form |
-| Topic | `/topic/:id` | Roadmap/group context, title and study guidance, topic status, resource progress, visible quiz/add-question actions, scannable resources, readable Markdown notes, and question list with type/difficulty indicators |
+| Topic | `/topic/:id` | Roadmap/group context, title and study guidance, topic status, lesson progress, visible quiz/add-question actions, lessons with multiple links or local documents, readable Markdown notes, and question list with type/difficulty indicators |
 | Question editor | `/topic/:id/q/:qid` | MCQ/Essay toggle, question text, difficulty, tags, options with a correct-answer selector, reference answer (essay), Save/Delete |
 | New question | `/topic/:id/q/new` | Same editor without Delete |
 | Topic quiz | `/topic/:id/quiz` | Setup (type, difficulty, limit, mistakes-only) then runner then results |

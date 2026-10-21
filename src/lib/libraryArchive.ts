@@ -42,7 +42,24 @@ export function createBackupArchive({
       encoder.encode(stringifyFile(file));
   });
 
-  return zipSync(files);
+  const uncompressedSize = Object.values(files).reduce(
+    (total, file) => total + file.byteLength,
+    0,
+  );
+
+  if (uncompressedSize > MAX_BACKUP_UNCOMPRESSED_BYTES) {
+    throw new Error("This backup contains too much data to restore in AskMe.");
+  }
+
+  const archive = zipSync(files);
+
+  if (archive.byteLength > MAX_BACKUP_ARCHIVE_BYTES) {
+    throw new Error(
+      `This backup ZIP is too large. The maximum supported size is ${MAX_BACKUP_ARCHIVE_SIZE_MB} MB.`,
+    );
+  }
+
+  return archive;
 }
 
 /** Reads a bounded backup ZIP and checks every relevant file. Nothing is stored here. */

@@ -17,7 +17,7 @@ import { deleteTopic, getTopicPage, setTopicStatus, updateTopic } from "@/lib/da
 import type { TopicStatus } from "@/types/study";
 import { NotesSection } from "./NotesSection";
 import { QuestionsSection } from "./QuestionsSection";
-import { ResourcesSection } from "./ResourcesSection";
+import { LessonsSection } from "./LessonsSection";
 
 export function TopicPage() {
   const params = useParams<{ id: string }>();
@@ -54,8 +54,8 @@ export function TopicPage() {
     );
   }
 
-  const { topic, roadmap, group, resources, questions } = page;
-  const completedResources = resources.filter((resource) => resource.done).length;
+  const { topic, roadmap, group, lessons, questions } = page;
+  const completedLessons = lessons.filter((lesson) => lesson.done).length;
 
   const run = async (action: () => Promise<void>) => {
     try {
@@ -67,8 +67,8 @@ export function TopicPage() {
   };
 
   const deleteMessage = `“${topic.title}” will be deleted${
-    questions.length > 0 || resources.length > 0
-      ? `, together with its ${plural(questions.length, "question")} and ${plural(resources.length, "link")}`
+    questions.length > 0 || lessons.length > 0
+      ? `, together with its ${plural(questions.length, "question")} and ${plural(lessons.length, "lesson")}`
       : ""
   }. This cannot be undone.`;
 
@@ -94,7 +94,7 @@ export function TopicPage() {
               {topic.title}
             </h1>
             <p className="mt-1 max-w-[72ch] text-[16px] leading-6 text-muted">
-              Learn the key ideas with your notes and resources, then use practice questions to check your understanding.
+              Learn the key ideas with your notes and lessons, then use practice questions to check your understanding.
             </p>
           </div>
 
@@ -138,22 +138,22 @@ export function TopicPage() {
                   : "No practice questions yet"}
               </span>
             </div>
-            {resources.length > 0 ? (
+            {lessons.length > 0 ? (
               <>
                 <ProgressBar
-                  label="Learning resources completed"
-                  completed={completedResources}
-                  total={resources.length}
+                  label="Lessons completed"
+                  completed={completedLessons}
+                  total={lessons.length}
                   onCard
                 />
                 <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
-                  {completedResources} of {plural(resources.length, "resource")} completed
+                  {completedLessons} of {plural(lessons.length, "lesson")} completed
                 </p>
               </>
             ) : (
               <p className="mt-1 text-[13px] leading-[18px] text-muted">
                 <BookOpen aria-hidden="true" className="me-1 inline h-4 w-4" strokeWidth={1.5} />
-                Add a learning link to track what you have read or watched.
+                Add a lesson to organize what you will read or watch.
               </p>
             )}
           </div>
@@ -170,7 +170,7 @@ export function TopicPage() {
       {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
       <NotesSection key={`notes-${topic.id}`} topicId={topic.id} notes={topic.notes} />
-      <ResourcesSection key={`resources-${topic.id}`} topicId={topic.id} resources={resources} />
+      <LessonsSection key={`lessons-${topic.id}`} topicId={topic.id} lessons={lessons} />
       <QuestionsSection
         topicId={topic.id}
         questions={questions}

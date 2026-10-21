@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
-  addQuestion, addResource, allTables, createGroup, createRoadmap, createTopic, db, deleteResource,
-  getQuestionEditorData, getTopicPage, listResources, reorderResources, setResourceDone,
-  updateResource, updateTopic,
+  addQuestion, addLesson, addLessonResource, allTables, createGroup, createRoadmap, createTopic, db,
+  deleteLesson, deleteLessonResource, getQuestionEditorData, getTopicPage, reorderLessons, setLessonDone,
+  updateLesson, updateLessonResource, updateTopic,
 } from '../src/lib/data'
 import { withHttps } from '../src/lib/format'
 
@@ -13,19 +13,27 @@ beforeEach(async () => {
 })
 
 describe('getTopicPage', () => {
-  it('returns the topic with roadmap, group, ordered resources and questions', async () => {
+  it('returns the topic with roadmap, group, ordered lessons and questions', async () => {
     const r = await createRoadmap({ title: 'React' })
     const g = await createGroup(r.id, 'Basics')
     const t = await createTopic({ roadmapId: r.id, groupId: g.id, title: 'JSX' })
-    await addResource({ topicId: t.id, url: 'https://a.dev', title: 'A' })
-    await addResource({ topicId: t.id, url: 'https://b.dev', title: 'B' })
+    const lesson = await addLesson(t.id, 'Study links')
+    await addLessonResource(lesson.id, {
+      source: 'link', url: 'https://a.dev', title: 'A', kind: 'docs',
+    })
+    await addLessonResource(lesson.id, {
+      source: 'link', url: 'https://b.dev', title: 'B', kind: 'video',
+    })
+    await addLesson(t.id, 'More study')
     const q1 = await addQuestion(t.id, mcq)
     await new Promise((x) => setTimeout(x, 5))
     const q2 = await addQuestion(t.id, { type: 'essay', text: 'Essay' })
     const page = await getTopicPage(t.id)
     expect(page!.roadmap.id).toBe(r.id)
     expect(page!.group!.title).toBe('Basics')
-    expect(page!.resources.map((x) => x.title)).toEqual(['A', 'B'])
+    expect(page!.lessons.map((x) => x.title)).toEqual(['Study links', 'More study'])
+    expect(page!.lessons[0].resources.map((x) => x.title)).toEqual(['A', 'B'])
+    expect(page!.lessons[1].resources).toEqual([])
     expect(page!.questions.map((q) => q.id)).toEqual([q1.id, q2.id])
   })
   it('has no group for ungrouped topics and null for a missing topic', async () => {
@@ -50,23 +58,65 @@ describe('getQuestionEditorData', () => {
   })
 })
 
-describe('resources as the topic page uses them', () => {
-  it('adds, normalizes links, ticks, edits, reorders and deletes', async () => {
+describe('lessons and lesson resources', () => {
+  it('creates, completes, edits, reorders, and deletes nested lesson resources', async () => {
     const r = await createRoadmap({ title: 'R' })
     const t = await createTopic({ roadmapId: r.id, title: 'T' })
-    const a = await addResource({ topicId: t.id, url: withHttps('react.dev/learn'), kind: 'docs' })
-    expect(a.url).toBe('https://react.dev/learn')
-    expect(a.title).toBe('react.dev')
-    const b = await addResource({ topicId: t.id, url: 'https://youtu.be/x', title: 'Video', kind: 'video' })
-    await expect(addResource({ topicId: t.id, url: 'javascript:alert(1)' })).rejects.toThrow()
-    await expect(addResource({ topicId: t.id, url: withHttps('javascript:alert(1)') })).rejects.toThrow()
-    await setResourceDone(a.id, true)
-    await updateResource(b.id, { title: 'Renamed', kind: 'other' })
-    await reorderResources([b.id, a.id])
-    const list = await listResources(t.id)
-    expect(list.map((x) => [x.title, x.done, x.kind])).toEqual([['Renamed', false, 'other'], ['react.dev', true, 'docs']])
-    await deleteResource(a.id)
-    expect(await listResources(t.id)).toHaveLength(1)
+    const first = await addLesson(t.id, 'First lesson')
+    const second = await addLesson(t.id, 'Second lesson')
+    await addLessonResource(first.id, {
+      source: 'link', url: withHttps('react.dev/learn'), title: 'React docs', kind: 'docs',
+    })
+    const video = await addLessonResource(first.id, {
+      source: 'link', url: 'https://youtu.be/x', title: 'Video', kind: 'video',
+    })
+    const document = await addLessonResource(first.id, {
+      source: 'file',
+      title: 'Study notes',
+      fileName: 'notes.md',
+      mimeType: 'text/markdown',
+      size: 2,
+      fileData: 'aGk=',
+    })
+    await expect(addLessonResource(first.id, {
+      source: 'link', url: 'javascript:alert(1)', title: 'Unsafe', kind: 'other',
+    })).rejects.toThrow()
+    await setLessonDone(first.id, true)
+    await updateLessonResource(first.id, video.id, {
+      source: 'link', url: 'https://youtu.be/x', title: 'Renamed', kind: 'other',
+    })
+    await updateLessonResource(first.id, document.id, {
+      source: 'file',
+      title: 'Edited notes',
+      fileName: 'notes.md',
+      mimeType: 'text/markdown',
+      size: 2,
+      fileData: 'aGk=',
+    })
+    await updateLesson(second.id, 'Renamed second lesson')
+    await reorderLessons([second.id, first.id])
+    const list = await getTopicPage(t.id)
+    expect(list!.lessons.map((lesson) => [lesson.title, lesson.done])).toEqual([
+      ['Renamed second lesson', false],
+      ['First lesson', true],
+    ])
+    expect(list!.lessons[1].resources.map((resource) => [resource.title, resource.kind])).toEqual([
+      ['React docs', 'docs'],
+      ['Renamed', 'other'],
+      ['Edited notes', 'docs'],
+    ])
+    await expect(addLessonResource(first.id, {
+      source: 'file',
+      title: 'Too large',
+      fileName: 'large.pdf',
+      mimeType: 'application/pdf',
+      size: 20 * 1024 * 1024 + 1,
+      fileData: 'aGk=',
+    })).rejects.toThrow('no larger than 20 MB')
+    await deleteLessonResource(first.id, video.id)
+    expect((await getTopicPage(t.id))!.lessons[1].resources).toHaveLength(2)
+    await deleteLesson(second.id)
+    expect((await getTopicPage(t.id))!.lessons.map((lesson) => lesson.title)).toEqual(['First lesson'])
   })
   it('withHttps only adds a scheme when missing', () => {
     expect(withHttps('  react.dev ')).toBe('https://react.dev')

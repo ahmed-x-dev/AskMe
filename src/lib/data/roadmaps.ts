@@ -77,7 +77,7 @@ export async function deleteRoadmap(id: string): Promise<void> {
     const topicIds = await db.topics.where('roadmapId').equals(id).primaryKeys()
 
     await db.reviews.where('topicId').anyOf(topicIds).delete()
-    await db.resources.where('topicId').anyOf(topicIds).delete()
+    await db.lessons.where('topicId').anyOf(topicIds).delete()
     await db.attempts.where('roadmapId').equals(id).delete()
     await db.questions.where('roadmapId').equals(id).delete()
     await db.topics.where('roadmapId').equals(id).delete()

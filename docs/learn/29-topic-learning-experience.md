@@ -4,26 +4,26 @@
 
 ## Why we need it
 
-A topic can contain notes, links, and questions. The page should show how those pieces fit together without adding duplicate saved fields or hiding familiar actions.
+A topic can contain notes, lessons, and questions. The page should show how those pieces fit together without adding duplicate saved fields or hiding familiar actions.
 
 ## The concept, simply
 
-Start with context: what topic is open, which roadmap it belongs to, and what can be done next. Show progress only for something the app can measure, such as completed resources. Keep long-form notes narrower than the full screen so they remain comfortable to read.
+Start with context: what topic is open, which roadmap it belongs to, and what can be done next. Show progress only for something the app can measure, such as completed lessons. Keep long-form notes narrower than the full screen so they remain comfortable to read.
 
-Progress must describe its numerator and denominator. A topic does not have one meaningful percentage today, so the overview should show resource completion and question availability separately instead of inventing a blended score.
+Progress must describe its numerator and denominator. A topic does not have one meaningful percentage today, so the overview should show lesson completion and question availability separately instead of inventing a blended score.
 
 ## In our code
 
-In `src/components/topics/TopicPage.tsx`, the page already loads the topic, roadmap, group, resources, and questions:
+In `src/components/topics/TopicPage.tsx`, the page loads the topic, roadmap, group, lessons, and questions:
 
 ```tsx
-const { topic, roadmap, group, resources, questions } = page;
-const completedResources = resources.filter((resource) => resource.done).length;
+const { topic, roadmap, group, lessons, questions } = page;
+const completedLessons = lessons.filter((lesson) => lesson.done).length;
 ```
 
 - `topic` and `roadmap` provide the study context.
 - `group` is optional context, not a separate navigation route.
-- Resource completion is directly measurable from `resource.done`.
+- Lesson completion is directly measurable from `lesson.done`.
 - Questions are counted independently; quiz availability follows whether any exist.
 - Nothing new is written to storage for this overview.
 
@@ -31,9 +31,9 @@ const completedResources = resources.filter((resource) => resource.done).length;
 
 ## ❌ / ✅ examples
 
-❌ Label the whole topic “60% complete” by blending resource checks, question counts, and a manual status.
+❌ Label the whole topic “60% complete” by blending lesson checks, question counts, and a manual status.
 
-✅ Show “2 of 4 resources completed” and “6 questions” as separate facts.
+✅ Show “2 of 4 lessons completed” and “6 questions” as separate facts.
 
 ❌ Stretch every note line across a wide monitor.
 
@@ -41,13 +41,13 @@ const completedResources = resources.filter((resource) => resource.done).length;
 
 ## Try it yourself
 
-1. Add three resources, mark one complete, and compare the summary with the resource list.
+1. Add three lessons, mark one complete, and compare the summary with the lesson list.
 2. Open a topic with a very long title and check it at phone width.
 3. Add a long unbroken URL to a resource and verify the page does not scroll sideways.
 
 ## Quick Reference
 
-- Read from existing data: topic status, `resource.done`, and question count.
+- Read from existing data: topic status, `lesson.done`, and question count.
 - Do not add a derived percentage that mixes unrelated measures.
 - Use labeled form controls and connect validation with `aria-describedby`.
 - Let long URLs break inside their own metadata area.
@@ -57,7 +57,7 @@ const completedResources = resources.filter((resource) => resource.done).length;
 
 - The topic overview is a guide, not a second source of saved data.
 - Clear study actions should be visible before the learner scrolls.
-- Resource progress and question availability answer different questions.
+- Lesson progress and question availability answer different questions.
 - Readable line length matters even when the layout is full-width.
 
 ## Links to related files

@@ -7,8 +7,11 @@ export type QuestionDifficulty = 'easy' | 'medium' | 'hard'
 /** Learning progress of one topic. `known` means "already learned, skip it". */
 export type TopicStatus = 'todo' | 'active' | 'done' | 'known'
 
-/** Kind of external learning resource attached to a topic. */
+/** Kind of learning material attached to a lesson. */
 export type ResourceKind = 'docs' | 'video' | 'article' | 'other'
+
+/** Uploaded lesson documents are kept in the browser's local database and capped at 20 MB. */
+export const MAX_LESSON_FILE_SIZE_BYTES = 20 * 1024 * 1024
 
 /** Timestamps are ISO 8601 UTC strings, so they sort correctly as IndexedDB keys. */
 interface Timestamps {
@@ -53,7 +56,37 @@ export interface TopicTarget {
   index: number
 }
 
-/** An external link or reference used to learn a topic. */
+/** A lesson groups learning materials and has its own completion state. */
+export interface Lesson {
+  id: string
+  topicId: string
+  title: string
+  done: boolean
+  order: number
+  resources: LessonResource[]
+}
+
+/** A link or locally stored document attached to a lesson. */
+export type LessonResource =
+  | {
+      id: string
+      title: string
+      kind: ResourceKind
+      source: 'link'
+      url: string
+    }
+  | {
+      id: string
+      title: string
+      kind: 'docs'
+      source: 'file'
+      fileName: string
+      mimeType: string
+      size: number
+      fileData: string
+    }
+
+/** Legacy topic link record, read only while migrating existing databases and roadmap files. */
 export interface Resource {
   id: string
   topicId: string

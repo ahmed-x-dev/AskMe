@@ -6,7 +6,8 @@ import {
   allTables,
   buildBackup,
   buildRoadmapFile,
-  addResource,
+  addLesson,
+  addLessonResource,
   createGroup,
   createRoadmap,
   createTopic,
@@ -15,6 +16,7 @@ import {
   recordAttempt,
   resetAllData,
   restoreBackup,
+  setLessonDone,
   setTopicStatus,
 } from "../src/lib/data";
 import { shouldRemindBackup } from "../src/lib/backupReminder";
@@ -61,11 +63,20 @@ async function seed() {
     title: "useState",
   });
   const loose = await createTopic({ roadmapId: roadmap.id, title: "Context" });
-  const resource = await addResource({
-    topicId: grouped.id,
+  const lesson = await addLesson(grouped.id, "Read React docs");
+  await addLessonResource(lesson.id, {
+    source: "link",
     title: "Docs",
     url: "https://react.dev",
     kind: "docs",
+  });
+  await addLessonResource(lesson.id, {
+    source: "file",
+    title: "Local notes",
+    fileName: "notes.md",
+    mimeType: "text/markdown",
+    size: 5,
+    fileData: "SGVsbG8=",
   });
   const q1 = await addQuestion(grouped.id, mcq("q1"));
   const q2 = await addQuestion(loose.id, {
@@ -74,19 +85,24 @@ async function seed() {
     referenceAnswer: "Shares values",
   });
   await setTopicStatus(grouped.id, "done");
-  await db.resources.update(resource.id, { done: true });
+  await setLessonDone(lesson.id, true);
   await recordAttempt(q1.id, true);
   await recordAttempt(q2.id, false);
-  return { roadmap, group, grouped, loose, resource, q1, q2 };
+  return { roadmap, group, grouped, loose, lesson, q1, q2 };
 }
 
 describe("roadmap file", () => {
   it("exports content only: statuses reset, links not done, no progress", async () => {
     const { roadmap } = await seed();
     const file = (await buildRoadmapFile(roadmap.id))!;
-    expect(file).toMatchObject({ format: "askme-roadmap", version: 1 });
+    expect(file).toMatchObject({ format: "askme-roadmap", version: 2 });
     expect(file.topics.map((t) => t.status)).toEqual(["todo", "todo"]);
-    expect(file.resources.every((r) => r.done === false)).toBe(true);
+    expect(file.lessons.every((lesson) => lesson.done === false)).toBe(true);
+    expect(file.lessons[0].resources[1]).toMatchObject({
+      source: "file",
+      fileName: "notes.md",
+      fileData: "SGVsbG8=",
+    });
     expect(file.questions).toHaveLength(2);
     expect(Object.keys(file)).not.toContain("attempts");
     expect(JSON.stringify(file)).not.toContain('"correct"');
@@ -97,6 +113,38 @@ describe("roadmap file", () => {
     const { roadmap } = await seed();
     const file = (await buildRoadmapFile(roadmap.id))!;
     expect(parseRoadmapFile(stringifyFile(file))).toEqual(file);
+  });
+
+  it("imports old roadmap links as one-resource lessons", async () => {
+    const { roadmap } = await seed();
+    const current = (await buildRoadmapFile(roadmap.id))!;
+    const oldFile = {
+      ...current,
+      version: 1,
+      resources: current.lessons.flatMap((lesson) =>
+        lesson.resources
+          .filter((resource) => resource.source === "link")
+          .map((resource) => ({
+            id: lesson.id,
+            topicId: lesson.topicId,
+            title: resource.title,
+            url: resource.url,
+            kind: resource.kind,
+            done: lesson.done,
+            order: lesson.order,
+          })),
+      ),
+    };
+    delete (oldFile as Partial<typeof oldFile>).lessons;
+
+    const migrated = parseRoadmapFile(JSON.stringify(oldFile));
+    expect(migrated.version).toBe(2);
+    expect(migrated.lessons).toHaveLength(1);
+    expect(migrated.lessons[0]).toMatchObject({
+      title: "Docs",
+      done: false,
+      resources: [{ source: "link", title: "Docs", url: "https://react.dev/" }],
+    });
   });
 
   it("round-trips every supported question type", async () => {
@@ -203,7 +251,13 @@ describe("roadmap file", () => {
     );
     const badUrl = {
       ...file,
-      resources: [{ ...file.resources[0], url: "javascript:alert(1)" }],
+      lessons: [{
+        ...file.lessons[0],
+        resources: [{
+          ...file.lessons[0].resources[0],
+          url: "javascript:alert(1)",
+        }],
+      }],
     };
     expect(() => parseRoadmapFile(JSON.stringify(badUrl))).toThrow(
       "not a valid AskMe roadmap file",
@@ -229,7 +283,11 @@ describe("full backup", () => {
     expect(
       read.roadmaps[0].topics.find((t) => t.title === "useState")!.status,
     ).toBe("done");
-    expect(read.roadmaps[0].resources[0].done).toBe(true);
+    expect(read.roadmaps[0].lessons[0].done).toBe(true);
+    expect(read.roadmaps[0].lessons[0].resources[1]).toMatchObject({
+      source: "file",
+      fileData: "SGVsbG8=",
+    });
   });
 
   it("never contains the AI key", async () => {
@@ -258,6 +316,10 @@ describe("full backup", () => {
     expect(roadmaps.map((r) => r.id)).toEqual([roadmap.id]);
     expect(await db.attempts.count()).toBe(2);
     expect(await db.reviews.get(q1.id)).toBeDefined();
+    expect((await db.lessons.toArray())[0].resources[1]).toMatchObject({
+      source: "file",
+      fileData: "SGVsbG8=",
+    });
     expect(
       (await db.topics.toArray()).find((t) => t.title === "useState")!.status,
     ).toBe("done");

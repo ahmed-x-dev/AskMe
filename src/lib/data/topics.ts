@@ -197,7 +197,7 @@ export async function moveTopicToRoadmap(
   )
 }
 
-/** Deletes a topic with its resources, questions, attempts and reviews. */
+/** Deletes a topic with its lessons, questions, attempts and reviews. */
 export async function deleteTopic(id: string): Promise<void> {
   await db.transaction('rw', allTables(), async () => {
     const topic = await db.topics.get(id)
@@ -209,7 +209,7 @@ export async function deleteTopic(id: string): Promise<void> {
     await db.reviews.where('topicId').equals(id).delete()
     await db.attempts.where('topicId').equals(id).delete()
     await db.questions.where('topicId').equals(id).delete()
-    await db.resources.where('topicId').equals(id).delete()
+    await db.lessons.where('topicId').equals(id).delete()
     await db.topics.delete(id)
 
     const groupId = topic.groupId ?? undefined

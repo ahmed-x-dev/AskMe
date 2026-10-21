@@ -1,7 +1,7 @@
 import { db } from './db'
 import { listQuestionsByTopic } from './questions'
-import { listResources } from './resources'
-import type { Group, Question, Resource, Roadmap, Topic } from '../../types/study'
+import { listLessons } from './lessons'
+import type { Group, Lesson, Question, Roadmap, Topic } from '../../types/study'
 
 /** Everything the topic page needs, loaded in one live query. */
 export interface TopicPageData {
@@ -9,11 +9,11 @@ export interface TopicPageData {
   roadmap: Roadmap
   /** The group the topic belongs to, if any. */
   group: Group | undefined
-  resources: Resource[]
+  lessons: Lesson[]
   questions: Question[]
 }
 
-/** Loads a topic with its roadmap, group, resources and questions. Returns `null` when it does not exist. */
+/** Loads a topic with its roadmap, group, lessons and questions. Returns `null` when it does not exist. */
 export async function getTopicPage(topicId: string): Promise<TopicPageData | null> {
   const topic = await db.topics.get(topicId)
 
@@ -21,10 +21,10 @@ export async function getTopicPage(topicId: string): Promise<TopicPageData | nul
     return null
   }
 
-  const [roadmap, group, resources, questions] = await Promise.all([
+  const [roadmap, group, lessons, questions] = await Promise.all([
     db.roadmaps.get(topic.roadmapId),
     topic.groupId ? db.groups.get(topic.groupId) : undefined,
-    listResources(topicId),
+    listLessons(topicId),
     listQuestionsByTopic(topicId),
   ])
 
@@ -32,7 +32,7 @@ export async function getTopicPage(topicId: string): Promise<TopicPageData | nul
     return null
   }
 
-  return { topic, roadmap, group, resources, questions }
+  return { topic, roadmap, group, lessons, questions }
 }
 
 /** What the question editor needs: the topic, and the question when editing one. */

@@ -6,19 +6,19 @@ import type { BackupContents } from '../libraryArchive'
 import type { ProgressFile, RoadmapFile } from '../schemas'
 import type { Roadmap } from '../../types/study'
 
-/** Reads one roadmap with its groups, topics, links and questions. Must run inside a transaction on those tables. */
+/** Reads one roadmap with its groups, topics, lessons and questions. Must run inside a transaction on those tables. */
 async function readRoadmap(roadmap: Roadmap): Promise<RoadmapFile> {
   const topics = byOrder(await db.topics.where('roadmapId').equals(roadmap.id).toArray())
   const topicIds = topics.map((topic) => topic.id)
 
   return {
     format: 'askme-roadmap',
-    version: 1,
+    version: 2,
     exportedAt: nowIso(),
     roadmap,
     groups: byOrder(await db.groups.where('roadmapId').equals(roadmap.id).toArray()),
     topics,
-    resources: byOrder(await db.resources.where('topicId').anyOf(topicIds).toArray()),
+    lessons: byOrder(await db.lessons.where('topicId').anyOf(topicIds).toArray()),
     questions: (await db.questions.where('roadmapId').equals(roadmap.id).toArray()).sort((a, b) =>
       a.createdAt.localeCompare(b.createdAt),
     ),
@@ -30,7 +30,7 @@ async function readRoadmap(roadmap: Roadmap): Promise<RoadmapFile> {
  * content only: topic statuses and "done" links are reset, and attempts and reviews are left out.
  */
 export async function buildRoadmapFile(roadmapId: string): Promise<RoadmapFile | null> {
-  return db.transaction('r', db.roadmaps, db.groups, db.topics, db.resources, db.questions, async () => {
+  return db.transaction('r', db.roadmaps, db.groups, db.topics, db.lessons, db.questions, async () => {
     const roadmap = await db.roadmaps.get(roadmapId)
 
     return roadmap ? stripProgress(await readRoadmap(roadmap)) : null
@@ -67,7 +67,7 @@ export interface ImportResult {
 export async function importRoadmapFile(file: RoadmapFile): Promise<ImportResult> {
   const copy = cloneWithNewIds(file)
 
-  return db.transaction('rw', db.roadmaps, db.groups, db.topics, db.resources, db.questions, async () => {
+  return db.transaction('rw', db.roadmaps, db.groups, db.topics, db.lessons, db.questions, async () => {
     const roadmap: Roadmap = {
       ...copy.roadmap,
       order: nextOrder(await db.roadmaps.toArray()),
@@ -77,7 +77,7 @@ export async function importRoadmapFile(file: RoadmapFile): Promise<ImportResult
     await db.roadmaps.add(roadmap)
     await db.groups.bulkAdd(copy.groups)
     await db.topics.bulkAdd(copy.topics)
-    await db.resources.bulkAdd(copy.resources)
+    await db.lessons.bulkAdd(copy.lessons)
     await db.questions.bulkAdd(copy.questions)
 
     return { roadmap, topicCount: copy.topics.length, questionCount: copy.questions.length }
@@ -99,7 +99,7 @@ export async function restoreBackup({ roadmaps, progress }: BackupContents): Pro
     await db.roadmaps.bulkAdd(roadmaps.map((file) => file.roadmap))
     await db.groups.bulkAdd(roadmaps.flatMap((file) => file.groups))
     await db.topics.bulkAdd(roadmaps.flatMap((file) => file.topics))
-    await db.resources.bulkAdd(roadmaps.flatMap((file) => file.resources))
+    await db.lessons.bulkAdd(roadmaps.flatMap((file) => file.lessons))
     await db.questions.bulkAdd(roadmaps.flatMap((file) => file.questions))
     await db.attempts.bulkAdd(progress.attempts)
     await db.reviews.bulkAdd(progress.reviews)

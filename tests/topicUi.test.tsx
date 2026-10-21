@@ -6,13 +6,14 @@ import { TopicPage } from "../src/components/topics/TopicPage";
 import { QuestionEditorForm } from "../src/components/questions/QuestionEditorForm";
 import {
   addQuestion,
-  addResource,
+  addLesson,
+  addLessonResource,
   allTables,
   createGroup,
   createRoadmap,
   createTopic,
   db,
-  setResourceDone,
+  setLessonDone,
 } from "../src/lib/data";
 
 const route = vi.hoisted(() => ({ topicId: "" }));
@@ -82,13 +83,14 @@ describe("topic learning page", () => {
       groupId: group.id,
       title: "Understanding component state",
     });
-    const resource = await addResource({
-      topicId: topic.id,
+    const lesson = await addLesson(topic.id, "React state guide");
+    const resource = await addLessonResource(lesson.id, {
+      source: "link",
       title: "State guide with a very long unbroken name: componentstateguidecomponentstateguide",
       url: "https://react.dev/learn/state",
       kind: "docs",
     });
-    await setResourceDone(resource.id, true);
+    await setLessonDone(lesson.id, true);
     await addQuestion(topic.id, {
       type: "mcq",
       text: "What does state represent?",
@@ -103,12 +105,12 @@ describe("topic learning page", () => {
     expect(container.querySelector("h1")?.textContent).toBe(topic.title);
     expect(container.textContent).toContain(roadmap.title);
     expect(container.textContent).toContain(group.title);
-    expect(container.textContent).toContain("1 of 1 resource completed");
+    expect(container.textContent).toContain("1 of 1 lesson completed");
     expect(container.textContent).toContain("Start quiz");
     expect(container.textContent).toContain("Add question");
-    expect(container.textContent).toContain("Learning resources");
+    expect(container.textContent).toContain("Lessons");
     expect(container.textContent).toContain("Generate with AI");
-    expect(container.querySelector("#resources-heading + p")?.textContent).toBe("1 resource");
+    expect(container.querySelector("#lessons-heading + p")?.textContent).toBe("1 lesson");
     expect(
       [...container.querySelectorAll("a")].filter((link) =>
         link.textContent?.includes("Add question"),
@@ -122,7 +124,7 @@ describe("topic learning page", () => {
     expect(container.querySelector(".break-all")?.textContent).toBe("react.dev");
     expect(
       container.querySelector(
-        `input[aria-label="Mark “${resource.title}” as not done"]`,
+        `input[aria-label="Mark “${lesson.title}” as not done"]`,
       ),
     ).not.toBeNull();
   });
@@ -139,7 +141,7 @@ describe("topic learning page", () => {
     expect(container.querySelector(`a[href="/topic/${topic.id}/q/new"]`)).not.toBeNull();
     expect(container.querySelector(`a[href="/topic/${topic.id}/quiz"]`)).toBeNull();
     expect(container.textContent).not.toContain("Add question");
-    expect(container.textContent).toContain("Add a learning link to track");
+    expect(container.textContent).toContain("Add a lesson to organize");
   });
 
   it("keeps note editing readable and saves changes on blur", async () => {

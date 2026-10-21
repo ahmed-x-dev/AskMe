@@ -3,8 +3,9 @@ import type { z } from 'zod'
 import { newId } from './data/util'
 import {
   progressFileSchema,
-  roadmapFileSchema,
+  roadmapFileImportSchema,
   type ProgressFile,
+  type LegacyRoadmapFile,
   type RoadmapFile,
 } from './schemas'
 
@@ -37,7 +38,40 @@ function parseWith<T>(text: string, schema: z.ZodType<T>, what: string): T {
 
 /** Reads the text of a roadmap file, for example one picked in the import dialog. */
 export function parseRoadmapFile(text: string): RoadmapFile {
-  return parseWith(text, roadmapFileSchema, 'AskMe roadmap')
+  const parsed = parseWith(text, roadmapFileImportSchema, 'AskMe roadmap')
+
+  if (parsed.version === 2) {
+    return parsed
+  }
+
+  return migrateRoadmapFile(parsed)
+}
+
+/** Converts a version-one roadmap's topic links into one-resource lessons. */
+function migrateRoadmapFile(file: LegacyRoadmapFile): RoadmapFile {
+  return {
+    format: 'askme-roadmap',
+    version: 2,
+    exportedAt: file.exportedAt,
+    roadmap: file.roadmap,
+    groups: file.groups,
+    topics: file.topics,
+    lessons: file.resources.map((resource) => ({
+      id: resource.id,
+      topicId: resource.topicId,
+      title: resource.title,
+      done: resource.done,
+      order: resource.order,
+      resources: [{
+        id: newId(),
+        title: resource.title,
+        kind: resource.kind,
+        source: 'link',
+        url: resource.url,
+      }],
+    })),
+    questions: file.questions,
+  }
 }
 
 /** Reads the `progress.json` file inside a backup. */
@@ -82,10 +116,14 @@ export function cloneWithNewIds(file: RoadmapFile, makeId: () => string = newId)
       roadmapId,
       groupId: topic.groupId ? remap(topic.groupId) : undefined,
     })),
-    resources: file.resources.map((resource) => ({
-      ...resource,
-      id: remap(resource.id),
-      topicId: remap(resource.topicId),
+    lessons: file.lessons.map((lesson) => ({
+      ...lesson,
+      id: remap(lesson.id),
+      topicId: remap(lesson.topicId),
+      resources: lesson.resources.map((resource) => ({
+        ...resource,
+        id: remap(resource.id),
+      })),
     })),
     questions: file.questions.map((question) => ({
       ...question,
@@ -96,12 +134,12 @@ export function cloneWithNewIds(file: RoadmapFile, makeId: () => string = newId)
   }
 }
 
-/** Removes progress from a roadmap file, so shared roadmaps start fresh: every topic is `todo`, no link is done. */
+/** Removes progress from a roadmap file, so shared roadmaps start fresh. */
 export function stripProgress(file: RoadmapFile): RoadmapFile {
   return {
     ...file,
     topics: file.topics.map((topic) => ({ ...topic, status: 'todo' })),
-    resources: file.resources.map((resource) => ({ ...resource, done: false })),
+    lessons: file.lessons.map((lesson) => ({ ...lesson, done: false })),
   }
 }
 
@@ -128,7 +166,7 @@ export function validateBackup(roadmaps: readonly RoadmapFile[], progress: Progr
       file.roadmap.id,
       ...file.groups.map((item) => item.id),
       ...file.topics.map((item) => item.id),
-      ...file.resources.map((item) => item.id),
+      ...file.lessons.flatMap((item) => [item.id, ...item.resources.map((resource) => resource.id)]),
       ...file.questions.map((item) => item.id),
     ]
 
