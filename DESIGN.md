@@ -23,12 +23,12 @@ Define all colors as CSS variables. Components use the variables, never raw hex.
 
 Four neutral surfaces form one lightness ramp. Every element sits on the step below it, so a control is never invisible on its own background.
 
-| Role | Token | Used by |
-|---|---|---|
-| Page | `--bg` | App background, sticky header and bottom navigation, insets inside a `--card` panel |
-| Resting surface | `--card` | Cards, option rows, inputs and selects on the page, insets inside a floating surface |
-| Floating surface | `--card-elevated` | Dialogs, overflow menus, popovers, bottom sheets — anything that overlaps other content |
-| Interactive state | `--card-hover` | Hover and press feedback on any surface above |
+| Role              | Token             | Used by                                                                                 |
+| ----------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| Page              | `--bg`            | App background, sticky header and bottom navigation, insets inside a `--card` panel     |
+| Resting surface   | `--card`          | Cards, option rows, inputs and selects on the page, insets inside a floating surface    |
+| Floating surface  | `--card-elevated` | Dialogs, overflow menus, popovers, bottom sheets — anything that overlaps other content |
+| Interactive state | `--card-hover`    | Hover and press feedback on any surface above                                           |
 
 Lightness order differs by theme, because light themes add depth by darkening and dark themes by lightening:
 
@@ -42,88 +42,87 @@ Two rules follow:
 
 ### Light theme (`data-theme="light"`)
 
-| Token | Hex | Use |
-|---|---|---|
-| `--bg` | `#FBFCFB` | App background |
-| `--card` | `#E9EEEB` | Cards, option rows, inputs, menus on the page |
-| `--card-elevated` | `#FFFFFF` | Dialogs, menus, popovers |
-| `--card-hover` | `#DFE6E2` | Pressed and hover state of any surface |
-| `--line` | `#C4D0C9` | Low-emphasis dividers |
-| `--control-line` | `#7D8982` | Boundaries for fields, option rows, neutral controls, and floating surfaces |
-| `--fg` | `#121715` | Primary text |
-| `--muted` | `#545E59` | Secondary text, inactive icons |
-| `--accent` | `#09785E` | Primary button fill, progress fill, focus ring, selected outline |
-| `--on-accent` | `#FFFFFF` | Text and icons on `--accent` |
-| `--accent-text` | `#096A53` | Accent used as text or icon on `--bg`, `--card`, `--card-elevated` or `--card-hover` |
-| `--ok-bg` | `#DDF3E8` | Correct answer fill, MCQ chip fill |
-| `--ok-fg` | `#0A6B4D` | Text and icon on `--ok-bg` |
-| `--bad-bg` | `#FCE9E7` | Wrong answer fill |
-| `--bad-fg` | `#B3261E` | Text and icon on `--bad-bg`, delete actions |
-| `--warn-bg` | `#FFF1CC` | Warning banners |
-| `--warn-fg` | `#7A5200` | Text and icon on `--warn-bg` |
-| `--essay-bg` | `#E6EAFB` | Essay chip fill |
-| `--essay-fg` | `#3B47A8` | Text on `--essay-bg` |
-| `--overlay` | `#000000 / 40%` | Dialog and bottom-sheet backdrop |
+| Token             | Hex             | Use                                                                                  |
+| ----------------- | --------------- | ------------------------------------------------------------------------------------ |
+| `--bg`            | `#FBFCFB`       | App background                                                                       |
+| `--card`          | `#E9EEEB`       | Cards, option rows, inputs, menus on the page                                        |
+| `--card-elevated` | `#FFFFFF`       | Dialogs, menus, popovers                                                             |
+| `--card-hover`    | `#DFE6E2`       | Pressed and hover state of any surface                                               |
+| `--line`          | `#C4D0C9`       | Low-emphasis dividers                                                                |
+| `--control-line`  | `#7D8982`       | Boundaries for fields, option rows, neutral controls, and floating surfaces          |
+| `--fg`            | `#121715`       | Primary text                                                                         |
+| `--muted`         | `#545E59`       | Secondary text, inactive icons                                                       |
+| `--accent`        | `#09785E`       | Primary button fill, progress fill, focus ring, selected outline                     |
+| `--on-accent`     | `#FFFFFF`       | Text and icons on `--accent`                                                         |
+| `--accent-text`   | `#096A53`       | Accent used as text or icon on `--bg`, `--card`, `--card-elevated` or `--card-hover` |
+| `--ok-bg`         | `#DDF3E8`       | Correct answer fill, MCQ chip fill                                                   |
+| `--ok-fg`         | `#0A6B4D`       | Text and icon on `--ok-bg`                                                           |
+| `--bad-bg`        | `#FCE9E7`       | Wrong answer fill                                                                    |
+| `--bad-fg`        | `#B3261E`       | Text and icon on `--bad-bg`, delete actions                                          |
+| `--warn-bg`       | `#FFF1CC`       | Warning banners                                                                      |
+| `--warn-fg`       | `#7A5200`       | Text and icon on `--warn-bg`                                                         |
+| `--essay-bg`      | `#E6EAFB`       | Essay chip fill                                                                      |
+| `--essay-fg`      | `#3B47A8`       | Text on `--essay-bg`                                                                 |
+| `--overlay`       | `#000000 / 40%` | Dialog and bottom-sheet backdrop                                                     |
 
 ### Dark theme (`data-theme="dark"`)
 
 Dark is a layered charcoal with a green tint, not black. `--bg` sits at about 9% lightness so surfaces read as steps, never as one flat void.
 
-| Token | Hex | Use |
-|---|---|---|
-| `--bg` | `#151B19` | App background |
-| `--card` | `#242F2A` | Cards, option rows, inputs, menus on the page |
-| `--card-elevated` | `#2E3A34` | Dialogs, menus, popovers |
-| `--card-hover` | `#39463F` | Pressed and hover state of any surface |
-| `--line` | `#44524B` | Low-emphasis dividers |
-| `--control-line` | `#77847C` | Boundaries for fields, option rows, neutral controls, and floating surfaces |
-| `--fg` | `#EDF3EF` | Primary text |
-| `--muted` | `#AAB5AE` | Secondary text, inactive icons |
-| `--accent` | `#3DD6A5` | Primary button fill, progress fill, focus ring, selected outline |
-| `--on-accent` | `#06100C` | Text and icons on `--accent` |
-| `--accent-text` | `#4FD9AC` | Accent used as text or icon on any dark surface |
-| `--ok-bg` | `#14322A` | Correct answer fill, MCQ chip fill |
-| `--ok-fg` | `#7CE8C1` | Text and icon on `--ok-bg` |
-| `--bad-bg` | `#3B1C20` | Wrong answer fill |
-| `--bad-fg` | `#FFA69E` | Text and icon on `--bad-bg`, delete actions |
-| `--warn-bg` | `#342A0F` | Warning banners |
-| `--warn-fg` | `#F3C65F` | Text and icon on `--warn-bg` |
-| `--essay-bg` | `#232B57` | Essay chip fill |
-| `--essay-fg` | `#C4CBFF` | Text on `--essay-bg` |
-| `--overlay` | `#000000 / 55%` | Dialog and bottom-sheet backdrop |
-
+| Token             | Hex             | Use                                                                         |
+| ----------------- | --------------- | --------------------------------------------------------------------------- |
+| `--bg`            | `#151B19`       | App background                                                              |
+| `--card`          | `#242F2A`       | Cards, option rows, inputs, menus on the page                               |
+| `--card-elevated` | `#2E3A34`       | Dialogs, menus, popovers                                                    |
+| `--card-hover`    | `#39463F`       | Pressed and hover state of any surface                                      |
+| `--line`          | `#44524B`       | Low-emphasis dividers                                                       |
+| `--control-line`  | `#77847C`       | Boundaries for fields, option rows, neutral controls, and floating surfaces |
+| `--fg`            | `#EDF3EF`       | Primary text                                                                |
+| `--muted`         | `#AAB5AE`       | Secondary text, inactive icons                                              |
+| `--accent`        | `#3DD6A5`       | Primary button fill, progress fill, focus ring, selected outline            |
+| `--on-accent`     | `#06100C`       | Text and icons on `--accent`                                                |
+| `--accent-text`   | `#4FD9AC`       | Accent used as text or icon on any dark surface                             |
+| `--ok-bg`         | `#14322A`       | Correct answer fill, MCQ chip fill                                          |
+| `--ok-fg`         | `#7CE8C1`       | Text and icon on `--ok-bg`                                                  |
+| `--bad-bg`        | `#3B1C20`       | Wrong answer fill                                                           |
+| `--bad-fg`        | `#FFA69E`       | Text and icon on `--bad-bg`, delete actions                                 |
+| `--warn-bg`       | `#342A0F`       | Warning banners                                                             |
+| `--warn-fg`       | `#F3C65F`       | Text and icon on `--warn-bg`                                                |
+| `--essay-bg`      | `#232B57`       | Essay chip fill                                                             |
+| `--essay-fg`      | `#C4CBFF`       | Text on `--essay-bg`                                                        |
+| `--overlay`       | `#000000 / 55%` | Dialog and bottom-sheet backdrop                                            |
 
 ### Contrast results (WCAG relative luminance)
 
 Calculated from the hex values above. Re-check whenever a token changes.
 
-| Pair | Light | Dark |
-|---|---|---|
-| `--fg` on `--bg` | 17.6 | 15.5 |
-| `--fg` on `--card` | 15.4 | 12.3 |
-| `--fg` on `--card-elevated` | 18.1 | 10.5 |
-| `--muted` on `--bg` | 6.5 | 8.3 |
-| `--muted` on `--card` | 5.7 | 6.6 |
-| `--muted` on `--card-elevated` | 6.7 | 5.6 |
-| `--muted` on `--card-hover` | 5.3 | 4.7 |
-| `--on-accent` on `--accent` | 5.4 | 10.5 |
-| `--accent-text` on `--bg` | 6.4 | 9.9 |
-| `--accent-text` on `--card` | 5.6 | 7.8 |
-| `--accent-text` on `--card-elevated` | 6.6 | 6.7 |
-| `--accent-text` on `--card-hover` | 5.2 | 5.6 |
-| `--ok-fg` on `--ok-bg` | 5.6 | 9.3 |
-| `--bad-fg` on `--bad-bg` | 5.6 | 8.2 |
-| `--bad-fg` on `--bg` | 6.4 | 9.3 |
-| `--warn-fg` on `--warn-bg` | 6.2 | 8.8 |
-| `--essay-fg` on `--essay-bg` | 6.6 | 8.6 |
-| `--accent` on `--bg` (focus ring, non-text) | 5.3 | 9.5 |
-| `--control-line` against `--bg` | 3.5 | 4.5 |
-| `--control-line` against `--card` | 3.1 | 3.6 |
-| `--control-line` against `--card-elevated` | 3.6 | 3.0 |
-| `--card` vs `--bg` (separation, not text) | 1.1 | 1.3 |
-| `--card-elevated` vs `--card` (separation) | 1.2 | 1.2 |
-| `--card-hover` vs `--card-elevated` (separation) | 1.3 | 1.2 |
-| `--line` vs `--card` (floating panel boundary, not text) | 1.4 | 1.7 |
+| Pair                                                     | Light | Dark |
+| -------------------------------------------------------- | ----- | ---- |
+| `--fg` on `--bg`                                         | 17.6  | 15.5 |
+| `--fg` on `--card`                                       | 15.4  | 12.3 |
+| `--fg` on `--card-elevated`                              | 18.1  | 10.5 |
+| `--muted` on `--bg`                                      | 6.5   | 8.3  |
+| `--muted` on `--card`                                    | 5.7   | 6.6  |
+| `--muted` on `--card-elevated`                           | 6.7   | 5.6  |
+| `--muted` on `--card-hover`                              | 5.3   | 4.7  |
+| `--on-accent` on `--accent`                              | 5.4   | 10.5 |
+| `--accent-text` on `--bg`                                | 6.4   | 9.9  |
+| `--accent-text` on `--card`                              | 5.6   | 7.8  |
+| `--accent-text` on `--card-elevated`                     | 6.6   | 6.7  |
+| `--accent-text` on `--card-hover`                        | 5.2   | 5.6  |
+| `--ok-fg` on `--ok-bg`                                   | 5.6   | 9.3  |
+| `--bad-fg` on `--bad-bg`                                 | 5.6   | 8.2  |
+| `--bad-fg` on `--bg`                                     | 6.4   | 9.3  |
+| `--warn-fg` on `--warn-bg`                               | 6.2   | 8.8  |
+| `--essay-fg` on `--essay-bg`                             | 6.6   | 8.6  |
+| `--accent` on `--bg` (focus ring, non-text)              | 5.3   | 9.5  |
+| `--control-line` against `--bg`                          | 3.5   | 4.5  |
+| `--control-line` against `--card`                        | 3.1   | 3.6  |
+| `--control-line` against `--card-elevated`               | 3.6   | 3.0  |
+| `--card` vs `--bg` (separation, not text)                | 1.1   | 1.3  |
+| `--card-elevated` vs `--card` (separation)               | 1.2   | 1.2  |
+| `--card-hover` vs `--card-elevated` (separation)         | 1.3   | 1.2  |
+| `--line` vs `--card` (floating panel boundary, not text) | 1.4   | 1.7  |
 
 Every text pair clears the 4.5:1 target. Card separation stays intentionally subtle (no borders, no shadows), but each dark step is a real jump in luminance — `--bg` 0.010, `--card` 0.026, `--card-elevated` 0.039, `--card-hover` 0.056 — so cards never merge into the page and floating surfaces never merge into cards. `--control-line` makes fields, controls, and floating surfaces identifiable at 3:1; `--line` remains low-emphasis for separators.
 
@@ -145,8 +144,8 @@ Every text pair clears the 4.5:1 target. Card separation stays intentionally sub
 
 To separate the accent further from the "correct" green, swap only `--accent` and `--accent-text`:
 
-| Token | Light | Dark |
-|---|---|---|
+| Token                        | Light     | Dark      |
+| ---------------------------- | --------- | --------- |
 | `--accent` / `--accent-text` | `#0F766E` | `#2DD4BF` |
 
 Re-run the contrast check before adopting it. Do not ship both accents.
@@ -233,13 +232,13 @@ This gives utilities such as `bg-bg`, `bg-card`, `bg-card-elevated`, `bg-card-ho
 
 ## 3. Shape and spacing
 
-| Element | Radius |
-|---|---|
-| Page cards (set card, question card) | 16px |
-| Option rows, inputs, small cards | 14px |
-| Buttons | 16px |
-| Chips, progress bar | fully rounded |
-| Index badges (A, B, C, D) | 6px |
+| Element                              | Radius        |
+| ------------------------------------ | ------------- |
+| Page cards (set card, question card) | 16px          |
+| Option rows, inputs, small cards     | 14px          |
+| Buttons                              | 16px          |
+| Chips, progress bar                  | fully rounded |
+| Index badges (A, B, C, D)            | 6px           |
 
 - Spacing scale: 4, 8, 12, 16, 24, 32 px. Nothing else, apart from the shell's fluid side padding described next.
 - Screen side padding: fluid at `clamp(16px, 2.5vw, 40px)` — 16px on phones, growing with the viewport and capping at 40px on wide monitors — plus safe-area insets.
@@ -260,17 +259,17 @@ This gives utilities such as `bg-bg`, `bg-card`, `bg-card-elevated`, `bg-card-ho
 - One sans-serif family for the whole app. Prefer the locally available Inter font, then `Segoe UI` and the platform sans-serif fallback; do not rely on a remote font download. Weights: 400 and 500 only.
 - Arabic content: add an Arabic font to the stack (for example Noto Sans Arabic). Use CSS logical properties (`ms-*`, `me-*`, `ps-*`, `pe-*`, `text-start`) instead of left and right so RTL works. No letter-spacing on Arabic text.
 
-| Role | Size / line height | Weight |
-|---|---|---|
-| App title (home) | 28px, scaling to 34px on wide screens (`clamp(1.75rem, 3.5vw, 2.125rem)`) | 500 |
-| Screen title | 22px / 28px | 500 |
-| Section title | 16px / 24px | 500 |
-| Question text (quiz) | 18px / 28px | 500 |
-| Body, option text | 16px / 24px | 400 |
-| Card title | 16px / 24px | 500 |
-| Card title (large, home grid, roadmap header) | 18px / 26px | 500 |
-| Secondary text, chips, captions | 13px / 18px | 400 or 500 |
-| Score number | 40px / 44px | 500 |
+| Role                                          | Size / line height                                                        | Weight     |
+| --------------------------------------------- | ------------------------------------------------------------------------- | ---------- |
+| App title (home)                              | 28px, scaling to 34px on wide screens (`clamp(1.75rem, 3.5vw, 2.125rem)`) | 500        |
+| Screen title                                  | 22px / 28px                                                               | 500        |
+| Section title                                 | 16px / 24px                                                               | 500        |
+| Question text (quiz)                          | 18px / 28px                                                               | 500        |
+| Body, option text                             | 16px / 24px                                                               | 400        |
+| Card title                                    | 16px / 24px                                                               | 500        |
+| Card title (large, home grid, roadmap header) | 18px / 26px                                                               | 500        |
+| Secondary text, chips, captions               | 13px / 18px                                                               | 400 or 500 |
+| Score number                                  | 40px / 44px                                                               | 500        |
 
 - Headings stay modest: no title is larger than the app title, and the app title never exceeds 34px. Avoid multi-line oversized headings.
 
@@ -284,6 +283,7 @@ This gives utilities such as `bg-bg`, `bg-card`, `bg-card-elevated`, `bg-card-ho
 Shared style is centralized in `src/components/ui/` so every surface matches. Buttons and fields each have a single exported class constant in `src/components/ui/styles.ts` (`buttonPrimary`, `buttonSecondary`, `buttonSecondaryOnCard`, `buttonSecondaryCompact`, `buttonGhost`, `buttonDestructive`, `buttonDanger`, `iconButton`, `fieldClassName`, `fieldOnCardClassName`, `menuSurface`, `pageContainer`) that components reuse; do not hand-write a new button or field string per screen.
 
 ### Navigation / shell
+
 - A single sticky top bar sits above all content: brand on the start side, primary navigation in the middle (or beside the brand on wide screens), and theme/account controls on the end side.
 - Keep the global header and navigation outside the single `<main>` landmark. Every route has one `<h1>`; nested section headings follow the heading order.
 - Primary navigation (Roadmaps, Review, Settings) is visible on **every** route, not only home. The active route is marked with `text-fg` plus an accent underline or pill; inactive items are `text-muted`.
@@ -293,6 +293,7 @@ Shared style is centralized in `src/components/ui/` so every surface matches. Bu
 - The theme toggle is an icon button with an `aria-label` that reflects the next action ("Switch to dark theme").
 
 ### Button
+
 - **Primary:** `bg-accent text-on-accent`, height 48px, radius 16px, weight 500. Pressed: `scale(0.98)`. Use one primary button per decision area; separate cards may each have their own primary action.
 - **Secondary:** `bg-card text-fg`, 1px solid `--control-line`, same size. Pressed or hover: `bg-card-hover`.
 - **Secondary (on a card):** the same button with `bg-bg`, for controls that sit inside a `bg-card` panel (settings sections, question editor, quiz setup). Never place a `bg-card` control directly on a `bg-card` surface. Inside a floating `bg-card-elevated` surface the standard `bg-card` secondary already sits one step below, so use that one.
@@ -307,33 +308,40 @@ Shared style is centralized in `src/components/ui/` so every surface matches. Bu
 **State rules:** Disabled controls use 60% opacity and `cursor: not-allowed`. Invalid fields use a 1px `--bad-fg` boundary, `aria-invalid="true"`, and an error message linked with `aria-describedby`; keyboard focus still uses the accent focus ring. Success and error messages include an icon and are announced with `role="status"` or `role="alert"`.
 
 ### Card
+
 `bg-card`, radius 16px, padding 12px to 16px, no border. Tappable cards use `bg-card-hover` when pressed or hovered. On wide screens cards in a grid stretch to fill their column; do not cap a card at a narrow fixed width. A box nested inside a card (an AI result, a reference answer, an inset row) uses `bg-bg` so it does not disappear into its parent.
 
 ### Option button (MCQ)
+
 Full-width row, `bg-card`, radius 14px, min height 48px, padding 12px, 1px `--control-line` boundary. Left: index badge A to D (20px square, `bg-bg`, 6px radius, 13px text). Then the option text.
 
-| State | Style |
-|---|---|
-| idle | `bg-card text-fg` |
-| pressed / hover | `bg-card-hover text-fg` |
-| selected (before submit, if used) | 2px outline `--accent` |
-| correct (revealed) | `bg-ok-bg text-ok-fg`, check icon on the end side |
-| wrong (revealed) | `bg-bad-bg text-bad-fg`, X icon on the end side |
+| State                             | Style                                             |
+| --------------------------------- | ------------------------------------------------- |
+| idle                              | `bg-card text-fg`                                 |
+| pressed / hover                   | `bg-card-hover text-fg`                           |
+| selected (before submit, if used) | 2px outline `--accent`                            |
+| correct (revealed)                | `bg-ok-bg text-ok-fg`, check icon on the end side |
+| wrong (revealed)                  | `bg-bad-bg text-bad-fg`, X icon on the end side   |
 
 After an answer, the correct option is always revealed. Options stop accepting taps.
 
 ### Chips
+
 Rounded-full, 13px, weight 500, padding 2px 10px.
+
 - MCQ: `bg-ok-bg text-ok-fg`
 - Essay: `bg-essay-bg text-essay-fg`
 
 ### Progress bar
+
 Height 6px, fully rounded. Track `bg-card-hover`, fill `bg-accent`, width animates with a short transition. Shown at the top of quiz screens with `n/total` beside it.
 
 ### Inputs and text areas
+
 `bg-card`, radius 14px, padding 12px, 1px solid `--control-line`, placeholder `text-muted`. Focus: 2px outline `--accent`. Errors: message below in `text-bad-fg` plus an icon. Selects use the same boundary and focus treatment. A field always takes the step below its surface: on the page and inside a dialog or menu it is `bg-card` (`fieldClassName`); inside a `bg-card` panel (settings section, question editor, quiz setup) it is `bg-bg` (`fieldOnCardClassName`).
 
 ### Settings and data management
+
 - Group preferences by purpose: appearance, AI assistance, and study data. Explain where a preference or key is stored and whether it is included in a backup.
 - Theme choices use native labeled radios with a clear selected state. Keep the global header toggle available as a shortcut.
 - Describe the scope of each file action before it is triggered: a full ZIP backup includes progress, a roadmap JSON shares content without progress, import adds a new roadmap, and restore replaces the local library.
@@ -346,20 +354,25 @@ Height 6px, fully rounded. Track `bg-card-hover`, fill `bg-accent`, width animat
 Use a 20px control with a 1px `--control-line` boundary on `bg-card`. Its label is body text and the whole label/control pair has a 48px minimum tap target. Checked state is `bg-accent text-on-accent` with a check or selected indicator; disabled state follows the shared state rules. Never rely on the checked color without the visible indicator.
 
 ### Segmented control (MCQ | Essay)
+
 Container `bg-card`, radius 14px, padding 3px, no border. Active segment `bg-accent text-on-accent`, inactive `text-muted`, inactive hover `bg-card-hover text-fg`. The inner radius is 11px (container radius minus padding). Pass `onCard` when the control sits inside a `bg-card` panel; the container then uses `bg-bg` so the seam stays visible. Segments have a 48px minimum tap height, a visible focus ring against the container surface, and support standard button keyboard activation. Disabled segments use the shared disabled opacity and cursor. The same rule applies to any custom segmented control.
 
 ### Overflow menu, bottom sheet, confirm dialog
+
 Surface `bg-card-elevated`, radius 16px, 1px `--control-line` boundary, backdrop `bg-overlay`. Floating surfaces always sit one step above the content they cover, so a menu opened from a card never blends into that card. Fields inside them use `bg-card`. Menus align to the trigger's end edge, flip above it when needed, stay inside viewport boundaries, and escape ancestor clipping. Action menus support arrow, Home/End, Escape, and Tab navigation; disabled actions are skipped. Dialogs fit the viewport, scroll their own content without chaining the page, focus within the native modal, restore focus when closed, and block Escape/backdrop dismissal while saving. Confirm dialogs have a ghost Cancel and a destructive confirm.
 
 ### Empty state
+
 A bordered-dashed or `bg-card` panel with an icon tile (24px, `text-muted`), a one-line title, a one-line body (`max-width` about 40ch), and a primary button that creates something. Center it within the content area. Do not write "Nothing here yet".
 
 ### Loading and error states
+
 - Loading uses `role="status"` text plus skeleton blocks that match the shape of the content being loaded (same radius and surface), never a blank screen.
 - Errors use the shared banner (`bg-bad-bg text-bad-fg`, icon, `role="alert"`) for page-level problems and inline text for field-level problems. When a safe recovery exists, give the banner a clearly labeled action; never make recovery depend on color.
 - Inputs show concise helper text where constraints are not obvious. Invalid input uses `aria-invalid="true"` and a message referenced by `aria-describedby`; temporary submissions disable the initiating action and announce the pending label.
 
 ### Topic learning page
+
 - The topic heading carries its roadmap/group context, title, brief study guidance, and visible status control. Do not invent a stored description; explain the existing study flow using the data already available.
 - Put the main practice action and question creation action near the title. Keep AI generation discoverable in the Questions section and preserve its preview-and-select flow.
 - Resource completion is its own progress measure (`completed / total`); question count and topic status remain separate facts. Do not combine them into a fabricated topic percentage.
@@ -368,29 +381,32 @@ A bordered-dashed or `bg-card` panel with an icon tile (24px, `text-muted`), a o
 - Resource creation and edit dialogs use visible labels, helper text where needed, linked validation errors, and clear pending/disabled states.
 
 ### Icons
+
 Use one outline icon set at 1.5px stroke (for example Tabler or Lucide). Sizes: 16px inline, 20px in rows, 24px in empty states. Icon-only buttons must have an `aria-label`.
 
 ## 6. Screens
 
-| Screen | Route | Key content |
-|---|---|---|
-| Roadmaps (home) | `/` | Backup reminder, "Today" summary, roadmap cards (icon, title, topic/question counts, due badge, overflow menu), "New roadmap" primary button, empty state |
-| Roadmap detail | `/roadmap/:id` | Roadmap header (icon, title, counts, progress), "Quiz all topics" and "New group" actions, group sections with draggable topic rows, "Add topic" inline form |
-| Topic | `/topic/:id` | Roadmap/group context, title and study guidance, topic status, lesson progress, visible quiz/add-question actions, lessons with multiple links or local documents, readable Markdown notes, and question list with type/difficulty indicators |
-| Question editor | `/topic/:id/q/:qid` | MCQ/Essay toggle, question text, difficulty, tags, options with a correct-answer selector, reference answer (essay), Save/Delete |
-| New question | `/topic/:id/q/new` | Same editor without Delete |
-| Topic quiz | `/topic/:id/quiz` | Setup (type, difficulty, limit, mistakes-only) then runner then results |
-| Roadmap quiz | `/roadmap/:id/quiz` | Topic picker, then the same setup/runner/results flow across topics |
-| Review | `/review` | Due count, breakdown by roadmap, "Start review" |
-| Settings | `/settings` | Light/dark theme, AI provider key, data backup/restore/import/reset |
+| Screen          | Route               | Key content                                                                                                                                                                                                                                   |
+| --------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Roadmaps (home) | `/`                 | Backup reminder, "Today" summary, roadmap cards (icon, title, topic/question counts, due badge, overflow menu), "New roadmap" primary button, empty state                                                                                     |
+| Roadmap detail  | `/roadmap/:id`      | Roadmap header (icon, title, counts, progress), "Quiz all topics" and "New group" actions, group sections with draggable topic rows, "Add topic" inline form                                                                                  |
+| Topic           | `/topic/:id`        | Roadmap/group context, title and study guidance, topic status, lesson progress, visible quiz/add-question actions, lessons with multiple links or local documents, readable Markdown notes, and question list with type/difficulty indicators |
+| Question editor | `/topic/:id/q/:qid` | MCQ/Essay toggle, question text, difficulty, tags, options with a correct-answer selector, reference answer (essay), Save/Delete                                                                                                              |
+| New question    | `/topic/:id/q/new`  | Same editor without Delete                                                                                                                                                                                                                    |
+| Topic quiz      | `/topic/:id/quiz`   | Setup (type, difficulty, limit, mistakes-only) then runner then results                                                                                                                                                                       |
+| Roadmap quiz    | `/roadmap/:id/quiz` | Topic picker, then the same setup/runner/results flow across topics                                                                                                                                                                           |
+| Review          | `/review`           | Due count, breakdown by roadmap, "Start review"                                                                                                                                                                                               |
+| Settings        | `/settings`         | Light/dark theme, AI provider key, data backup/restore/import/reset                                                                                                                                                                           |
 
 Layout per screen:
+
 - Home is a grid that uses the full shell width (`1 → 2 → 3 → 4` columns, fewer when the list is short).
 - Roadmap detail, topic, question editor, quiz setup, quiz runner, quiz results, and review use the full shell width.
 - Settings pairs its sections in two columns above 1024px.
 - Every screen keeps the header actions visible and reachable; on phones the primary action may sit in a sticky footer.
 
 Quiz-flow rules:
+
 - Keep one question visually dominant. Use a clear question number, a compact elapsed timer, and a labeled progress count; avoid unrelated page actions while answering.
 - Question text and options use readable body typography and an 80ch reading measure, wrap long words and URLs, and preserve meaningful line breaks. Longer content may scroll; never shrink text or clip answers to force everything onto one phone screen. Current question records are text-only; do not imply embedded-image support.
 - Every answer, self-assessment, AI-help, and navigation control has a visible keyboard focus. After answering, disable MCQ choices and visibly identify the correct answer and the learner's wrong choice.
