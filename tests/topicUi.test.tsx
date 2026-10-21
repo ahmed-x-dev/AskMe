@@ -24,10 +24,12 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
 }));
 
-;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
-let container: HTMLDivElement
-let root: Root
+let container: HTMLDivElement;
+let root: Root;
 
 beforeEach(async () => {
   await db.transaction("rw", allTables(), async () => {
@@ -88,7 +90,8 @@ describe("topic learning page", () => {
     const lesson = await addLesson(topic.id, "React state guide");
     const resource = await addLessonResource(lesson.id, {
       source: "link",
-      title: "State guide with a very long unbroken name: componentstateguidecomponentstateguide",
+      title:
+        "State guide with a very long unbroken name: componentstateguidecomponentstateguide",
       url: "https://react.dev/learn/state",
       kind: "docs",
     });
@@ -118,19 +121,29 @@ describe("topic learning page", () => {
     expect(container.textContent).toContain("Add question");
     expect(container.textContent).toContain("Lessons");
     expect(container.textContent).toContain("Generate with AI");
-    expect(container.querySelector("#lessons-heading + p")?.textContent).toBe("1 lesson");
+    expect(container.querySelector("#lessons-heading + p")?.textContent).toBe(
+      "1 lesson",
+    );
     expect(
       [...container.querySelectorAll("a")].filter((link) =>
         link.textContent?.includes("Add question"),
       ),
     ).toHaveLength(1);
-    expect(container.querySelector(`a[href="/topic/${topic.id}/quiz"]`)).not.toBeNull();
-    expect(container.querySelector(`a[href="/topic/${topic.id}/resource/${videoResource.id}"]`)).not.toBeNull();
+    expect(
+      container.querySelector(`a[href="/topic/${topic.id}/quiz"]`),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        `a[href="/topic/${topic.id}/resource/${videoResource.id}"]`,
+      ),
+    ).not.toBeNull();
     const resourceTitle = [...container.querySelectorAll("a span")].find(
       (element) => element.textContent === resource.title,
     );
     expect(resourceTitle?.className).toContain("wrap-break-word");
-    expect(container.querySelector(".break-all")?.textContent).toBe("react.dev");
+    expect(container.querySelector(".break-all")?.textContent).toBe(
+      "react.dev",
+    );
     expect(
       container.querySelector(
         `input[aria-label="Mark “${lesson.title}” as not done"]`,
@@ -140,15 +153,22 @@ describe("topic learning page", () => {
 
   it("offers a first-question action when a topic has no practice questions", async () => {
     const roadmap = await createRoadmap({ title: "Biology" });
-    const topic = await createTopic({ roadmapId: roadmap.id, title: "Cell structure" });
+    const topic = await createTopic({
+      roadmapId: roadmap.id,
+      title: "Cell structure",
+    });
     route.topicId = topic.id;
 
     act(() => root.render(<TopicPage />));
     await wait();
 
     expect(container.textContent).toContain("Add your first question");
-    expect(container.querySelector(`a[href="/topic/${topic.id}/q/new"]`)).not.toBeNull();
-    expect(container.querySelector(`a[href="/topic/${topic.id}/quiz"]`)).toBeNull();
+    expect(
+      container.querySelector(`a[href="/topic/${topic.id}/q/new"]`),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(`a[href="/topic/${topic.id}/quiz"]`),
+    ).toBeNull();
     expect(container.textContent).not.toContain("Add question");
     expect(container.textContent).toContain("Add a lesson to organize");
   });
@@ -160,7 +180,9 @@ describe("topic learning page", () => {
       title: "Hooks",
     });
 
-    act(() => root.render(<NotesSection topicId={topic.id} notes={undefined} />));
+    act(() =>
+      root.render(<NotesSection topicId={topic.id} notes={undefined} />),
+    );
     const textarea = container.querySelector("textarea")!;
     expect(textarea.className).toContain("w-full");
     expect(textarea.placeholder).toContain("Write notes in Markdown");
@@ -216,11 +238,16 @@ describe("topic learning page", () => {
     await wait();
     expect(container.querySelector("h1")?.textContent).toBe("Hook guide");
     expect(container.querySelector("h3")?.textContent).toBe("Original title");
-    expect(container.querySelector(`a[href="/topic/${topic.id}"]`)?.textContent).toContain("Back to topic");
+    expect(
+      container.querySelector(`a[href="/topic/${topic.id}"]`)?.textContent,
+    ).toContain("Back to topic");
 
     await click(
-      [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Document view"] button')]
-        .find((button) => button.textContent === "Edit"),
+      [
+        ...container.querySelectorAll<HTMLButtonElement>(
+          '[aria-label="Document view"] button',
+        ),
+      ].find((button) => button.textContent === "Edit"),
     );
     const textarea = container.querySelector("textarea")!;
     expect(textarea.className).toContain("min-h-[65vh]");
@@ -239,7 +266,9 @@ describe("topic learning page", () => {
 
     expect(container.querySelector("h3")?.textContent).toBe("Updated title");
     const updated = (await db.lessons.get(lesson.id))?.resources[0];
-    expect(updated?.source === "file" && atob(updated.fileData)).toBe("# Updated title\n\nNew text");
+    expect(updated?.source === "file" && atob(updated.fileData)).toBe(
+      "# Updated title\n\nNew text",
+    );
 
     route.resourceId = video.id;
     act(() => root.render(<TopicResourcePage />));
@@ -247,6 +276,8 @@ describe("topic learning page", () => {
     expect(container.querySelector("iframe")?.getAttribute("src")).toBe(
       "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
     );
-    expect(container.querySelector("iframe")?.getAttribute("title")).toBe(video.title);
+    expect(container.querySelector("iframe")?.getAttribute("title")).toBe(
+      video.title,
+    );
   });
 });

@@ -76,7 +76,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
       await action();
       setActionError(null);
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Something went wrong.");
+      setActionError(
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
     }
   };
 
@@ -115,14 +117,23 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
   };
 
   return (
-    <section id="lessons-section" aria-labelledby="lessons-heading" className="flex flex-col gap-4">
+    <section
+      id="lessons-section"
+      aria-labelledby="lessons-heading"
+      className="flex flex-col gap-4"
+    >
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 id="lessons-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+          <h2
+            id="lessons-heading"
+            className="text-[18px] font-medium leading-[26px] text-fg"
+          >
             Lessons
           </h2>
           <p className="text-[13px] leading-[18px] text-muted tabular-nums">
-            {lessons.length === 0 ? "Break this topic into study sessions." : plural(lessons.length, "lesson")}
+            {lessons.length === 0
+              ? "Break this topic into study sessions."
+              : plural(lessons.length, "lesson")}
           </p>
         </div>
         <button
@@ -139,7 +150,8 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
 
       {lessons.length === 0 ? (
         <div className="rounded-2xl bg-card px-4 py-3 text-[13px] leading-[18px] text-muted">
-          Add a lesson, then attach videos, articles, links, or documents from your device.
+          Add a lesson, then attach videos, articles, links, or documents from
+          your device.
         </div>
       ) : (
         <ol className="flex flex-col gap-3">
@@ -151,7 +163,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                     type="checkbox"
                     checked={lesson.done}
                     onChange={(event) =>
-                      void run(() => setLessonDone(lesson.id, event.target.checked))
+                      void run(() =>
+                        setLessonDone(lesson.id, event.target.checked),
+                      )
                     }
                     aria-label={
                       lesson.done
@@ -176,7 +190,11 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                 <ActionMenu
                   label={`Actions for ${lesson.title}`}
                   items={[
-                    { label: "Edit lesson", icon: Pencil, onSelect: () => setEditingLesson(lesson) },
+                    {
+                      label: "Edit lesson",
+                      icon: Pencil,
+                      onSelect: () => setEditingLesson(lesson),
+                    },
                     {
                       label: "Move up",
                       icon: ArrowUp,
@@ -204,7 +222,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                   {lesson.resources.map((resource) => {
                     const ResourceIcon = RESOURCE_ICONS[resource.kind];
                     const kindLabel =
-                      RESOURCE_KINDS.find((option) => option.value === resource.kind)?.label ?? "Other";
+                      RESOURCE_KINDS.find(
+                        (option) => option.value === resource.kind,
+                      )?.label ?? "Other";
 
                     return (
                       <li
@@ -234,7 +254,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                                   rel="noopener noreferrer"
                                   className="flex min-w-0 items-start gap-2 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
                                 >
-                                  <span className="min-w-0 flex-1 wrap-break-word">{resource.title}</span>
+                                  <span className="min-w-0 flex-1 wrap-break-word">
+                                    {resource.title}
+                                  </span>
                                   <ExternalLink
                                     aria-hidden="true"
                                     className="mt-0.5 h-4 w-4 shrink-0"
@@ -259,7 +281,11 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                               ) : (
                                 <button
                                   type="button"
-                                  onClick={() => void run(async () => openLessonFile(resource))}
+                                  onClick={() =>
+                                    void run(async () =>
+                                      openLessonFile(resource),
+                                    )
+                                  }
                                   className="min-w-0 wrap-break-word text-start text-[14px] font-medium leading-5 text-fg hover:underline"
                                 >
                                   {resource.title}
@@ -267,11 +293,19 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                               )}
                               <button
                                 type="button"
-                                onClick={() => void run(async () => downloadLessonFile(resource))}
+                                onClick={() =>
+                                  void run(async () =>
+                                    downloadLessonFile(resource),
+                                  )
+                                }
                                 aria-label={`Download “${resource.title}”`}
                                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-card-hover hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                               >
-                                <Download aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+                                <Download
+                                  aria-hidden="true"
+                                  className="h-4 w-4"
+                                  strokeWidth={1.5}
+                                />
                               </button>
                             </div>
                           )}
@@ -280,7 +314,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                             {resource.source === "link" ? (
                               <>
                                 <span aria-hidden="true"> · </span>
-                                <span className="break-all">{hostOf(resource.url)}</span>
+                                <span className="break-all">
+                                  {hostOf(resource.url)}
+                                </span>
                               </>
                             ) : (
                               <>
@@ -298,13 +334,15 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                             {
                               label: "Edit resource",
                               icon: Pencil,
-                              onSelect: () => setResourceDialog({ lesson, resource }),
+                              onSelect: () =>
+                                setResourceDialog({ lesson, resource }),
                             },
                             {
                               label: "Delete resource",
                               icon: Trash2,
                               danger: true,
-                              onSelect: () => setDeletingResource({ lesson, resource }),
+                              onSelect: () =>
+                                setDeletingResource({ lesson, resource }),
                             },
                           ]}
                         />
@@ -319,7 +357,11 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                 onClick={() => setResourceDialog({ lesson })}
                 className="ms-[52px] mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-[18px] text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                <Plus aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+                <Plus
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                />
                 Add resource
               </button>
             </li>
@@ -373,7 +415,10 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
           confirmLabel="Delete resource"
           onClose={() => setDeletingResource(null)}
           onConfirm={() =>
-            deleteLessonResource(deletingResource.lesson.id, deletingResource.resource.id)
+            deleteLessonResource(
+              deletingResource.lesson.id,
+              deletingResource.resource.id,
+            )
           }
         />
       ) : null}

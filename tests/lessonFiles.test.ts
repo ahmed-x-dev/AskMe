@@ -7,7 +7,9 @@ import {
 
 describe("lesson document files", () => {
   it("encodes a device file with its name and document type", async () => {
-    const file = new File(["# Local notes"], "notes.md", { type: "text/markdown" });
+    const file = new File(["# Local notes"], "notes.md", {
+      type: "text/markdown",
+    });
     const resource = await prepareLessonFile(file, "My notes");
 
     expect(resource).toMatchObject({
@@ -17,7 +19,9 @@ describe("lesson document files", () => {
       mimeType: "text/markdown",
       size: 13,
     });
-    expect(resource.source === "file" && atob(resource.fileData)).toBe("# Local notes");
+    expect(resource.source === "file" && atob(resource.fileData)).toBe(
+      "# Local notes",
+    );
   });
 
   it("rejects file types that are not supported", async () => {

@@ -43,31 +43,42 @@ export function videoEmbedUrl(url: string): string | null {
   ]);
 
   if (hostname === "youtu.be") {
-    const videoId = parsed.pathname.match(/^\/([A-Za-z0-9_-]{11})(?:\/|$)/)?.[1];
+    const videoId = parsed.pathname.match(
+      /^\/([A-Za-z0-9_-]{11})(?:\/|$)/,
+    )?.[1];
     return videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : null;
   }
 
   if (youtubeHosts.has(hostname)) {
-    const videoId = parsed.pathname === "/watch"
-      ? parsed.searchParams.get("v")
-      : parsed.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})(?:\/|$)/)?.[1];
+    const videoId =
+      parsed.pathname === "/watch"
+        ? parsed.searchParams.get("v")
+        : parsed.pathname.match(
+            /^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})(?:\/|$)/,
+          )?.[1];
 
     return videoId && /^[A-Za-z0-9_-]{11}$/.test(videoId)
       ? `https://www.youtube-nocookie.com/embed/${videoId}`
       : null;
   }
 
-  if (hostname === "vimeo.com" || hostname === "www.vimeo.com" || hostname === "player.vimeo.com") {
-    const videoId = hostname === "player.vimeo.com"
-      ? parsed.pathname.match(/^\/video\/(\d+)(?:\/|$)/)?.[1]
-      : parsed.pathname.match(/^\/(\d+)(?:\/|$)/)?.[1];
+  if (
+    hostname === "vimeo.com" ||
+    hostname === "www.vimeo.com" ||
+    hostname === "player.vimeo.com"
+  ) {
+    const videoId =
+      hostname === "player.vimeo.com"
+        ? parsed.pathname.match(/^\/video\/(\d+)(?:\/|$)/)?.[1]
+        : parsed.pathname.match(/^\/(\d+)(?:\/|$)/)?.[1];
 
     if (!videoId) return null;
 
     const privacyHash = parsed.searchParams.get("h");
-    const query = privacyHash && /^[A-Za-z0-9]+$/.test(privacyHash)
-      ? `?h=${encodeURIComponent(privacyHash)}`
-      : "";
+    const query =
+      privacyHash && /^[A-Za-z0-9]+$/.test(privacyHash)
+        ? `?h=${encodeURIComponent(privacyHash)}`
+        : "";
 
     return `https://player.vimeo.com/video/${videoId}${query}`;
   }
