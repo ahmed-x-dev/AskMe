@@ -40,6 +40,30 @@ export async function prepareLessonFile(file: File, title: string): Promise<Less
   }
 }
 
+/** Identifies saved Markdown documents by their filename or MIME type. */
+export function isMarkdownLessonFile(
+  resource: LessonResource,
+): boolean {
+  return resource.source === 'file' &&
+    (resource.mimeType === 'text/markdown' || /\.(md|markdown)$/i.test(resource.fileName))
+}
+
+/** Decodes a saved Markdown document as UTF-8 text. */
+export function readLessonMarkdown(resource: LessonResource): string {
+  if (resource.source !== 'file' || !isMarkdownLessonFile(resource)) {
+    throw new Error('This resource is not a Markdown document.')
+  }
+
+  const binary = atob(resource.fileData)
+  const bytes = new Uint8Array(binary.length)
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index)
+  }
+
+  return new TextDecoder().decode(bytes)
+}
+
 /** Opens a saved document in a new tab for reading. */
 export function openLessonFile(resource: LessonResource): void {
   if (resource.source !== 'file') {

@@ -47,4 +47,4 @@ Some early guides describe previous implementations. For the current product sco
 - [30 — Focused quiz and review](./30-focused-quiz-and-review.md): How setup, question feedback, attempt saving, results, and due reviews work together without changing scoring rules.
 - [31 — Settings and data management](./31-settings-and-data-management.md): How appearance and AI preferences share app state, and how backup/restore actions explain their effects.
 - [32 — Optional question types](./32-question-types.md): How new question variants extend the shared schema without breaking the quiz or AI pipelines.
-- [33 — Topic lessons and local documents](./33-topic-lessons-and-local-documents.md): How lessons group multiple learning materials and keep uploaded documents in local browser storage.
+- [33 — Topic lessons and local documents](./33-topic-lessons-and-local-documents.md): How lessons group materials, store local documents, and preview/edit Markdown files in the app.

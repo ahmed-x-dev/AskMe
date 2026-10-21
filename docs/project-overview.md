@@ -24,7 +24,7 @@ The product should remain useful without an account or application server. The l
 ## Current Feature Areas
 
 - Roadmap and topic management, including topic groups.
-- Topic lessons, Markdown notes, links, and locally stored lesson documents.
+- Topic lessons, Markdown notes, and local documents, with an in-app resource page for Markdown editing and supported video playback.
 - Question authoring, import/export, quiz setup and sessions, results, and saved attempts.
 - Due-question review and progress summaries.
 - Optional AI question generation and essay grading with validated provider responses.

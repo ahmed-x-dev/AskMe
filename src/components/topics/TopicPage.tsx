@@ -11,9 +11,18 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { buttonPrimary, buttonSecondary, buttonSecondaryCompact } from "@/components/ui/styles";
+import {
+  buttonPrimary,
+  buttonSecondary,
+  buttonSecondaryCompact,
+} from "@/components/ui/styles";
 import { plural } from "@/lib/format";
-import { deleteTopic, getTopicPage, setTopicStatus, updateTopic } from "@/lib/data";
+import {
+  deleteTopic,
+  getTopicPage,
+  setTopicStatus,
+  updateTopic,
+} from "@/lib/data";
 import type { TopicStatus } from "@/types/study";
 import { NotesSection } from "./NotesSection";
 import { QuestionsSection } from "./QuestionsSection";
@@ -31,7 +40,12 @@ export function TopicPage() {
 
   if (page === undefined) {
     return (
-      <div role="status" aria-busy="true" aria-label="Loading topic" className="mx-auto flex w-full flex-col gap-4">
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading topic"
+        className="mx-auto flex w-full flex-col gap-4"
+      >
         <div className="h-12 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-20 animate-pulse rounded-2xl bg-card" />
         <div className="h-32 animate-pulse rounded-2xl bg-card" />
@@ -43,11 +57,10 @@ export function TopicPage() {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Topic not found</h1>
-        <p className="mt-2 text-[16px] leading-6 text-muted">It may have been deleted.</p>
-        <Link
-          href="/"
-          className={`mt-6 ${buttonPrimary}`}
-        >
+        <p className="mt-2 text-[16px] leading-6 text-muted">
+          It may have been deleted.
+        </p>
+        <Link href="/" className={`mt-6 ${buttonPrimary}`}>
           Back to roadmaps
         </Link>
       </section>
@@ -62,7 +75,9 @@ export function TopicPage() {
       await action();
       setActionError(null);
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Something went wrong.");
+      setActionError(
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
     }
   };
 
@@ -75,10 +90,19 @@ export function TopicPage() {
   return (
     <section className="mx-auto flex w-full flex-col gap-8">
       <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-[18px] text-muted">
-          <Link href={`/roadmap/${roadmap.id}`} className={buttonSecondaryCompact}>
-            <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
-            <span className="max-w-[min(60vw,24rem)] truncate">{roadmap.title}</span>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-4.5 text-muted">
+          <Link
+            href={`/roadmap/${roadmap.id}`}
+            className={buttonSecondaryCompact}
+          >
+            <ArrowLeft
+              aria-hidden="true"
+              className="h-5 w-5 shrink-0 rtl:rotate-180"
+              strokeWidth={1.5}
+            />
+            <span className="max-w-[min(60vw,24rem)] truncate">
+              {roadmap.title}
+            </span>
           </Link>
           {group ? (
             <>
@@ -94,15 +118,25 @@ export function TopicPage() {
               {topic.title}
             </h1>
             <p className="mt-1 max-w-[72ch] text-[16px] leading-6 text-muted">
-              Learn the key ideas with your notes and lessons, then use practice questions to check your understanding.
+              Learn the key ideas with your notes and lessons, then use practice
+              questions to check your understanding.
             </p>
           </div>
 
           <ActionMenu
             label={`Actions for ${topic.title}`}
             items={[
-              { label: "Rename", icon: Pencil, onSelect: () => setIsRenaming(true) },
-              { label: "Delete", icon: Trash2, danger: true, onSelect: () => setIsConfirmingDelete(true) },
+              {
+                label: "Rename",
+                icon: Pencil,
+                onSelect: () => setIsRenaming(true),
+              },
+              {
+                label: "Delete",
+                icon: Trash2,
+                danger: true,
+                onSelect: () => setIsConfirmingDelete(true),
+              },
             ]}
           />
         </div>
@@ -128,11 +162,16 @@ export function TopicPage() {
           ) : null}
         </div>
 
-        <section aria-label="Topic progress" className="flex flex-col gap-4 rounded-2xl bg-card p-4 sm:flex-row sm:items-center">
+        <section
+          aria-label="Topic progress"
+          className="flex flex-col gap-4 rounded-2xl bg-card p-4 sm:flex-row sm:items-center"
+        >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-[16px] font-medium leading-6 text-fg">Learning progress</h2>
-              <span className="text-[13px] leading-[18px] text-muted tabular-nums">
+              <h2 className="text-[16px] font-medium leading-6 text-fg">
+                Learning progress
+              </h2>
+              <span className="text-[13px] leading-4.5 text-muted tabular-nums">
                 {questions.length > 0
                   ? plural(questions.length, "question")
                   : "No practice questions yet"}
@@ -146,22 +185,31 @@ export function TopicPage() {
                   total={lessons.length}
                   onCard
                 />
-                <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
-                  {completedLessons} of {plural(lessons.length, "lesson")} completed
+                <p className="mt-2 text-[13px] leading-4.5 text-muted tabular-nums">
+                  {completedLessons} of {plural(lessons.length, "lesson")}{" "}
+                  completed
                 </p>
               </>
             ) : (
-              <p className="mt-1 text-[13px] leading-[18px] text-muted">
-                <BookOpen aria-hidden="true" className="me-1 inline h-4 w-4" strokeWidth={1.5} />
+              <p className="mt-1 text-[13px] leading-4.5 text-muted">
+                <BookOpen
+                  aria-hidden="true"
+                  className="me-1 inline h-4 w-4"
+                  strokeWidth={1.5}
+                />
                 Add a lesson to organize what you will read or watch.
               </p>
             )}
           </div>
           <div className="flex shrink-0 flex-col gap-1">
-            <span className="text-[13px] font-medium leading-[18px] text-muted">Topic status</span>
+            <span className="text-[13px] font-medium leading-4.5 text-muted">
+              Topic status
+            </span>
             <StatusSelect
               topic={topic}
-              onChange={(status: TopicStatus) => void run(() => setTopicStatus(topic.id, status))}
+              onChange={(status: TopicStatus) =>
+                void run(() => setTopicStatus(topic.id, status))
+              }
             />
           </div>
         </section>
@@ -169,8 +217,16 @@ export function TopicPage() {
 
       {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
-      <NotesSection key={`notes-${topic.id}`} topicId={topic.id} notes={topic.notes} />
-      <LessonsSection key={`lessons-${topic.id}`} topicId={topic.id} lessons={lessons} />
+      <NotesSection
+        key={`notes-${topic.id}`}
+        topicId={topic.id}
+        notes={topic.notes}
+      />
+      <LessonsSection
+        key={`lessons-${topic.id}`}
+        topicId={topic.id}
+        lessons={lessons}
+      />
       <QuestionsSection
         topicId={topic.id}
         questions={questions}

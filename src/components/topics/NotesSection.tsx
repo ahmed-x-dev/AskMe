@@ -39,27 +39,34 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
 
   const isDirty = normalize(draft) !== saved;
 
-  const save = useCallback((value: string) => {
-    const normalized = normalize(value);
-    const request = saveQueue.current.then(async () => {
-      if (normalized === savedRef.current) return;
+  const save = useCallback(
+    (value: string) => {
+      const normalized = normalize(value);
+      const request = saveQueue.current.then(async () => {
+        if (normalized === savedRef.current) return;
 
-      setIsSaving(true);
+        setIsSaving(true);
 
-      try {
-        await updateTopic(topicId, { notes: normalized });
-        savedRef.current = normalized;
-        setError(null);
-      } catch (saveError) {
-        setError(saveError instanceof Error ? saveError.message : "Could not save the notes.");
-      } finally {
-        setIsSaving(false);
-      }
-    });
+        try {
+          await updateTopic(topicId, { notes: normalized });
+          savedRef.current = normalized;
+          setError(null);
+        } catch (saveError) {
+          setError(
+            saveError instanceof Error
+              ? saveError.message
+              : "Could not save the notes.",
+          );
+        } finally {
+          setIsSaving(false);
+        }
+      });
 
-    saveQueue.current = request;
-    return request;
-  }, [topicId]);
+      saveQueue.current = request;
+      return request;
+    },
+    [topicId],
+  );
 
   useEffect(() => {
     if (!isDirty) return;
@@ -69,23 +76,31 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
     return () => window.clearTimeout(timer);
   }, [draft, isDirty, save]);
 
-  const statusText = error ?? (isSaving ? "Saving…" : isDirty ? "Unsaved changes" : "Saved");
+  const statusText =
+    error ?? (isSaving ? "Saving…" : isDirty ? "Unsaved changes" : "Saved");
 
   return (
     <section aria-labelledby="notes-heading" className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="notes-heading" className="text-[16px] font-medium leading-6 text-fg">
+        <h2
+          id="notes-heading"
+          className="text-[16px] font-medium leading-6 text-fg"
+        >
           Notes
         </h2>
 
-        <div role="group" aria-label="Notes view" className="flex gap-1 rounded-[14px] bg-card p-[3px]">
+        <div
+          role="group"
+          aria-label="Notes view"
+          className="flex gap-1 rounded-[14px] bg-card p-0.75"
+        >
           {(["edit", "preview"] as const).map((value) => (
             <button
               key={value}
               type="button"
               onClick={() => setMode(value)}
               aria-pressed={mode === value}
-              className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+              className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-4.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                 mode === value
                   ? "bg-accent text-on-accent active:scale-[0.98]"
                   : "text-muted hover:bg-card-hover hover:text-fg active:scale-[0.98]"
@@ -107,10 +122,10 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
           rows={8}
           aria-label="Notes (Markdown)"
           placeholder="Write notes in Markdown: # headings, **bold**, - lists, `code`…"
-          className={`min-h-48 w-full max-w-[72ch] resize-y py-3 ${fieldClassName}`}
+          className={`min-h-48 w-full  resize-y py-3 ${fieldClassName}`}
         />
       ) : (
-        <div className="min-h-24 w-full max-w-[72ch] rounded-2xl bg-card p-4">
+        <div className="min-h-24 w-full  rounded-2xl bg-card p-4">
           {draft.trim() ? (
             <Markdown>{draft}</Markdown>
           ) : (
@@ -122,17 +137,35 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
       )}
 
       {error ? (
-        <div role="alert" className="flex flex-wrap items-center gap-3 text-[13px] leading-[18px] text-bad-fg">
-          <CircleAlert aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-3 text-[13px] leading-4.5 text-bad-fg"
+        >
+          <CircleAlert
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0"
+            strokeWidth={1.5}
+          />
           <span className="min-w-0 flex-1 wrap-break-word">{statusText}</span>
-          <button type="button" onClick={() => void save(draft)} className={buttonSecondaryCompact}>
+          <button
+            type="button"
+            onClick={() => void save(draft)}
+            className={buttonSecondaryCompact}
+          >
             Try again
           </button>
         </div>
       ) : (
-        <p role="status" className="flex items-center gap-2 text-[13px] leading-[18px] text-muted">
+        <p
+          role="status"
+          className="flex items-center gap-2 text-[13px] leading-4.5 text-muted"
+        >
           {!isSaving && !isDirty ? (
-            <Check aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+            <Check
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0"
+              strokeWidth={1.5}
+            />
           ) : null}
           {statusText}
         </p>

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   addQuestion, addLesson, addLessonResource, allTables, createGroup, createRoadmap, createTopic, db,
   deleteLesson, deleteLessonResource, getQuestionEditorData, getTopicPage, reorderLessons, setLessonDone,
-  updateLesson, updateLessonResource, updateTopic,
+  getTopicLessonResource, updateLesson, updateLessonResource, updateTopic,
 } from '../src/lib/data'
 import { withHttps } from '../src/lib/format'
 
@@ -105,6 +105,8 @@ describe('lessons and lesson resources', () => {
       ['Renamed', 'other'],
       ['Edited notes', 'docs'],
     ])
+    expect((await getTopicLessonResource(t.id, document.id))?.lesson.id).toBe(first.id)
+    expect(await getTopicLessonResource('missing-topic', document.id)).toBeNull()
     await expect(addLessonResource(first.id, {
       source: 'file',
       title: 'Too large',

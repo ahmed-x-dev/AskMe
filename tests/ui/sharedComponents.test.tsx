@@ -195,7 +195,34 @@ describe("AppLayout navigation", () => {
     expect(primaryNavigation.querySelector('a[href="/review"]')?.hasAttribute("aria-current")).toBe(false)
     expect(container.querySelectorAll("main")).toHaveLength(1)
     expect(container.querySelector("main header, main nav")).toBeNull()
-    expect(container.querySelector('header a[href="/"]:not([aria-label])')?.className).toContain("min-h-12")
+    expect(container.querySelector('[data-brand="askme"]')).toBeNull()
+  })
+
+  it.each(["/", "/review", "/settings"])(
+    "shows the AskMe brand on %s",
+    (pathname) => {
+      mockRoute.pathname = pathname
+      render(
+        <AppLayout theme="light" setTheme={vi.fn()}>
+          <h1>Primary page</h1>
+        </AppLayout>,
+      )
+
+      expect(container.querySelector('[data-brand="askme"]')?.textContent).toContain(
+        "AskMe",
+      )
+    },
+  )
+
+  it("hides the AskMe brand on topic and quiz pages", () => {
+    mockRoute.pathname = "/topic/topic-1/quiz"
+    render(
+      <AppLayout theme="light" setTheme={vi.fn()}>
+        <h1>Quiz</h1>
+      </AppLayout>,
+    )
+
+    expect(container.querySelector('[data-brand="askme"]')).toBeNull()
   })
 })
 

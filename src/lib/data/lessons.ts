@@ -1,6 +1,12 @@
 import { db } from './db'
 import { byOrder, cleanTitle, cleanUrl, newId, nextOrder } from './util'
-import { MAX_LESSON_FILE_SIZE_BYTES, type Lesson, type LessonResource, type ResourceKind } from '../../types/study'
+import {
+  MAX_LESSON_FILE_SIZE_BYTES,
+  type Lesson,
+  type LessonResource,
+  type ResourceKind,
+  type Topic,
+} from '../../types/study'
 
 export type LessonResourceInput =
   | { source: 'link'; title: string; kind: ResourceKind; url: string }
@@ -12,6 +18,32 @@ export type LessonResourceInput =
       size: number
       fileData: string
     }
+
+export interface TopicLessonResourceData {
+  topic: Topic
+  lesson: Lesson
+  resource: LessonResource
+}
+
+/** Finds one resource only within lessons owned by the requested topic. */
+export async function getTopicLessonResource(
+  topicId: string,
+  resourceId: string,
+): Promise<TopicLessonResourceData | null> {
+  const topic = await db.topics.get(topicId)
+
+  if (!topic) return null
+
+  const lessons = await listLessons(topicId)
+
+  for (const lesson of lessons) {
+    const resource = lesson.resources.find((item) => item.id === resourceId)
+
+    if (resource) return { topic, lesson, resource }
+  }
+
+  return null
+}
 
 /** Returns a topic's lessons in display order. */
 export async function listLessons(topicId: string): Promise<Lesson[]> {

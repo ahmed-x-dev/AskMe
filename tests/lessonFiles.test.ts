@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { prepareLessonFile } from "../src/lib/lessonFiles";
+import {
+  isMarkdownLessonFile,
+  prepareLessonFile,
+  readLessonMarkdown,
+} from "../src/lib/lessonFiles";
 
 describe("lesson document files", () => {
   it("encodes a device file with its name and document type", async () => {
@@ -21,5 +25,24 @@ describe("lesson document files", () => {
     await expect(prepareLessonFile(file, "Notes")).rejects.toThrow(
       "Choose a PDF, TXT, Markdown, or Word document.",
     );
+  });
+
+  it("detects and decodes saved Markdown lesson documents as UTF-8", () => {
+    const content = "# Résumé";
+    const bytes = new TextEncoder().encode(content);
+    const binary = String.fromCharCode(...bytes);
+    const resource = {
+      id: "resource-id",
+      title: "Study notes",
+      kind: "docs" as const,
+      source: "file" as const,
+      fileName: "notes.markdown",
+      mimeType: "text/plain",
+      size: bytes.length,
+      fileData: btoa(binary),
+    };
+
+    expect(isMarkdownLessonFile(resource)).toBe(true);
+    expect(readLessonMarkdown(resource)).toBe(content);
   });
 });

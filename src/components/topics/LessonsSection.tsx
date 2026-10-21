@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import {
   ArrowDown,
   ArrowUp,
@@ -31,7 +32,12 @@ import {
   updateLessonResource,
   type LessonResourceInput,
 } from "@/lib/data";
-import { downloadLessonFile, formatFileSize, openLessonFile } from "@/lib/lessonFiles";
+import {
+  downloadLessonFile,
+  formatFileSize,
+  isMarkdownLessonFile,
+  openLessonFile,
+} from "@/lib/lessonFiles";
 import { plural } from "@/lib/format";
 import type { Lesson, LessonResource, ResourceKind } from "@/types/study";
 import { LessonResourceDialog } from "./LessonResourceDialog";
@@ -214,19 +220,28 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                         <div className="min-w-0 flex-1">
                           {resource.source === "link" ? (
                             isSafeLink(resource.url) ? (
-                              <a
-                                href={resource.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex min-w-0 items-start gap-2 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
-                              >
-                                <span className="min-w-0 flex-1 wrap-break-word">{resource.title}</span>
-                                <ExternalLink
-                                  aria-hidden="true"
-                                  className="mt-0.5 h-4 w-4 shrink-0"
-                                  strokeWidth={1.5}
-                                />
-                              </a>
+                              resource.kind === "video" ? (
+                                <Link
+                                  href={`/topic/${topicId}/resource/${resource.id}`}
+                                  className="min-w-0 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                >
+                                  {resource.title}
+                                </Link>
+                              ) : (
+                                <a
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex min-w-0 items-start gap-2 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                >
+                                  <span className="min-w-0 flex-1 wrap-break-word">{resource.title}</span>
+                                  <ExternalLink
+                                    aria-hidden="true"
+                                    className="mt-0.5 h-4 w-4 shrink-0"
+                                    strokeWidth={1.5}
+                                  />
+                                </a>
+                              )
                             ) : (
                               <span className="wrap-break-word text-[14px] font-medium leading-5 text-muted">
                                 {resource.title}
@@ -234,13 +249,22 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                             )
                           ) : (
                             <div className="flex items-start gap-2">
-                              <button
-                                type="button"
-                                onClick={() => void run(async () => openLessonFile(resource))}
-                                className="min-w-0 wrap-break-word text-start text-[14px] font-medium leading-5 text-fg hover:underline"
-                              >
-                                {resource.title}
-                              </button>
+                              {isMarkdownLessonFile(resource) ? (
+                                <Link
+                                  href={`/topic/${topicId}/resource/${resource.id}`}
+                                  className="min-w-0 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                >
+                                  {resource.title}
+                                </Link>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => void run(async () => openLessonFile(resource))}
+                                  className="min-w-0 wrap-break-word text-start text-[14px] font-medium leading-5 text-fg hover:underline"
+                                >
+                                  {resource.title}
+                                </button>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => void run(async () => downloadLessonFile(resource))}

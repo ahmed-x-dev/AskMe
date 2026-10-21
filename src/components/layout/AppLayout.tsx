@@ -4,7 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, type ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, CalendarCheck, Map, Moon, Settings, Sun, type LucideIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarCheck,
+  Map,
+  Moon,
+  Settings,
+  Sun,
+  type LucideIcon,
+} from "lucide-react";
 import { countDue } from "@/lib/data";
 import { iconButton, pageContainer } from "@/components/ui/styles";
 
@@ -52,7 +60,8 @@ const NAV_ITEMS: NavItem[] = [
 export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const pathname = usePathname();
   const dueCount = useLiveQuery(() => countDue(), []) ?? 0;
-  const isHomePage = pathname === "/";
+  const isHomePage =
+    pathname === "/" || pathname === "/review" || pathname === "/settings";
   /** Pages that carry their own back link do not need the generic one. */
   const hasOwnBackLink =
     pathname.startsWith("/topic/") || /^\/roadmap\/[^/]+\/quiz/.test(pathname);
@@ -77,28 +86,38 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   return (
     <div className="min-h-screen w-full bg-bg text-fg transition-colors duration-200">
       <header className="sticky top-0 z-30 border-b border-line bg-bg">
-        <div className={`${pageContainer} flex items-center gap-2 py-3 md:gap-4`}>
+        <div
+          className={`${pageContainer} flex items-center gap-2 py-3 md:gap-4`}
+        >
           {!isHomePage && !hasOwnBackLink ? (
             <Link
               href="/"
               aria-label="Back to roadmaps"
               className={`${iconButton} text-muted`}
             >
-              <ArrowLeft aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              <ArrowLeft
+                aria-hidden="true"
+                className="h-5 w-5"
+                strokeWidth={1.5}
+              />
             </Link>
           ) : null}
-
-          <Link href="/" className="flex min-h-12 min-w-0 items-center gap-3 rounded-2xl">
-            <span
-              aria-hidden="true"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[16px] font-medium text-on-accent"
+          {isHomePage ? (
+            <Link
+              href="/"
+              className="flex min-h-12 min-w-0 items-center gap-3 rounded-2xl"
             >
-              A
-            </span>
-            <span className="min-w-0 text-[16px] font-medium leading-6 text-fg">
-              AskMe
-            </span>
-          </Link>
+              <span
+                aria-hidden="true"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[16px] font-medium text-on-accent"
+              >
+                A
+              </span>
+              <span className="min-w-0 text-[16px] font-medium leading-6 text-fg">
+                AskMe
+              </span>
+            </Link>
+          ) : null}
 
           <nav
             aria-label="Primary navigation"
@@ -119,7 +138,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 {href === "/review" && dueCount > 0 ? (
                   <span
                     aria-label={`${dueCount} due`}
-                    className="rounded-full bg-accent px-2 py-0.5 text-[13px] font-medium leading-[18px] text-on-accent tabular-nums"
+                    className="rounded-full bg-accent px-2 py-0.5 text-[13px] font-medium leading-4.5 text-on-accent tabular-nums"
                   >
                     {dueCount}
                   </span>
@@ -138,7 +157,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
             >
               {theme === "light" ? (
-                <Moon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                <Moon
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.5}
+                />
               ) : (
                 <Sun aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
               )}
@@ -148,7 +171,9 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
       </header>
 
       <AppThemeContext value={{ theme, setTheme }}>
-        <main className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}>
+        <main
+          className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}
+        >
           {children}
         </main>
       </AppThemeContext>
@@ -163,18 +188,22 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
               key={href}
               href={href}
               aria-current={currentNavigation(href)}
-              className={`relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[13px] font-medium leading-[18px] transition-colors duration-150 ${
+              className={`relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[13px] font-medium leading-4.5 transition-colors duration-150 ${
                 isActive(href)
                   ? "bg-card text-accent-text"
                   : "text-muted hover:bg-card"
               }`}
             >
               <span className="relative">
-                <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                <Icon
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.5}
+                />
                 {href === "/review" && dueCount > 0 ? (
                   <span
                     aria-label={`${dueCount} due`}
-                    className="absolute -end-2 -top-1.5 min-w-4 rounded-full bg-accent px-1 text-center text-[11px] font-medium leading-4 text-on-accent tabular-nums"
+                    className="absolute -inset-e-2 -top-1.5 min-w-4 rounded-full bg-accent px-1 text-center text-[11px] font-medium leading-4 text-on-accent tabular-nums"
                   >
                     {dueCount}
                   </span>

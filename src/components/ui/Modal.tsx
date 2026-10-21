@@ -11,14 +11,21 @@ type ModalProps = {
 };
 
 /** A viewport-bounded native modal that restores focus and blocks dismissal while busy. */
-export function Modal({ titleId, isBusy = false, onClose, children }: ModalProps) {
+export function Modal({
+  titleId,
+  isBusy = false,
+  onClose,
+  children,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     previousFocusRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
 
     if (dialog && !dialog.open) {
       dialog.showModal();

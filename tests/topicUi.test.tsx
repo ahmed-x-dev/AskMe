@@ -3,6 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NotesSection } from "../src/components/topics/NotesSection";
 import { TopicPage } from "../src/components/topics/TopicPage";
+import { TopicResourcePage } from "../src/components/topics/TopicResourcePage";
 import { QuestionEditorForm } from "../src/components/questions/QuestionEditorForm";
 import {
   addQuestion,
@@ -16,10 +17,10 @@ import {
   setLessonDone,
 } from "../src/lib/data";
 
-const route = vi.hoisted(() => ({ topicId: "" }));
+const route = vi.hoisted(() => ({ topicId: "", resourceId: "" }));
 
 vi.mock("next/navigation", () => ({
-  useParams: () => ({ id: route.topicId }),
+  useParams: () => ({ id: route.topicId, resourceId: route.resourceId }),
   useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
 }));
 
@@ -33,6 +34,7 @@ beforeEach(async () => {
     for (const table of allTables()) await table.clear();
   });
   route.topicId = "";
+  route.resourceId = "";
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -90,6 +92,12 @@ describe("topic learning page", () => {
       url: "https://react.dev/learn/state",
       kind: "docs",
     });
+    const videoResource = await addLessonResource(lesson.id, {
+      source: "link",
+      title: "State in practice",
+      url: "https://youtu.be/dQw4w9WgXcQ",
+      kind: "video",
+    });
     await setLessonDone(lesson.id, true);
     await addQuestion(topic.id, {
       type: "mcq",
@@ -117,6 +125,7 @@ describe("topic learning page", () => {
       ),
     ).toHaveLength(1);
     expect(container.querySelector(`a[href="/topic/${topic.id}/quiz"]`)).not.toBeNull();
+    expect(container.querySelector(`a[href="/topic/${topic.id}/resource/${videoResource.id}"]`)).not.toBeNull();
     const resourceTitle = [...container.querySelectorAll("a span")].find(
       (element) => element.textContent === resource.title,
     );
@@ -153,7 +162,7 @@ describe("topic learning page", () => {
 
     act(() => root.render(<NotesSection topicId={topic.id} notes={undefined} />));
     const textarea = container.querySelector("textarea")!;
-    expect(textarea.className).toContain("max-w-[72ch]");
+    expect(textarea.className).toContain("w-full");
     expect(textarea.placeholder).toContain("Write notes in Markdown");
 
     const setter = Object.getOwnPropertyDescriptor(
@@ -179,5 +188,65 @@ describe("topic learning page", () => {
     });
     await wait(50);
     expect((await db.topics.get(topic.id))?.notes).toBe("# Updated note");
+  });
+
+  it("opens Markdown and video resources on their dedicated page", async () => {
+    const roadmap = await createRoadmap({ title: "React" });
+    const topic = await createTopic({ roadmapId: roadmap.id, title: "Hooks" });
+    const lesson = await addLesson(topic.id, "Read the guide");
+    const original = "# Original title\n\nOld text";
+    const resource = await addLessonResource(lesson.id, {
+      source: "file",
+      title: "Hook guide",
+      fileName: "hooks.md",
+      mimeType: "text/markdown",
+      size: new TextEncoder().encode(original).length,
+      fileData: btoa(original),
+    });
+    const video = await addLessonResource(lesson.id, {
+      source: "link",
+      title: "State in practice",
+      url: "https://youtu.be/dQw4w9WgXcQ",
+      kind: "video",
+    });
+    route.topicId = topic.id;
+    route.resourceId = resource.id;
+
+    act(() => root.render(<TopicResourcePage />));
+    await wait();
+    expect(container.querySelector("h1")?.textContent).toBe("Hook guide");
+    expect(container.querySelector("h3")?.textContent).toBe("Original title");
+    expect(container.querySelector(`a[href="/topic/${topic.id}"]`)?.textContent).toContain("Back to topic");
+
+    await click(
+      [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Document view"] button')]
+        .find((button) => button.textContent === "Edit"),
+    );
+    const textarea = container.querySelector("textarea")!;
+    expect(textarea.className).toContain("min-h-[65vh]");
+    expect(textarea.className).toContain("w-full");
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLTextAreaElement.prototype,
+      "value",
+    )?.set;
+    await act(async () => {
+      setter?.call(textarea, "# Updated title\n\nNew text");
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const saveButton = getButton("Save changes");
+    expect(saveButton?.disabled).toBe(false);
+    await click(saveButton);
+
+    expect(container.querySelector("h3")?.textContent).toBe("Updated title");
+    const updated = (await db.lessons.get(lesson.id))?.resources[0];
+    expect(updated?.source === "file" && atob(updated.fileData)).toBe("# Updated title\n\nNew text");
+
+    route.resourceId = video.id;
+    act(() => root.render(<TopicResourcePage />));
+    await wait();
+    expect(container.querySelector("iframe")?.getAttribute("src")).toBe(
+      "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+    );
+    expect(container.querySelector("iframe")?.getAttribute("title")).toBe(video.title);
   });
 });
