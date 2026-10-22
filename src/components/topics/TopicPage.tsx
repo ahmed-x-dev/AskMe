@@ -11,11 +11,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import {
-  buttonPrimary,
-  buttonSecondary,
-  buttonSecondaryCompact,
-} from "@/components/ui/styles";
+import { buttonPrimary, buttonSecondaryCompact } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import {
   deleteTopic,
@@ -154,12 +150,6 @@ export function TopicPage() {
               Add your first question
             </Link>
           )}
-          {questions.length > 0 ? (
-            <Link href={`/topic/${topic.id}/q/new`} className={buttonSecondary}>
-              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Add question
-            </Link>
-          ) : null}
         </div>
 
         <section

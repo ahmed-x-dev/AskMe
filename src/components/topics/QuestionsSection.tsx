@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, CircleHelp, Sparkles } from "lucide-react";
+import { ChevronRight, CircleHelp, Plus, Sparkles } from "lucide-react";
 import { buttonSecondary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import type { Question } from "@/types/study";
-import { GenerateQuestionsDialog, type GenerationContext } from "./GenerateQuestionsDialog";
+import {
+  GenerateQuestionsDialog,
+  type GenerationContext,
+} from "./GenerateQuestionsDialog";
 
-const TYPE_BADGE: Record<Question["type"], { label: string; className: string }> = {
+const TYPE_BADGE: Record<
+  Question["type"],
+  { label: string; className: string }
+> = {
   mcq: { label: "MCQ", className: "bg-ok-bg text-ok-fg" },
   essay: { label: "Essay", className: "bg-essay-bg text-essay-fg" },
   "true-false": { label: "True/False", className: "bg-ok-bg text-ok-fg" },
@@ -20,11 +26,18 @@ type QuestionsSectionProps = {
   topicId: string;
   questions: Question[];
   /** What the AI is told about the topic. `topicId` and `existingQuestions` are filled in here. */
-  topicContext: Pick<GenerationContext, "topicTitle" | "roadmapTitle" | "groupTitle" | "notes">;
+  topicContext: Pick<
+    GenerationContext,
+    "topicTitle" | "roadmapTitle" | "groupTitle" | "notes"
+  >;
 };
 
 /** The questions of one topic, each linking to the editor, plus the "Add question" button. */
-export function QuestionsSection({ topicId, questions, topicContext }: QuestionsSectionProps) {
+export function QuestionsSection({
+  topicId,
+  questions,
+  topicContext,
+}: QuestionsSectionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const typeCounts = questions.reduce(
     (counts, question) => {
@@ -35,10 +48,17 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
   );
 
   return (
-    <section id="questions-section" aria-labelledby="questions-heading" className="flex flex-col gap-4">
+    <section
+      id="questions-section"
+      aria-labelledby="questions-heading"
+      className="flex flex-col gap-4"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="questions-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+          <h2
+            id="questions-heading"
+            className="text-[18px] font-medium leading-[26px] text-fg"
+          >
             Questions
           </h2>
           <p className="text-[13px] leading-[18px] text-muted tabular-nums">
@@ -49,12 +69,23 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {questions.length > 0 ? (
+            <Link href={`/topic/${topicId}/q/new`} className={buttonSecondary}>
+              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              Add question
+            </Link>
+          ) : null}
+
           <button
             type="button"
             onClick={() => setIsGenerating(true)}
             className={buttonSecondary}
           >
-            <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+            <Sparkles
+              aria-hidden="true"
+              className="h-5 w-5"
+              strokeWidth={1.5}
+            />
             Generate with AI
           </button>
         </div>
@@ -63,11 +94,18 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
       {questions.length === 0 ? (
         <div className="rounded-2xl bg-card p-6 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
-            <CircleHelp aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
+            <CircleHelp
+              aria-hidden="true"
+              className="h-6 w-6"
+              strokeWidth={1.5}
+            />
           </div>
-          <h3 className="mt-4 text-[16px] font-medium leading-6 text-fg">No questions yet</h3>
+          <h3 className="mt-4 text-[16px] font-medium leading-6 text-fg">
+            No questions yet
+          </h3>
           <p className="mx-auto mt-2 max-w-[40ch] text-[16px] leading-6 text-muted">
-            Write your own question or ask AI to draft a few from your notes. You can review every suggestion before adding it.
+            Write your own question or ask AI to draft a few from your notes.
+            You can review every suggestion before adding it.
           </p>
         </div>
       ) : (
@@ -110,7 +148,11 @@ export function QuestionsSection({ topicId, questions, topicContext }: Questions
 
       {isGenerating ? (
         <GenerateQuestionsDialog
-          context={{ ...topicContext, topicId, existingQuestions: questions.map((question) => question.text) }}
+          context={{
+            ...topicContext,
+            topicId,
+            existingQuestions: questions.map((question) => question.text),
+          }}
           onClose={() => setIsGenerating(false)}
         />
       ) : null}
