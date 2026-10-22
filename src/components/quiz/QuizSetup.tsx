@@ -125,7 +125,7 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
                   type="checkbox"
                   checked={mistakesOnly}
                   onChange={(event) => setMistakesOnly(event.target.checked)}
-                  className="h-5 w-5 shrink-0 accent-(--accent)"
+                  className="h-5 w-5 shrink-0 accent-accent"
                 />
                 <span>
                   Only questions I got wrong last time{" "}
