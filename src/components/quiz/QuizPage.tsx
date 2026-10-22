@@ -7,7 +7,12 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useHeaderBackLink } from "@/components/layout/AppLayout";
 import { shuffle } from "@/features/quiz";
 import { buttonPrimary } from "@/components/ui/styles";
-import { completeTopicsFromQuiz, getQuizSource, type QuizAnswer, type QuizScope } from "@/lib/data";
+import {
+  completeTopicsFromQuiz,
+  getQuizSource,
+  type QuizAnswer,
+  type QuizScope,
+} from "@/lib/data";
 import type { Question, Topic } from "@/types/study";
 import { QuizResults } from "./QuizResults";
 import { QuizRunner } from "./QuizRunner";
@@ -35,7 +40,9 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
   const source = useLiveQuery(
     () =>
       getQuizSource(
-        kind === "topic" ? { kind, topicId: topicId ?? "" } : { kind, roadmapId: roadmapId ?? "", groupId },
+        kind === "topic"
+          ? { kind, topicId: topicId ?? "" }
+          : { kind, roadmapId: roadmapId ?? "", groupId },
       ),
     [kind, topicId, roadmapId, groupId],
   );
@@ -46,7 +53,12 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 
   if (source === undefined) {
     return (
-      <div role="status" aria-busy="true" aria-label="Loading quiz" className="mx-auto flex w-full flex-col gap-4">
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading quiz"
+        className="mx-auto flex w-full flex-col gap-4"
+      >
         <div className="h-12 w-40 animate-pulse rounded-2xl bg-card" />
         <div className="h-48 animate-pulse rounded-2xl bg-card" />
       </div>
@@ -57,7 +69,9 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Quiz not found</h1>
-        <p className="mt-2 text-base leading-6 text-muted">What you wanted to practice may have been deleted.</p>
+        <p className="mt-2 text-base leading-6 text-muted">
+          What you wanted to practice may have been deleted.
+        </p>
         <Link href="/" className={`mt-6 ${buttonPrimary}`}>
           Back to roadmaps
         </Link>
@@ -79,7 +93,8 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
     );
   }
 
-  const start = (queue: Question[]) => setPhase({ name: "running", queue, runId: Date.now() });
+  const start = (queue: Question[]) =>
+    setPhase({ name: "running", queue, runId: Date.now() });
 
   const handleFinish = async (
     queue: Question[],
@@ -94,10 +109,20 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
       markedDone = await completeTopicsFromQuiz(answers);
     } catch (error) {
       completionError =
-        error instanceof Error ? error.message : "Try again later from the topic page.";
+        error instanceof Error
+          ? error.message
+          : "Try again later from the topic page.";
     }
 
-    setPhase({ name: "results", queue, answers, elapsedSeconds, markedDone, historyErrors, completionError });
+    setPhase({
+      name: "results",
+      queue,
+      answers,
+      elapsedSeconds,
+      markedDone,
+      historyErrors,
+      completionError,
+    });
   };
 
   if (phase.name === "running") {
@@ -114,7 +139,11 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
   }
 
   if (phase.name === "results") {
-    const missedIds = new Set(phase.answers.filter((answer) => !answer.correct).map((answer) => answer.questionId));
+    const missedIds = new Set(
+      phase.answers
+        .filter((answer) => !answer.correct)
+        .map((answer) => answer.questionId),
+    );
 
     return (
       <QuizResults
@@ -127,7 +156,13 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
         backHref={source.backHref}
         backLabel={source.backLabel}
         onRestart={() => start(shuffle(phase.queue))}
-        onRetryMistakes={() => start(shuffle(phase.queue.filter((question) => missedIds.has(question.id))))}
+        onRetryMistakes={() =>
+          start(
+            shuffle(
+              phase.queue.filter((question) => missedIds.has(question.id)),
+            ),
+          )
+        }
       />
     );
   }
@@ -139,7 +174,14 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
 export function TopicQuizPage() {
   const params = useParams<{ id: string }>();
 
-  return <QuizPage scope={{ kind: "topic", topicId: typeof params.id === "string" ? params.id : "" }} />;
+  return (
+    <QuizPage
+      scope={{
+        kind: "topic",
+        topicId: typeof params.id === "string" ? params.id : "",
+      }}
+    />
+  );
 }
 
 function RoadmapQuizContent() {
@@ -160,7 +202,16 @@ function RoadmapQuizContent() {
 /** The quiz for `/roadmap/[id]/quiz`, or one group of it with `?group=<id>`. */
 export function RoadmapQuizPage() {
   return (
-    <Suspense fallback={<div role="status" aria-busy="true" aria-label="Loading quiz" className="h-48 animate-pulse rounded-2xl bg-card" />}>
+    <Suspense
+      fallback={
+        <div
+          role="status"
+          aria-busy="true"
+          aria-label="Loading quiz"
+          className="h-48 animate-pulse rounded-2xl bg-card"
+        />
+      }
+    >
       <RoadmapQuizContent />
     </Suspense>
   );

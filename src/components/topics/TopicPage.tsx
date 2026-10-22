@@ -31,7 +31,9 @@ export function TopicPage() {
   const page = useLiveQuery(() => getTopicPage(topicId), [topicId]);
   const router = useRouter();
   useHeaderBackLink(
-    page ? { href: `/roadmap/${page.roadmap.id}`, label: page.roadmap.title } : null,
+    page
+      ? { href: `/roadmap/${page.roadmap.id}`, label: page.roadmap.title }
+      : null,
   );
 
   const [isRenaming, setIsRenaming] = useState(false);

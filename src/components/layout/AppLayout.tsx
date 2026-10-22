@@ -20,10 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { countDue } from "@/lib/data";
-import {
-  iconButton,
-  pageContainer,
-} from "@/components/ui/styles";
+import { iconButton, pageContainer } from "@/components/ui/styles";
 
 export type Theme = "light" | "dark";
 
@@ -44,8 +41,9 @@ type HeaderBackLinkContextValue = {
   setHeaderBackLink: HeaderBackLinkSetter;
 };
 
-const HeaderBackLinkContext =
-  createContext<HeaderBackLinkContextValue | null>(null);
+const HeaderBackLinkContext = createContext<HeaderBackLinkContextValue | null>(
+  null,
+);
 
 /** Registers a contextual back link in the shared application header. */
 export function useHeaderBackLink(link: HeaderBackLink | null): void {
