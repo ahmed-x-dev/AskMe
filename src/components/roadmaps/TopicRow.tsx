@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSortable } from "@dnd-kit/sortable";
 import { ChevronDown, FolderInput, GripVertical, Pencil, Trash2 } from "lucide-react";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import { focusRing } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import type { Topic, TopicStatus } from "@/types/study";
 
@@ -96,44 +97,55 @@ export function TopicRow({ topic, number, questionCount, actions }: TopicRowProp
           : undefined,
         transition,
       }}
-      className={`flex items-center gap-3 rounded-2xl bg-card p-3 ${isDragging ? "opacity-40" : ""}`}
+      className={`group relative flex items-center gap-3 rounded-2xl bg-card p-3 transition-colors hover:bg-card-hover ${
+        isDragging ? "opacity-40" : ""
+      }`}
     >
+      <Link
+        href={`/topic/${topic.id}`}
+        aria-label={`Open ${topic.title}`}
+        className={`absolute inset-0 z-10 rounded-2xl ${focusRing}`}
+      />
+
       <button
         type="button"
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
         aria-label={`Reorder ${topic.title}`}
-        className="flex h-11 w-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-[14px] bg-bg text-muted transition-colors hover:text-fg active:cursor-grabbing"
+        className="relative z-20 flex h-11 w-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-[14px] bg-bg text-muted transition-colors hover:text-fg active:cursor-grabbing"
       >
         <GripVertical aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </button>
 
-      <span className="w-6 shrink-0 text-center text-[16px] text-muted tabular-nums">{number}</span>
+      <span className="pointer-events-none relative z-20 w-6 shrink-0 text-center text-[16px] text-muted tabular-nums">
+        {number}
+      </span>
 
-      <div className="min-w-0 flex-1">
-        <Link
-          href={`/topic/${topic.id}`}
-          className="flex min-h-12 w-full items-center py-2 wrap-break-word text-[16px] font-medium leading-6 text-fg hover:underline"
-        >
+      <div className="pointer-events-none relative z-20 min-w-0 flex-1">
+        <div className="flex min-h-12 w-full items-center py-2 wrap-break-word text-[16px] font-medium leading-6 text-fg group-hover:underline">
           {topic.title}
-        </Link>
+        </div>
         <div className="flex flex-wrap items-center gap-x-3">
-          <StatusSelect topic={topic} onChange={(status) => actions.onStatusChange(topic, status)} />
+          <div className="pointer-events-auto relative z-30">
+            <StatusSelect topic={topic} onChange={(status) => actions.onStatusChange(topic, status)} />
+          </div>
           <span className="text-[13px] leading-[18px] text-muted tabular-nums">
             {plural(questionCount, "question")}
           </span>
         </div>
       </div>
 
-      <ActionMenu
-        label={`Actions for ${topic.title}`}
-        items={[
-          { label: "Rename", icon: Pencil, onSelect: () => actions.onRename(topic) },
-          { label: "Move…", icon: FolderInput, onSelect: () => actions.onMove(topic) },
-          { label: "Delete", icon: Trash2, danger: true, onSelect: () => actions.onDelete(topic) },
-        ]}
-      />
+      <div className="pointer-events-auto relative z-30">
+        <ActionMenu
+          label={`Actions for ${topic.title}`}
+          items={[
+            { label: "Rename", icon: Pencil, onSelect: () => actions.onRename(topic) },
+            { label: "Move…", icon: FolderInput, onSelect: () => actions.onMove(topic) },
+            { label: "Delete", icon: Trash2, danger: true, onSelect: () => actions.onDelete(topic) },
+          ]}
+        />
+      </div>
     </li>
   );
 }
