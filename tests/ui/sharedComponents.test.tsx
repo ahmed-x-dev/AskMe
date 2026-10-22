@@ -9,7 +9,10 @@ import { Modal } from "../../src/components/ui/Modal";
 import { NameDialog } from "../../src/components/ui/NameDialog";
 import { ProgressBar } from "../../src/components/ui/ProgressBar";
 import { SegmentedControl } from "../../src/components/ui/SegmentedControl";
-import { AppLayout } from "../../src/components/layout/AppLayout";
+import {
+  AppLayout,
+  useHeaderBackLink,
+} from "../../src/components/layout/AppLayout";
 import { Check, Pencil, Trash2 } from "lucide-react";
 
 const mockRoute = vi.hoisted(() => ({ pathname: "/" }))
@@ -181,6 +184,39 @@ describe("ActionMenu", () => {
 })
 
 describe("AppLayout navigation", () => {
+  it("renders a page-registered back link in the shared header", () => {
+    mockRoute.pathname = "/topic/topic-1";
+
+    function TopicPageHeader() {
+      useHeaderBackLink({ href: "/roadmap/roadmap-1", label: "React" });
+      return <h1>Hooks</h1>;
+    }
+
+    render(
+      <AppLayout theme="light" setTheme={vi.fn()}>
+        <TopicPageHeader />
+      </AppLayout>,
+    );
+
+    const backLink = container.querySelector<HTMLAnchorElement>(
+      'header a[href="/roadmap/roadmap-1"][aria-label="Back to React"]',
+    );
+    expect(backLink?.textContent).toBe("");
+    expect(backLink?.querySelector("svg")).not.toBeNull();
+    expect(container.querySelector("main a[href=\"/roadmap/roadmap-1\"]")).toBeNull();
+
+    mockRoute.pathname = "/topic/topic-2";
+    render(
+      <AppLayout theme="light" setTheme={vi.fn()}>
+        <h1>Loading topic</h1>
+      </AppLayout>,
+    );
+
+    expect(
+      container.querySelector('header a[aria-label="Back to roadmaps"] svg'),
+    ).not.toBeNull();
+  });
+
   it("keeps Roadmaps active for roadmap detail routes", () => {
     mockRoute.pathname = "/roadmap/roadmap-1"
     render(

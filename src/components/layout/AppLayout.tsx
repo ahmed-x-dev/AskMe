@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useContext, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   ArrowLeft,
@@ -14,7 +20,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { countDue } from "@/lib/data";
-import { iconButton, pageContainer } from "@/components/ui/styles";
+import {
+  iconButton,
+  pageContainer,
+} from "@/components/ui/styles";
 
 export type Theme = "light" | "dark";
 
@@ -25,6 +34,33 @@ export type ThemeSetter = (
 type AppTheme = { theme: Theme; setTheme: ThemeSetter };
 
 const AppThemeContext = createContext<AppTheme | null>(null);
+
+export type HeaderBackLink = { href: string; label: string };
+
+type RegisteredHeaderBackLink = HeaderBackLink & { pathname: string };
+type HeaderBackLinkSetter = (link: RegisteredHeaderBackLink | null) => void;
+type HeaderBackLinkContextValue = {
+  pathname: string;
+  setHeaderBackLink: HeaderBackLinkSetter;
+};
+
+const HeaderBackLinkContext =
+  createContext<HeaderBackLinkContextValue | null>(null);
+
+/** Registers a contextual back link in the shared application header. */
+export function useHeaderBackLink(link: HeaderBackLink | null): void {
+  const context = useContext(HeaderBackLinkContext);
+  const setHeaderBackLink = context?.setHeaderBackLink;
+  const pathname = context?.pathname;
+  const href = link?.href;
+  const label = link?.label;
+
+  useEffect(() => {
+    setHeaderBackLink?.(
+      href && label && pathname ? { href, label, pathname } : null,
+    );
+  }, [href, label, pathname, setHeaderBackLink]);
+}
 
 /** Reads the active theme and setter provided by the shared application shell. */
 export function useAppTheme(): AppTheme {
@@ -59,12 +95,13 @@ const NAV_ITEMS: NavItem[] = [
  *  bottom navigation bar on small screens. */
 export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
   const pathname = usePathname();
+  const [registeredBackLink, setRegisteredBackLink] =
+    useState<RegisteredHeaderBackLink | null>(null);
+  const headerBackLink =
+    registeredBackLink?.pathname === pathname ? registeredBackLink : null;
   const dueCount = useLiveQuery(() => countDue(), []) ?? 0;
   const isHomePage =
     pathname === "/" || pathname === "/review" || pathname === "/settings";
-  /** Pages that carry their own back link do not need the generic one. */
-  const hasOwnBackLink =
-    pathname.startsWith("/topic/") || /^\/roadmap\/[^/]+\/quiz/.test(pathname);
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -89,7 +126,20 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
         <div
           className={`${pageContainer} flex items-center gap-2 py-3 md:gap-4`}
         >
-          {!isHomePage && !hasOwnBackLink ? (
+          {headerBackLink ? (
+            <Link
+              href={headerBackLink.href}
+              aria-label={`Back to ${headerBackLink.label}`}
+              title={`Back to ${headerBackLink.label}`}
+              className={`${iconButton} text-muted`}
+            >
+              <ArrowLeft
+                aria-hidden="true"
+                className="h-5 w-5 shrink-0 rtl:rotate-180"
+                strokeWidth={1.5}
+              />
+            </Link>
+          ) : !isHomePage ? (
             <Link
               href="/"
               aria-label="Back to roadmaps"
@@ -170,13 +220,17 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
         </div>
       </header>
 
-      <AppThemeContext value={{ theme, setTheme }}>
-        <main
-          className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}
-        >
-          {children}
-        </main>
-      </AppThemeContext>
+      <HeaderBackLinkContext
+        value={{ pathname, setHeaderBackLink: setRegisteredBackLink }}
+      >
+        <AppThemeContext value={{ theme, setTheme }}>
+          <main
+            className={`${pageContainer} flex flex-col gap-6 pb-28 pt-6 md:pb-12`}
+          >
+            {children}
+          </main>
+        </AppThemeContext>
+      </HeaderBackLinkContext>
 
       <nav
         aria-label="Primary navigation"

@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, Download, ExternalLink } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
+import { useHeaderBackLink } from "@/components/layout/AppLayout";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Markdown } from "@/components/ui/Markdown";
 import {
   buttonPrimary,
   buttonSecondary,
-  buttonSecondaryCompact,
   fieldClassName,
 } from "@/components/ui/styles";
 import { getTopicLessonResource, updateLessonResource } from "@/lib/data";
@@ -31,6 +30,9 @@ export function TopicResourcePage() {
   const topicId = typeof params.id === "string" ? params.id : "";
   const resourceId =
     typeof params.resourceId === "string" ? params.resourceId : "";
+  useHeaderBackLink(
+    topicId ? { href: `/topic/${topicId}`, label: "Back to topic" } : null,
+  );
   const data = useLiveQuery(
     () => getTopicLessonResource(topicId, resourceId),
     [topicId, resourceId],
@@ -59,30 +61,14 @@ export function TopicResourcePage() {
         <p className="text-base leading-6 text-muted">
           It may have been removed from this topic.
         </p>
-        <Link
-          href={topicId ? `/topic/${topicId}` : "/"}
-          className={buttonSecondaryCompact}
-        >
-          <ArrowLeft aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-          Back to topic
-        </Link>
       </section>
     );
   }
 
-  const { topic, lesson, resource } = data;
+  const { lesson, resource } = data;
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <Link href={`/topic/${topic.id}`} className={buttonSecondaryCompact}>
-        <ArrowLeft
-          aria-hidden="true"
-          className="h-5 w-5 rtl:rotate-180"
-          strokeWidth={1.5}
-        />
-        Back to topic
-      </Link>
-
       {resource.source === "file" ? (
         isMarkdownLessonFile(resource) ? (
           <MarkdownResource

@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useHeaderBackLink } from "@/components/layout/AppLayout";
 import { shuffle } from "@/features/quiz";
 import { buttonPrimary } from "@/components/ui/styles";
 import { completeTopicsFromQuiz, getQuizSource, type QuizAnswer, type QuizScope } from "@/lib/data";
@@ -37,6 +38,9 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
         kind === "topic" ? { kind, topicId: topicId ?? "" } : { kind, roadmapId: roadmapId ?? "", groupId },
       ),
     [kind, topicId, roadmapId, groupId],
+  );
+  useHeaderBackLink(
+    source ? { href: source.backHref, label: source.backLabel } : null,
   );
   const [phase, setPhase] = useState<Phase>({ name: "setup" });
 

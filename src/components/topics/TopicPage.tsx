@@ -4,14 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLiveQuery } from "dexie-react-hooks";
-import { ArrowLeft, BookOpen, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { BookOpen, Pencil, Play, Plus, Trash2 } from "lucide-react";
+import { useHeaderBackLink } from "@/components/layout/AppLayout";
 import { StatusSelect } from "@/components/roadmaps/TopicRow";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { buttonPrimary, buttonSecondaryCompact } from "@/components/ui/styles";
+import { buttonPrimary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
 import {
   deleteTopic,
@@ -29,6 +30,9 @@ export function TopicPage() {
   const topicId = typeof params.id === "string" ? params.id : "";
   const page = useLiveQuery(() => getTopicPage(topicId), [topicId]);
   const router = useRouter();
+  useHeaderBackLink(
+    page ? { href: `/roadmap/${page.roadmap.id}`, label: page.roadmap.title } : null,
+  );
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -87,19 +91,6 @@ export function TopicPage() {
     <section className="mx-auto flex w-full flex-col gap-8">
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-4.5 text-muted">
-          <Link
-            href={`/roadmap/${roadmap.id}`}
-            className={buttonSecondaryCompact}
-          >
-            <ArrowLeft
-              aria-hidden="true"
-              className="h-5 w-5 shrink-0 rtl:rotate-180"
-              strokeWidth={1.5}
-            />
-            <span className="max-w-[min(60vw,24rem)] truncate">
-              {roadmap.title}
-            </span>
-          </Link>
           {group ? (
             <>
               <span aria-hidden="true">/</span>

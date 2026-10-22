@@ -114,7 +114,7 @@ describe("topic learning page", () => {
     await wait();
 
     expect(container.querySelector("h1")?.textContent).toBe(topic.title);
-    expect(container.textContent).toContain(roadmap.title);
+    expect(container.textContent).not.toContain(roadmap.title);
     expect(container.textContent).toContain(group.title);
     expect(container.textContent).toContain("1 of 1 lesson completed");
     expect(container.textContent).toContain("Start quiz");
@@ -238,9 +238,7 @@ describe("topic learning page", () => {
     await wait();
     expect(container.querySelector("h1")?.textContent).toBe("Hook guide");
     expect(container.querySelector("h3")?.textContent).toBe("Original title");
-    expect(
-      container.querySelector(`a[href="/topic/${topic.id}"]`)?.textContent,
-    ).toContain("Back to topic");
+    expect(container.textContent).not.toContain("Back to topic");
 
     await click(
       [

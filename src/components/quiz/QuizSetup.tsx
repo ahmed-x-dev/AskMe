@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { buttonPrimary, buttonSecondaryCompact, fieldOnCardClassName } from "@/components/ui/styles";
+import { buttonPrimary, fieldOnCardClassName } from "@/components/ui/styles";
 import { buildQuizQueue, filterQuestions, type QuizQuestionType } from "@/features/quiz";
 import type { QuizSource } from "@/lib/data";
 import { plural } from "@/lib/format";
@@ -51,13 +49,6 @@ export function QuizSetup({ source, onStart }: QuizSetupProps) {
   return (
     <section className="mx-auto flex w-full flex-col gap-6">
       <header className="flex flex-col gap-4">
-        <Link
-          href={source.backHref}
-          className={buttonSecondaryCompact}
-        >
-          <ArrowLeft aria-hidden="true" className="h-5 w-5 shrink-0 rtl:rotate-180" strokeWidth={1.5} />
-          {source.backLabel}
-        </Link>
         <div className="min-w-0">
           <h1 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">{source.title}</h1>
           <p className="mt-1 wrap-break-word text-base leading-6 text-muted">
