@@ -56,7 +56,7 @@ export function TopicResourcePage() {
         <h1 className="text-[22px] font-medium leading-7">
           Resource not found
         </h1>
-        <p className="text-[16px] leading-6 text-muted">
+        <p className="text-base leading-6 text-muted">
           It may have been removed from this topic.
         </p>
         <Link
@@ -96,7 +96,7 @@ export function TopicResourcePage() {
               <h1 className="wrap-break-word text-[22px] font-medium leading-7">
                 {resource.title}
               </h1>
-              <p className="mt-1 text-[14px] leading-5 text-muted">
+              <p className="mt-1 text-sm leading-5 text-muted">
                 {lesson.title} · {resource.fileName}
               </p>
             </div>
@@ -157,7 +157,7 @@ function VideoResource({
         <h1 className="wrap-break-word text-[22px] font-medium leading-7">
           {resource.title}
         </h1>
-        <p className="mt-1 text-[14px] leading-5 text-muted">{lessonTitle}</p>
+        <p className="mt-1 text-sm leading-5 text-muted">{lessonTitle}</p>
       </header>
       {embedUrl ? (
         <div className="aspect-video w-full overflow-hidden rounded-2xl bg-card">
@@ -172,7 +172,7 @@ function VideoResource({
         </div>
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-2xl bg-card p-5">
-          <p className="text-[16px] leading-6 text-muted">
+          <p className="text-base leading-6 text-muted">
             This video host does not support in-app playback.
           </p>
           {isSafeLink(resource.url) ? (
@@ -241,7 +241,7 @@ function MarkdownResource({
           <h1 className="wrap-break-word text-[22px] font-medium leading-7">
             {resource.title}
           </h1>
-          <p className="mt-1 wrap-break-word text-[14px] leading-5 text-muted">
+          <p className="mt-1 wrap-break-word text-sm leading-5 text-muted">
             {resource.fileName}
           </p>
         </div>
@@ -258,8 +258,8 @@ function MarkdownResource({
               aria-pressed={mode === value}
               className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-4.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                 mode === value
-                  ? "bg-accent text-on-accent active:scale-[0.98]"
-                  : "text-muted hover:bg-card-hover hover:text-fg active:scale-[0.98]"
+                  ? "bg-accent text-on-accent active:scale-98"
+                  : "text-muted hover:bg-card-hover hover:text-fg active:scale-98"
               }`}
             >
               {value === "edit" ? "Edit" : "Preview"}
@@ -280,7 +280,7 @@ function MarkdownResource({
           {draft.trim() ? (
             <Markdown>{draft}</Markdown>
           ) : (
-            <p className="text-[16px] leading-6 text-muted">
+            <p className="text-base leading-6 text-muted">
               This document is empty.
             </p>
           )}

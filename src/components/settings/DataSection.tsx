@@ -127,20 +127,20 @@ export function DataSection() {
     >
       <h2
         id="data-heading"
-        className="text-[18px] font-medium leading-[26px] text-fg"
+        className="text-lg font-medium leading-6.5 text-fg"
       >
         Study data
       </h2>
-      <p className="mt-2 text-[16px] leading-6 text-muted">
+      <p className="mt-2 text-base leading-6 text-muted">
         Roadmaps and progress are stored in this browser, which may clear local
         data. A full backup is a ZIP containing your roadmaps and progress; it
         never contains your AI key.
       </p>
 
-      <h3 className="mt-5 text-[16px] font-medium leading-6 text-fg">
+      <h3 className="mt-5 text-base font-medium leading-6 text-fg">
         Full backup
       </h3>
-      <p className="mt-1 text-[13px] leading-[18px] text-muted">
+      <p className="mt-1 text-[13px] leading-4.5 text-muted">
         {lastBackupAt
           ? `Last downloaded: ${formatDate(lastBackupAt)}.`
           : "No backup downloaded yet."}{" "}
@@ -177,10 +177,10 @@ export function DataSection() {
         </button>
       </div>
 
-      <h3 className="mt-6 text-[16px] font-medium leading-6 text-fg">
+      <h3 className="mt-6 text-base font-medium leading-6 text-fg">
         Share one roadmap
       </h3>
-      <p className="mt-1 text-[13px] leading-[18px] text-muted">
+      <p className="mt-1 text-[13px] leading-4.5 text-muted">
         Export a JSON file from a roadmap card on the home page. It includes
         topics, links, and questions but not progress. Import adds a separate
         new roadmap; it does not replace existing data.
@@ -202,7 +202,7 @@ export function DataSection() {
       {status ? (
         <div
           role={status.kind === "error" ? "alert" : "status"}
-          className={`mt-3 flex items-start gap-2 text-[13px] leading-[18px] ${status.kind === "error" ? "text-bad-fg" : "text-accent-text"}`}
+          className={`mt-3 flex items-start gap-2 text-[13px] leading-4.5 ${status.kind === "error" ? "text-bad-fg" : "text-accent-text"}`}
         >
           {status.kind === "error" ? (
             <AlertCircle
@@ -237,7 +237,7 @@ export function DataSection() {
       >
         <h3
           id="reset-data-heading"
-          className="flex items-center gap-2 text-[16px] font-medium leading-6 text-bad-fg"
+          className="flex items-center gap-2 text-base font-medium leading-6 text-bad-fg"
         >
           <TriangleAlert
             aria-hidden="true"
@@ -246,7 +246,7 @@ export function DataSection() {
           />
           Reset all data
         </h3>
-        <p className="mt-2 text-[13px] leading-[18px] text-muted">
+        <p className="mt-2 text-[13px] leading-4.5 text-muted">
           Permanently deletes all roadmaps, topics, questions, and study
           progress from this browser. Your AI key and theme preference stay.
           This cannot be undone.

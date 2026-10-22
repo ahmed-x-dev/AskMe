@@ -84,7 +84,7 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
       <div className="flex items-center justify-between gap-3">
         <h2
           id="notes-heading"
-          className="text-[16px] font-medium leading-6 text-fg"
+          className="text-base font-medium leading-6 text-fg"
         >
           Notes
         </h2>
@@ -102,8 +102,8 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
               aria-pressed={mode === value}
               className={`min-h-12 rounded-[11px] px-3 text-[13px] font-medium leading-4.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                 mode === value
-                  ? "bg-accent text-on-accent active:scale-[0.98]"
-                  : "text-muted hover:bg-card-hover hover:text-fg active:scale-[0.98]"
+                  ? "bg-accent text-on-accent active:scale-98"
+                  : "text-muted hover:bg-card-hover hover:text-fg active:scale-98"
               }`}
             >
               {value === "edit" ? "Edit" : "Preview"}
@@ -129,7 +129,7 @@ export function NotesSection({ topicId, notes }: NotesSectionProps) {
           {draft.trim() ? (
             <Markdown>{draft}</Markdown>
           ) : (
-            <p className="text-[16px] leading-6 text-muted">
+            <p className="text-base leading-6 text-muted">
               No notes yet. Switch to Edit to add some.
             </p>
           )}

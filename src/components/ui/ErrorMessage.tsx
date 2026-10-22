@@ -26,7 +26,7 @@ export function ErrorMessage({
 }: ErrorMessageProps) {
   if (variant === "inline") {
     return (
-      <p id={id} role="alert" className="flex items-start gap-2 text-[13px] leading-[18px] text-bad-fg">
+      <p id={id} role="alert" className="flex items-start gap-2 text-[13px] leading-4.5 text-bad-fg">
         <CircleAlert aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.5} />
         <span className="min-w-0 wrap-break-word">{children}</span>
       </p>
@@ -37,7 +37,7 @@ export function ErrorMessage({
     <div
       id={id}
       role="alert"
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-bad-bg px-4 py-3 text-[16px] leading-6 text-bad-fg"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-bad-bg px-4 py-3 text-base leading-6 text-bad-fg"
     >
       <CircleAlert aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
       <span className="min-w-0 flex-1 wrap-break-word">{children}</span>

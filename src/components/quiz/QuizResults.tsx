@@ -63,35 +63,35 @@ export function QuizResults({
 
       <div className="rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7 text-fg">Quiz complete</h1>
-        <p aria-label={`${correct} of ${queue.length} correct`} className="mt-2 text-[40px] font-medium leading-[44px] text-accent-text tabular-nums">
+        <p aria-label={`${correct} of ${queue.length} correct`} className="mt-2 text-[40px] font-medium leading-11 text-accent-text tabular-nums">
           {correct} / {queue.length}
         </p>
-        <p className="mt-2 text-[16px] leading-6 text-muted tabular-nums">
+        <p className="mt-2 text-base leading-6 text-muted tabular-nums">
           {percent}% correct · {formatElapsedTime(elapsedSeconds)}
         </p>
       </div>
 
       {markedDone === undefined ? null : markedDone.length > 0 ? (
-        <p role="status" className="flex items-start gap-3 rounded-2xl bg-ok-bg px-4 py-3 text-[16px] leading-6 text-ok-fg">
+        <p role="status" className="flex items-start gap-3 rounded-2xl bg-ok-bg px-4 py-3 text-base leading-6 text-ok-fg">
           <Check aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.5} />
           <span className="min-w-0 wrap-break-word">
             Marked as done: {markedDone.map((topic) => topic.title).join(", ")}
           </span>
         </p>
       ) : (
-        <p className="text-[13px] leading-[18px] text-muted">
+        <p className="text-[13px] leading-4.5 text-muted">
           A topic is marked done when a quiz asks all of its questions and you get at least {Math.round(PASS_MARK * 100)}% right.
         </p>
       )}
 
       {missed.length > 0 ? (
         <div className="flex flex-col gap-3">
-          <h2 className="text-[18px] font-medium leading-[26px] text-fg">
+          <h2 className="text-lg font-medium leading-6.5 text-fg">
             Review your missed {plural(missed.length, "question")}
           </h2>
           <ul className="flex flex-col gap-2">
             {missed.map((question) => (
-              <li key={question.id} className="flex items-start gap-3 rounded-2xl bg-card p-3 text-[16px] leading-6 text-fg">
+              <li key={question.id} className="flex items-start gap-3 rounded-2xl bg-card p-3 text-base leading-6 text-fg">
                 <X aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-bad-fg" strokeWidth={1.5} />
                 <span className="min-w-0 wrap-break-word">{question.text}</span>
               </li>
@@ -99,7 +99,7 @@ export function QuizResults({
           </ul>
         </div>
       ) : (
-        <p className="flex items-center gap-2 text-[16px] leading-6 text-ok-fg">
+        <p className="flex items-center gap-2 text-base leading-6 text-ok-fg">
           <Check aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.5} />
           No mistakes. Well done.
         </p>

@@ -20,9 +20,9 @@ const EMPTY_OPTIONS: McqOptions = ['', '', '', '']
 const DIFFICULTIES: QuestionDifficulty[] = ['easy', 'medium', 'hard']
 
 /** Segmented-control styling for the MCQ/Essay and difficulty toggles on the editor card. */
-const segmentContainer = 'flex gap-1 rounded-[14px] bg-bg p-[3px]'
+const segmentContainer = 'flex gap-1 rounded-[14px] bg-bg p-0.75'
 const segmentBase =
-  'min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150'
+  'min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-4.5 transition-colors duration-150'
 const segmentActive = 'bg-accent text-on-accent'
 const segmentInactive = 'text-muted hover:bg-card-hover hover:text-fg'
 
@@ -141,7 +141,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
           <h1 className="text-[22px] font-medium leading-7 text-fg">
             {existingQuestion ? 'Edit question' : 'New question'}
           </h1>
-          <p className="mt-1 break-words text-[16px] leading-6 text-muted">{topic.title}</p>
+          <p className="mt-1 break-words text-base leading-6 text-muted">{topic.title}</p>
         </div>
         <button
           type="button"
@@ -168,7 +168,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
       </div>
 
       <div>
-        <label htmlFor="question-text" className="block text-[13px] font-medium leading-[18px] text-muted">
+        <label htmlFor="question-text" className="block text-[13px] font-medium leading-4.5 text-muted">
           Question
         </label>
         <textarea
@@ -178,12 +178,12 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
           aria-describedby={invalidField === 'text' ? 'question-editor-error' : undefined}
           onChange={(event) => setText(event.target.value)}
           placeholder="Type the question here…"
-          className={`mt-2 min-h-[120px] resize-y py-3 ${fieldOnCardClassName}`}
+          className={`mt-2 min-h-30 resize-y py-3 ${fieldOnCardClassName}`}
         />
       </div>
 
       <fieldset>
-        <legend className="text-[13px] font-medium leading-[18px] text-muted">Difficulty</legend>
+        <legend className="text-[13px] font-medium leading-4.5 text-muted">Difficulty</legend>
         <div className={`mt-2 ${segmentContainer}`}>
           {DIFFICULTIES.map((level) => (
             <button
@@ -200,7 +200,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
       </fieldset>
 
       <div>
-        <label htmlFor="question-tags" className="block text-[13px] font-medium leading-[18px] text-muted">
+        <label htmlFor="question-tags" className="block text-[13px] font-medium leading-4.5 text-muted">
           Tags (one per line)
         </label>
         <textarea
@@ -209,9 +209,9 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
           onChange={(event) => setTagsText(event.target.value)}
           placeholder={'deprecated\nhtml'}
           rows={2}
-          className={`mt-2 min-h-[88px] resize-y py-3 ${fieldOnCardClassName}`}
+          className={`mt-2 min-h-22 resize-y py-3 ${fieldOnCardClassName}`}
         />
-        <p className="mt-1 text-[13px] leading-[18px] text-muted">
+        <p className="mt-1 text-[13px] leading-4.5 text-muted">
           Use “deprecated” to label outdated information. Tags do not change quiz behavior.
         </p>
       </div>
@@ -226,7 +226,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
         />
       ) : activeType === 'true-false' ? (
         <fieldset>
-          <legend className="text-[13px] font-medium leading-[18px] text-muted">Correct answer</legend>
+          <legend className="text-[13px] font-medium leading-4.5 text-muted">Correct answer</legend>
           <div className={`mt-2 ${segmentContainer}`}>
             {([true, false] as const).map((value) => (
               <button
@@ -243,7 +243,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
         </fieldset>
       ) : activeType === 'fill-blank' || activeType === 'flashcard' ? (
         <div>
-          <label htmlFor="question-answer" className="block text-[13px] font-medium leading-[18px] text-muted">
+          <label htmlFor="question-answer" className="block text-[13px] font-medium leading-4.5 text-muted">
             {activeType === 'fill-blank' ? 'Expected answer' : 'Flashcard answer'}
           </label>
           <input

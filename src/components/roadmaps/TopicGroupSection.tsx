@@ -96,8 +96,8 @@ export function TopicGroupSection({
           ) : null}
 
           <div className="min-w-0 flex-1">
-            <h2 className="wrap-break-word text-[16px] font-medium leading-6 text-fg">{heading}</h2>
-            <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+            <h2 className="wrap-break-word text-base font-medium leading-6 text-fg">{heading}</h2>
+            <p className="text-[13px] leading-4.5 text-muted tabular-nums">
               {total === 0
                 ? "No topics"
                 : `${completed} / ${total} done · ${plural(groupQuestionCount, "question")}`}
@@ -125,7 +125,7 @@ export function TopicGroupSection({
       ) : null}
 
       {isCollapsed ? (
-        <p className="px-3 pb-2 text-[13px] leading-[18px] text-muted">
+        <p className="px-3 pb-2 text-[13px] leading-4.5 text-muted">
           {plural(topics.length, "topic")} hidden
         </p>
       ) : (
@@ -145,7 +145,7 @@ export function TopicGroupSection({
           </SortableContext>
 
           {topics.length === 0 && !isFlat ? (
-            <p className="rounded-2xl bg-card px-4 py-3 text-center text-[13px] leading-[18px] text-muted">
+            <p className="rounded-2xl bg-card px-4 py-3 text-center text-[13px] leading-4.5 text-muted">
               {group ? "Drop a topic here, or add one below." : "Drop a topic here to remove it from its group."}
             </p>
           ) : null}

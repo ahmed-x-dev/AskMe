@@ -126,11 +126,11 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
         <div>
           <h2
             id="lessons-heading"
-            className="text-[18px] font-medium leading-[26px] text-fg"
+            className="text-lg font-medium leading-6.5 text-fg"
           >
             Lessons
           </h2>
-          <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+          <p className="text-[13px] leading-4.5 text-muted tabular-nums">
             {lessons.length === 0
               ? "Break this topic into study sessions."
               : plural(lessons.length, "lesson")}
@@ -149,7 +149,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
       {actionError ? <ErrorMessage>{actionError}</ErrorMessage> : null}
 
       {lessons.length === 0 ? (
-        <div className="rounded-2xl bg-card px-4 py-3 text-[13px] leading-[18px] text-muted">
+        <div className="rounded-2xl bg-card px-4 py-3 text-[13px] leading-4.5 text-muted">
           Add a lesson, then attach videos, articles, links, or documents from
           your device.
         </div>
@@ -177,13 +177,13 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                 </label>
                 <div className="min-w-0 flex-1">
                   <h3
-                    className={`wrap-break-word text-[16px] font-medium leading-6 ${
+                    className={`wrap-break-word text-base font-medium leading-6 ${
                       lesson.done ? "text-muted line-through" : "text-fg"
                     }`}
                   >
                     {lesson.title}
                   </h3>
-                  <p className="text-[13px] leading-[18px] text-muted">
+                  <p className="text-[13px] leading-4.5 text-muted">
                     {plural(lesson.resources.length, "resource")}
                   </p>
                 </div>
@@ -243,7 +243,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                               resource.kind === "video" ? (
                                 <Link
                                   href={`/topic/${topicId}/resource/${resource.id}`}
-                                  className="min-w-0 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                  className="min-w-0 wrap-break-word text-sm font-medium leading-5 text-fg hover:underline"
                                 >
                                   {resource.title}
                                 </Link>
@@ -252,7 +252,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                                   href={resource.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex min-w-0 items-start gap-2 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                  className="flex min-w-0 items-start gap-2 wrap-break-word text-sm font-medium leading-5 text-fg hover:underline"
                                 >
                                   <span className="min-w-0 flex-1 wrap-break-word">
                                     {resource.title}
@@ -265,7 +265,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                                 </a>
                               )
                             ) : (
-                              <span className="wrap-break-word text-[14px] font-medium leading-5 text-muted">
+                              <span className="wrap-break-word text-sm font-medium leading-5 text-muted">
                                 {resource.title}
                               </span>
                             )
@@ -274,7 +274,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                               {isMarkdownLessonFile(resource) ? (
                                 <Link
                                   href={`/topic/${topicId}/resource/${resource.id}`}
-                                  className="min-w-0 wrap-break-word text-[14px] font-medium leading-5 text-fg hover:underline"
+                                  className="min-w-0 wrap-break-word text-sm font-medium leading-5 text-fg hover:underline"
                                 >
                                   {resource.title}
                                 </Link>
@@ -286,7 +286,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                                       openLessonFile(resource),
                                     )
                                   }
-                                  className="min-w-0 wrap-break-word text-start text-[14px] font-medium leading-5 text-fg hover:underline"
+                                  className="min-w-0 wrap-break-word text-start text-sm font-medium leading-5 text-fg hover:underline"
                                 >
                                   {resource.title}
                                 </button>
@@ -309,7 +309,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                               </button>
                             </div>
                           )}
-                          <p className="mt-1 text-[13px] leading-[18px] text-muted">
+                          <p className="mt-1 text-[13px] leading-4.5 text-muted">
                             <span className="font-medium">{kindLabel}</span>
                             {resource.source === "link" ? (
                               <>
@@ -355,7 +355,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
               <button
                 type="button"
                 onClick={() => setResourceDialog({ lesson })}
-                className="ms-[52px] mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-[18px] text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="ms-[52px] mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-4.5 text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <Plus
                   aria-hidden="true"

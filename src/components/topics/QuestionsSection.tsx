@@ -57,11 +57,11 @@ export function QuestionsSection({
         <div className="min-w-0">
           <h2
             id="questions-heading"
-            className="text-[18px] font-medium leading-[26px] text-fg"
+            className="text-lg font-medium leading-6.5 text-fg"
           >
             Questions
           </h2>
-          <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+          <p className="text-[13px] leading-4.5 text-muted tabular-nums">
             {questions.length === 0
               ? "Add practice questions to check what you have learned."
               : `${plural(questions.length, "question")} · ${plural(typeCounts.mcq, "MCQ")} · ${plural(typeCounts.essay, "essay")}`}
@@ -69,12 +69,10 @@ export function QuestionsSection({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {questions.length > 0 ? (
-            <Link href={`/topic/${topicId}/q/new`} className={buttonSecondary}>
-              <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              Add question
-            </Link>
-          ) : null}
+          <Link href={`/topic/${topicId}/q/new`} className={buttonSecondary}>
+            <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+            Add question
+          </Link>
 
           <button
             type="button"
@@ -100,10 +98,10 @@ export function QuestionsSection({
               strokeWidth={1.5}
             />
           </div>
-          <h3 className="mt-4 text-[16px] font-medium leading-6 text-fg">
+          <h3 className="mt-4 text-base font-medium leading-6 text-fg">
             No questions yet
           </h3>
-          <p className="mx-auto mt-2 max-w-[40ch] text-[16px] leading-6 text-muted">
+          <p className="mx-auto mt-2 max-w-[40ch] text-base leading-6 text-muted">
             Write your own question or ask AI to draft a few from your notes.
             You can review every suggestion before adding it.
           </p>
@@ -120,16 +118,16 @@ export function QuestionsSection({
                   className="flex min-w-0 items-start gap-3 rounded-2xl bg-card p-3 transition-colors duration-150 hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 wrap-break-word text-[16px] leading-6 text-fg">
+                    <p className="line-clamp-2 wrap-break-word text-base leading-6 text-fg">
                       {question.text}
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px] ${badge.className}`}
+                        className={`rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-4.5 ${badge.className}`}
                       >
                         {badge.label}
                       </span>
-                      <span className="rounded-full bg-bg px-2.5 py-0.5 text-[13px] leading-[18px] text-muted">
+                      <span className="rounded-full bg-bg px-2.5 py-0.5 text-[13px] leading-4.5 text-muted">
                         {question.difficulty}
                       </span>
                     </div>

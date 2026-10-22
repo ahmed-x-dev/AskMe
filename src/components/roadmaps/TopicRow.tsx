@@ -38,10 +38,10 @@ export function StatusSelect({ topic, onChange }: { topic: Topic; onChange: (sta
   const current = STATUS_OPTIONS.find((option) => option.value === topic.status) ?? STATUS_OPTIONS[0];
 
   return (
-    <span className="relative inline-flex min-h-11 items-center rounded-full has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">
+    <span className="relative inline-flex min-h-11 items-center rounded-full has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent">
       <span
         aria-hidden="true"
-        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px] ${current.className}`}
+        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-4.5 ${current.className}`}
       >
         {current.label}
         <ChevronDown className="h-4 w-4" strokeWidth={1.5} />
@@ -69,8 +69,8 @@ export function TopicRowPreview({ topic, number }: { topic: Topic; number: numbe
       <span className="flex h-11 w-11 shrink-0 items-center justify-center text-muted">
         <GripVertical aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </span>
-      <span className="w-6 text-center text-[16px] text-muted tabular-nums">{number}</span>
-      <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-6 text-fg">
+      <span className="w-6 text-center text-base text-muted tabular-nums">{number}</span>
+      <span className="min-w-0 flex-1 truncate text-base font-medium leading-6 text-fg">
         {topic.title}
       </span>
     </div>
@@ -118,19 +118,19 @@ export function TopicRow({ topic, number, questionCount, actions }: TopicRowProp
         <GripVertical aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
       </button>
 
-      <span className="pointer-events-none relative z-20 w-6 shrink-0 text-center text-[16px] text-muted tabular-nums">
+      <span className="pointer-events-none relative z-20 w-6 shrink-0 text-center text-base text-muted tabular-nums">
         {number}
       </span>
 
       <div className="pointer-events-none relative z-20 min-w-0 flex-1">
-        <div className="flex min-h-12 w-full items-center py-2 wrap-break-word text-[16px] font-medium leading-6 text-fg group-hover:underline">
+        <div className="flex min-h-12 w-full items-center py-2 wrap-break-word text-base font-medium leading-6 text-fg group-hover:underline">
           {topic.title}
         </div>
         <div className="flex flex-wrap items-center gap-x-3">
           <div className="pointer-events-auto relative z-30">
             <StatusSelect topic={topic} onChange={(status) => actions.onStatusChange(topic, status)} />
           </div>
-          <span className="text-[13px] leading-[18px] text-muted tabular-nums">
+          <span className="text-[13px] leading-4.5 text-muted tabular-nums">
             {plural(questionCount, "question")}
           </span>
         </div>

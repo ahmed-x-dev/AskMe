@@ -92,14 +92,14 @@ export function StoragePersistenceSection() {
 
   return (
     <section aria-labelledby="storage-persistence-heading" aria-busy={isChecking || isRequesting || undefined} className="w-full rounded-2xl bg-card p-4">
-      <h2 id="storage-persistence-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+      <h2 id="storage-persistence-heading" className="text-lg font-medium leading-6.5 text-fg">
         Local data retention
       </h2>
-      <p className="mt-2 text-[16px] leading-6 text-muted">
+      <p className="mt-2 text-base leading-6 text-muted">
         Ask the browser not to automatically evict AskMe’s local study data. This is best-effort and does not replace
         downloading a backup.
       </p>
-      <p className="mt-3 text-[13px] leading-[18px] text-muted">
+      <p className="mt-3 text-[13px] leading-4.5 text-muted">
         {isChecking
           ? "Checking browser storage…"
           : isPersisted
@@ -124,7 +124,7 @@ export function StoragePersistenceSection() {
       {status ? (
         <p
           role={status.kind === "error" ? "alert" : "status"}
-          className={`mt-3 text-[13px] leading-[18px] ${
+          className={`mt-3 text-[13px] leading-4.5 ${
             status.kind === "error"
               ? "text-bad-fg"
               : status.kind === "warning"

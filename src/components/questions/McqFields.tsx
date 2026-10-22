@@ -20,7 +20,7 @@ export function McqFields({
 }: McqFieldsProps) {
   return (
     <div className="mt-5">
-      <p className="mb-2 text-[13px] leading-[18px] text-muted">
+      <p className="mb-2 text-[13px] leading-4.5 text-muted">
         Select the correct answer from the options.
       </p>
       <div className="grid gap-3 lg:grid-cols-2">
@@ -50,7 +50,7 @@ export function McqFields({
               value={options[index]}
               onChange={(event) => onOptionChange(index, event.target.value)}
               placeholder={`Option ${index + 1}`}
-              className="w-full bg-transparent text-[16px] text-fg placeholder:text-muted"
+              className="w-full bg-transparent text-base text-fg placeholder:text-muted"
             />
           </div>
         ))}

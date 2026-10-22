@@ -14,7 +14,7 @@ type QuestionCardProps = {
   questionHeadingRef?: Ref<HTMLHeadingElement>;
 };
 
-const chipClassName = "rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-[18px]";
+const chipClassName = "rounded-full px-2.5 py-0.5 text-[13px] font-medium leading-4.5";
 
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -66,7 +66,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
         <h2
           ref={questionHeadingRef}
           tabIndex={-1}
-          className="mt-3 whitespace-pre-wrap wrap-break-word text-[18px] font-medium leading-7 text-fg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-card"
+          className="mt-3 whitespace-pre-wrap wrap-break-word text-lg font-medium leading-7 text-fg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-card"
         >
           {question.text}
         </h2>
@@ -91,7 +91,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
                   setSelected(optionIndex);
                   onAnswer(optionIndex === question.answerIndex);
                 }}
-                className={`flex min-h-12 w-full items-start gap-3 rounded-[14px] border border-control-line px-3 py-3 text-start text-[16px] leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
+                className={`flex min-h-12 w-full items-start gap-3 rounded-[14px] border border-control-line px-3 py-3 text-start text-base leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
                   isRight
                     ? "bg-ok-bg text-ok-fg"
                     : isWrong
@@ -143,7 +143,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
                   setSelected(Number(value));
                   onAnswer(value === question.answer);
                 }}
-                className={`min-h-12 rounded-[14px] border border-control-line px-3 py-3 text-[16px] font-medium leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
+                className={`min-h-12 rounded-[14px] border border-control-line px-3 py-3 text-base font-medium leading-6 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-100 ${
                   isRight
                     ? "bg-ok-bg text-ok-fg"
                     : isWrong
@@ -175,7 +175,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
               Check answer
             </button>
           ) : (
-            <p role="status" className={`inline-flex items-center gap-2 text-[16px] font-medium leading-6 ${result ? "text-ok-fg" : "text-bad-fg"}`}>
+            <p role="status" className={`inline-flex items-center gap-2 text-base font-medium leading-6 ${result ? "text-ok-fg" : "text-bad-fg"}`}>
               {result ? <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} /> : <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />}
               {result ? "Correct answer" : `Correct answer: ${question.answer}`}
             </p>
@@ -207,27 +207,27 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
           ) : (
             <>
               <div className="rounded-[14px] bg-card p-4" aria-live="polite">
-                <p className="text-[13px] font-medium leading-[18px] text-muted">Reference answer</p>
-                <p className="mt-2 whitespace-pre-wrap wrap-break-word text-[16px] leading-6 text-fg">
+                <p className="text-[13px] font-medium leading-4.5 text-muted">Reference answer</p>
+                <p className="mt-2 whitespace-pre-wrap wrap-break-word text-base leading-6 text-fg">
                   {question.referenceAnswer?.trim() || "No reference answer was added for this question."}
                 </p>
               </div>
 
               {!isAnswered ? (
                 <>
-                  <p className="text-[13px] leading-[18px] text-muted">Compare your answer, then mark yourself.</p>
+                  <p className="text-[13px] leading-4.5 text-muted">Compare your answer, then mark yourself.</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => onAnswer(true)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-[16px] font-medium text-ok-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-ok-bg px-3 text-base font-medium text-ok-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     >
                       <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it right
                     </button>
                     <button
                       type="button"
                       onClick={() => onAnswer(false)}
-                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-[16px] font-medium text-bad-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[14px] bg-bad-bg px-3 text-base font-medium text-bad-fg transition-colors duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                     >
                       <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />I got it wrong
                     </button>
@@ -236,7 +236,7 @@ export function QuestionCard({ question, result, onAnswer, questionHeadingRef }:
               ) : (
                 <p
                   role="status"
-                  className={`inline-flex items-center gap-2 text-[16px] font-medium leading-6 ${result ? "text-ok-fg" : "text-bad-fg"}`}
+                  className={`inline-flex items-center gap-2 text-base font-medium leading-6 ${result ? "text-ok-fg" : "text-bad-fg"}`}
                 >
                   {result ? (
                     <Check aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />

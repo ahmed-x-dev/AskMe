@@ -124,12 +124,12 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           <h2 id="generate-dialog-title" className="text-[22px] font-medium leading-7 text-fg">
             Generate with AI
           </h2>
-          <p className="mt-1 wrap-break-word text-[16px] leading-6 text-muted">{context.topicTitle}</p>
+          <p className="mt-1 wrap-break-word text-base leading-6 text-muted">{context.topicTitle}</p>
         </div>
 
         {!hasKey ? (
           <div className="flex flex-col items-start gap-4">
-            <p className="text-[16px] leading-6 text-muted">
+            <p className="text-base leading-6 text-muted">
               Add an AI key in Settings first. It stays in this browser.
             </p>
             <Link
@@ -141,7 +141,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </div>
         ) : step === "preview" ? (
           <>
-            <p className="text-[16px] leading-6 text-muted tabular-nums">
+            <p className="text-base leading-6 text-muted tabular-nums">
               {selected.size} of {plural(generated.length, "question")} selected
             </p>
 
@@ -156,7 +156,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                       className="mt-1 h-5 w-5 shrink-0 accent-(--accent)"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block wrap-break-word text-[16px] font-medium leading-6 text-fg">
+                      <span className="block wrap-break-word text-base font-medium leading-6 text-fg">
                         {question.text}
                       </span>
                       {question.type === "mcq" ? (
@@ -164,7 +164,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                           {question.options.map((option, optionIndex) => (
                             <span
                               key={optionIndex}
-                              className={`flex items-start gap-2 text-[13px] leading-[18px] ${
+                              className={`flex items-start gap-2 text-[13px] leading-4.5 ${
                                 optionIndex === question.answerIndex ? "text-ok-fg" : "text-muted"
                               }`}
                             >
@@ -181,15 +181,15 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                           ))}
                         </span>
                       ) : question.type === "true-false" ? (
-                        <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
+                        <span className="mt-2 block wrap-break-word text-[13px] leading-4.5 text-muted">
                           Correct answer: {question.answer ? "True" : "False"}
                         </span>
                       ) : question.type === "fill-blank" || question.type === "flashcard" ? (
-                        <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
+                        <span className="mt-2 block wrap-break-word text-[13px] leading-4.5 text-muted">
                           Answer: {question.answer}
                         </span>
                       ) : question.referenceAnswer ? (
-                        <span className="mt-2 block wrap-break-word text-[13px] leading-[18px] text-muted">
+                        <span className="mt-2 block wrap-break-word text-[13px] leading-4.5 text-muted">
                           {question.referenceAnswer}
                         </span>
                       ) : null}
@@ -201,7 +201,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </>
         ) : (
           <>
-            <div role="group" aria-label="Question type" className="flex flex-wrap gap-1 rounded-[14px] bg-card p-[3px]">
+            <div role="group" aria-label="Question type" className="flex flex-wrap gap-1 rounded-[14px] bg-card p-0.75">
               {(["mcq", "true-false", "fill-blank", "flashcard", "essay"] as const).map((value) => (
                 <button
                   key={value}
@@ -209,7 +209,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                   onClick={() => setType(value)}
                   disabled={isBusy}
                   aria-pressed={type === value}
-                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-[18px] transition-colors duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
+                  className={`min-h-12 flex-1 rounded-[11px] px-3 text-[13px] font-medium leading-4.5 transition-colors duration-150 active:scale-98 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                     type === value ? "bg-accent text-on-accent" : "text-muted hover:bg-card-hover hover:text-fg"
                   }`}
                 >
@@ -219,7 +219,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+              <label className="flex flex-col gap-2 text-base font-medium leading-6">
                 How many
                 <select
                   value={count}
@@ -235,7 +235,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                 </select>
               </label>
 
-              <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+              <label className="flex flex-col gap-2 text-base font-medium leading-6">
                 Difficulty
                 <select
                   value={difficulty}
@@ -252,7 +252,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
               </label>
             </div>
 
-            <label className="flex flex-col gap-2 text-[13px] font-medium leading-[18px]">
+            <label className="flex flex-col gap-2 text-[13px] font-medium leading-4.5">
               Extra instructions (optional)
               <textarea
                 value={instructions}

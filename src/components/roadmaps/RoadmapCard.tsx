@@ -31,10 +31,10 @@ export function RoadmapCard({ overview, onEdit, onExport, onDelete }: RoadmapCar
         <RoadmapIcon roadmap={roadmap} />
 
         <div className="min-w-0 flex-1">
-          <h2 className="wrap-break-word text-[18px] font-medium leading-6 text-fg group-hover:text-fg">
+          <h2 className="wrap-break-word text-lg font-medium leading-6 text-fg group-hover:text-fg">
             {roadmap.title}
           </h2>
-          <p className="mt-1 text-[13px] leading-[18px] text-muted tabular-nums">
+          <p className="mt-1 text-[13px] leading-4.5 text-muted tabular-nums">
             {plural(topicCount, "topic")} · {plural(questionCount, "question")}
           </p>
         </div>
@@ -60,13 +60,13 @@ export function RoadmapCard({ overview, onEdit, onExport, onDelete }: RoadmapCar
         {dueCount > 0 ? (
           <div className="flex items-center gap-2 rounded-xl bg-bg px-3 py-2">
             <AlertCircle aria-hidden="true" className="h-4 w-4 shrink-0 text-accent-text" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium leading-[18px] text-accent-text tabular-nums">
+            <span className="text-[13px] font-medium leading-4.5 text-accent-text tabular-nums">
               {dueCount} due for review
             </span>
           </div>
         ) : null}
         {topicCount === 0 ? (
-          <p className="text-[13px] leading-[18px] text-muted">No topics yet — add your first topic to get started</p>
+          <p className="text-[13px] leading-4.5 text-muted">No topics yet — add your first topic to get started</p>
         ) : (
           <>
             <ProgressBar
@@ -76,7 +76,7 @@ export function RoadmapCard({ overview, onEdit, onExport, onDelete }: RoadmapCar
               color={roadmap.color}
               onCard
             />
-            <div className="flex items-center justify-between text-[13px] leading-[18px]">
+            <div className="flex items-center justify-between text-[13px] leading-4.5">
               <span className="text-muted tabular-nums">
                 {completedCount} / {topicCount} done
               </span>

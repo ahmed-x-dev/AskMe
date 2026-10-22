@@ -88,7 +88,7 @@ export function RoadmapGrid() {
           <h1 className="text-[clamp(1.75rem,3.5vw,2.125rem)] font-medium leading-tight text-fg">
             Your roadmaps
           </h1>
-          <p className="mt-2 text-[16px] leading-6 text-muted">
+          <p className="mt-2 text-base leading-6 text-muted">
             Create roadmaps for each subject, add topics, and track your progress as you study.
           </p>
         </div>
@@ -158,7 +158,7 @@ export function RoadmapGrid() {
             className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-control-line bg-bg text-muted transition-colors duration-150 hover:border-accent hover:bg-card hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Plus aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
-            <span className="text-[16px] font-medium">New roadmap</span>
+            <span className="text-base font-medium">New roadmap</span>
           </button>
         </div>
       )}

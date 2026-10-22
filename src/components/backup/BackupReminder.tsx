@@ -45,7 +45,7 @@ export function BackupReminder({ oldestDataAt }: { oldestDataAt: string | null }
         ) : (
           <DatabaseBackup aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.5} />
         )}
-        <p role={backupComplete ? "status" : undefined} className="min-w-0 text-[16px] leading-6">
+        <p role={backupComplete ? "status" : undefined} className="min-w-0 text-base leading-6">
           {backupComplete
             ? "Backup downloaded. Keep the ZIP file somewhere safe."
             : `${lastBackupAt ? "It has been a while since your last backup." : "You have not made a backup yet."} Your data lives only in this browser, and browsers can clear it.`}
@@ -70,7 +70,7 @@ export function BackupReminder({ oldestDataAt }: { oldestDataAt: string | null }
           <button
             type="button"
             onClick={() => snoozeBackupReminder()}
-            className="min-h-12 rounded-2xl px-4 text-[16px] font-medium underline-offset-4 transition-opacity hover:underline hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="min-h-12 rounded-2xl px-4 text-base font-medium underline-offset-4 transition-opacity hover:underline hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             Remind me later
           </button>

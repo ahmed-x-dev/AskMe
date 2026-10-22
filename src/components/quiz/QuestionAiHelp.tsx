@@ -128,11 +128,11 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
           {gradeError ? <ErrorMessage variant="inline">{gradeError}</ErrorMessage> : null}
           {grade && grade.forAnswer === currentText ? (
             <div className="rounded-[14px] bg-card p-3" aria-live="polite">
-              <p className="text-[13px] font-medium leading-[18px] text-muted">AI grading</p>
-              <p className="mt-1 text-[16px] font-medium leading-6 text-fg tabular-nums">
+              <p className="text-[13px] font-medium leading-4.5 text-muted">AI grading</p>
+              <p className="mt-1 text-base font-medium leading-6 text-fg tabular-nums">
                 {grade.score}/10 · missing points: {grade.missingPoints}
               </p>
-              <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[16px] leading-6 text-muted">{grade.feedback}</p>
+              <p className="mt-1 whitespace-pre-wrap wrap-break-word text-base leading-6 text-muted">{grade.feedback}</p>
             </div>
           ) : null}
         </>
@@ -152,8 +152,8 @@ export function QuestionAiHelp({ question, answer, isAnswered }: QuestionAiHelpP
           {explainError ? <ErrorMessage variant="inline">{explainError}</ErrorMessage> : null}
           {explanation ? (
             <div className="rounded-[14px] bg-card p-3" aria-live="polite">
-              <p className="text-[13px] font-medium leading-[18px] text-muted">AI explanation</p>
-              <p className="mt-1 whitespace-pre-wrap wrap-break-word text-[16px] leading-6 text-fg">{explanation}</p>
+              <p className="text-[13px] font-medium leading-4.5 text-muted">AI explanation</p>
+              <p className="mt-1 whitespace-pre-wrap wrap-break-word text-base leading-6 text-fg">{explanation}</p>
             </div>
           ) : null}
         </>

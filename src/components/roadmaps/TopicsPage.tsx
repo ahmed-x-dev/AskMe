@@ -146,7 +146,7 @@ export function TopicsPage() {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Roadmap not found</h1>
-        <p className="mt-2 text-[16px] leading-6 text-muted">
+        <p className="mt-2 text-base leading-6 text-muted">
           It may have been deleted.
         </p>
         <Link
@@ -305,7 +305,7 @@ export function TopicsPage() {
             <h1 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">
               {roadmap.title}
             </h1>
-            <p className="text-[16px] leading-6 text-muted tabular-nums">
+            <p className="text-base leading-6 text-muted tabular-nums">
               {plural(total, "topic")} · {plural(totalQuestions, "question")}
             </p>
           </div>
@@ -319,7 +319,7 @@ export function TopicsPage() {
               total={total}
               color={roadmap.color}
             />
-            <p className="mt-2 text-[13px] leading-[18px] text-muted tabular-nums">
+            <p className="mt-2 text-[13px] leading-4.5 text-muted tabular-nums">
               {completed} / {total} done
             </p>
           </div>
@@ -350,7 +350,7 @@ export function TopicsPage() {
         </div>
 
         {totalQuestions === 0 ? (
-          <p className="text-[13px] leading-[18px] text-muted">
+          <p className="text-[13px] leading-4.5 text-muted">
             Add questions to your topics to unlock quizzes.
           </p>
         ) : null}

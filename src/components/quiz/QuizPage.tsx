@@ -53,7 +53,7 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Quiz not found</h1>
-        <p className="mt-2 text-[16px] leading-6 text-muted">What you wanted to practice may have been deleted.</p>
+        <p className="mt-2 text-base leading-6 text-muted">What you wanted to practice may have been deleted.</p>
         <Link href="/" className={`mt-6 ${buttonPrimary}`}>
           Back to roadmaps
         </Link>
@@ -65,7 +65,7 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">No questions yet</h1>
-        <p className="mt-2 text-[16px] leading-6 text-muted">
+        <p className="mt-2 text-base leading-6 text-muted">
           Add questions to {source.title} before starting a quiz.
         </p>
         <Link href={source.backHref} className={`mt-6 ${buttonPrimary}`}>

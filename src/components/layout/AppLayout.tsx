@@ -109,11 +109,11 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
             >
               <span
                 aria-hidden="true"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-[16px] font-medium text-on-accent"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-base font-medium text-on-accent"
               >
                 A
               </span>
-              <span className="min-w-0 text-[16px] font-medium leading-6 text-fg">
+              <span className="min-w-0 text-base font-medium leading-6 text-fg">
                 AskMe
               </span>
             </Link>
@@ -128,7 +128,7 @@ export function AppLayout({ theme, setTheme, children }: AppLayoutProps) {
                 key={href}
                 href={href}
                 aria-current={currentNavigation(href)}
-                className={`inline-flex min-h-12 items-center gap-2 rounded-2xl px-3 text-[16px] font-medium leading-6 transition-colors duration-150 ${
+                className={`inline-flex min-h-12 items-center gap-2 rounded-2xl px-3 text-base font-medium leading-6 transition-colors duration-150 ${
                   isActive(href)
                     ? "bg-card text-fg"
                     : "text-muted hover:bg-card hover:text-fg"

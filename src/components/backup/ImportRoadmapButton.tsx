@@ -48,7 +48,7 @@ export function ImportRoadmapButton({ className, children = "Import roadmap", on
         disabled={isBusy}
         aria-busy={isBusy}
         onClick={() => inputRef.current?.click()}
-        className={`${className} active:scale-[0.98]`}
+        className={`${className} active:scale-98`}
       >
         <Upload aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
         {isBusy ? "Importing…" : children}

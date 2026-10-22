@@ -20,10 +20,10 @@ export function EmptyState({
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg text-muted">
         <Icon aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
       </div>
-      <h2 className="mt-4 text-[18px] font-medium leading-6 text-fg">
+      <h2 className="mt-4 text-lg font-medium leading-6 text-fg">
         {title}
       </h2>
-      <p className="mt-2 max-w-md text-[16px] leading-6 text-muted">
+      <p className="mt-2 max-w-md text-base leading-6 text-muted">
         {description}
       </p>
       <button type="button" onClick={onAction} className={`mt-6 ${buttonPrimary} ${focusRing}`}>

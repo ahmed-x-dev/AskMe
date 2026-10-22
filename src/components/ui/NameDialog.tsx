@@ -60,7 +60,7 @@ export function NameDialog({
           {title}
         </h2>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           {label}
           <input
             type="text"
@@ -77,7 +77,7 @@ export function NameDialog({
             aria-describedby={`name-dialog-help${error ? " name-dialog-error" : ""}`}
             className={fieldClassName}
           />
-          <span id="name-dialog-help" className="text-[13px] font-normal leading-[18px] text-muted">
+          <span id="name-dialog-help" className="text-[13px] font-normal leading-4.5 text-muted">
             Required. Use up to 100 characters.
           </span>
         </label>

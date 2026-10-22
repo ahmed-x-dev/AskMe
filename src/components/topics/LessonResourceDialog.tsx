@@ -64,7 +64,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
           {resource ? "Edit lesson resource" : "Add lesson resource"}
         </h2>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           Resource type
           <select
             value={source}
@@ -79,7 +79,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
           </select>
         </label>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           Resource title
           <input
             type="text"
@@ -97,7 +97,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
 
         {source === "link" ? (
           <>
-            <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+            <label className="flex flex-col gap-2 text-base font-medium leading-6">
               Resource link
               <input
                 type="text"
@@ -111,7 +111,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
                 className={inputClassName}
               />
             </label>
-            <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+            <label className="flex flex-col gap-2 text-base font-medium leading-6">
               Kind
               <select
                 value={kind}
@@ -127,7 +127,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
             </label>
           </>
         ) : (
-          <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+          <label className="flex flex-col gap-2 text-base font-medium leading-6">
             {resource?.source === "file" ? "Replace document (optional)" : "Choose document"}
             <input
               type="file"
@@ -141,7 +141,7 @@ export function LessonResourceDialog({ resource, onSubmit, onClose }: LessonReso
               }}
               className={inputClassName}
             />
-            <span className="text-[13px] font-normal leading-[18px] text-muted">
+            <span className="text-[13px] font-normal leading-4.5 text-muted">
               PDF, TXT, Markdown, or Word documents. Maximum 20 MB.
               {resource?.source === "file" ? ` Current file: ${resource.fileName}.` : ""}
             </span>

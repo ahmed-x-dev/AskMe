@@ -53,7 +53,7 @@ export function ConfirmDialog({
           <h2 id="confirm-dialog-title" className="text-[22px] font-medium leading-7 text-fg">
             {title}
           </h2>
-          <p className="wrap-break-word text-[16px] leading-6 text-muted">{message}</p>
+          <p className="wrap-break-word text-base leading-6 text-muted">{message}</p>
         </div>
 
         {error ? <ErrorMessage>{error}</ErrorMessage> : null}

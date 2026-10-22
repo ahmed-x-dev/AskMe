@@ -120,13 +120,13 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
   return (
     <section className="mx-auto flex w-full flex-col gap-6">
       <div className="mx-auto flex w-full max-w-[80ch] flex-wrap items-center justify-between gap-2">
-        <h1 aria-live="polite" className="text-[16px] font-medium leading-6 text-fg tabular-nums">
+        <h1 aria-live="polite" className="text-base font-medium leading-6 text-fg tabular-nums">
           Question {index + 1} of {queue.length}
         </h1>
         <span
           role="timer"
           aria-label={`Elapsed time ${formatElapsedTime(elapsedSeconds)}`}
-          className="rounded-full bg-card px-2.5 py-0.5 text-[13px] font-medium leading-[18px] text-muted tabular-nums"
+          className="rounded-full bg-card px-2.5 py-0.5 text-[13px] font-medium leading-4.5 text-muted tabular-nums"
         >
           {formatElapsedTime(elapsedSeconds)}
         </span>
@@ -138,7 +138,7 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
           completed={answeredCount}
           total={queue.length}
         />
-        <p className="text-[13px] leading-[18px] text-muted tabular-nums">
+        <p className="text-[13px] leading-4.5 text-muted tabular-nums">
           {answeredCount} of {queue.length} answered
         </p>
       </div>
@@ -164,7 +164,7 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
       ) : null}
 
       {result === undefined ? (
-        <p className="mx-auto w-full max-w-[80ch] text-[13px] leading-[18px] text-muted">
+        <p className="mx-auto w-full max-w-[80ch] text-[13px] leading-4.5 text-muted">
           {question.type === "mcq" ? "Choose an option to continue." : "Reveal the reference, then mark your answer to continue."}
         </p>
       ) : null}
@@ -209,7 +209,7 @@ export function QuizRunner({ queue, exitHref, onFinish }: QuizRunnerProps) {
               <h2 id="exit-quiz-title" className="text-[22px] font-medium leading-7 text-fg">
                 Exit this quiz?
               </h2>
-              <p className="mt-2 text-[16px] leading-6 text-muted">
+              <p className="mt-2 text-base leading-6 text-muted">
                 Your quiz score will be lost. Answers already saved will remain in your review history.
                 {Object.keys(historyErrors).length > 0
                   ? " Some answers could not be saved and will not appear there."

@@ -214,7 +214,7 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
                     triggerRef.current?.focus();
                     onSelect();
                   }}
-                  className={`flex min-h-12 w-full items-center gap-3 rounded-[14px] px-3 text-start text-[16px] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card-elevated ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
+                  className={`flex min-h-12 w-full items-center gap-3 rounded-[14px] px-3 text-start text-base transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card-elevated ${danger ? "text-bad-fg hover:bg-bad-bg" : "text-fg hover:bg-card-hover"}`}
                 >
                   <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
                   {itemLabel}

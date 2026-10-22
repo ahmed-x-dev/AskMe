@@ -115,17 +115,17 @@ function AiKeySection() {
       aria-busy={!isLoaded || undefined}
       className="w-full rounded-2xl bg-card p-4"
     >
-      <h2 id="ai-key-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+      <h2 id="ai-key-heading" className="text-lg font-medium leading-6.5 text-fg">
         AI assistance
       </h2>
 
-      <p className="mt-2 text-[16px] leading-6 text-muted">
+      <p className="mt-2 text-base leading-6 text-muted">
         Choose a provider and save its API key to use AI question generation, grading, and explanations. The key stays
         in this browser and is never included in backups or sync files. Browser storage is not encrypted.
       </p>
 
       <label
-        className="mt-5 block text-[13px] font-medium leading-[18px] text-muted"
+        className="mt-5 block text-[13px] font-medium leading-4.5 text-muted"
         htmlFor="ai-provider"
       >
         AI provider
@@ -147,7 +147,7 @@ function AiKeySection() {
       </select>
 
       <label
-        className="mt-5 block text-[13px] font-medium leading-[18px] text-muted"
+        className="mt-5 block text-[13px] font-medium leading-4.5 text-muted"
         htmlFor="ai-key"
       >
         API key
@@ -174,7 +174,7 @@ function AiKeySection() {
         </button>
       </div>
 
-      <p id="ai-key-help" className="mt-2 text-[13px] leading-[18px] text-muted">
+      <p id="ai-key-help" className="mt-2 text-[13px] leading-4.5 text-muted">
         Saving a non-empty key stores it for this provider. To remove a saved key, use Remove.
       </p>
 
@@ -198,7 +198,7 @@ function AiKeySection() {
       </div>
 
       {!isLoaded ? (
-        <p role="status" className="mt-4 text-[13px] leading-[18px] text-muted">
+        <p role="status" className="mt-4 text-[13px] leading-4.5 text-muted">
           Loading saved AI settings…
         </p>
       ) : null}
@@ -206,7 +206,7 @@ function AiKeySection() {
       {status ? (
         <p
           role={status.kind === "error" ? "alert" : "status"}
-          className={`mt-4 text-[13px] leading-[18px] ${
+          className={`mt-4 text-[13px] leading-4.5 ${
             status.kind === "error" ? "text-bad-fg" : "text-accent-text"
           }`}
         >
@@ -245,14 +245,14 @@ function AppearanceSection() {
 
   return (
     <section aria-labelledby="appearance-heading" className="w-full rounded-2xl bg-card p-4">
-      <h2 id="appearance-heading" className="text-[18px] font-medium leading-[26px] text-fg">
+      <h2 id="appearance-heading" className="text-lg font-medium leading-6.5 text-fg">
         Appearance
       </h2>
-      <p id="theme-help" className="mt-2 text-[16px] leading-6 text-muted">
+      <p id="theme-help" className="mt-2 text-base leading-6 text-muted">
         Choose a theme for this browser. Your preference is saved automatically; you can also switch it from the header.
       </p>
       <fieldset aria-describedby="theme-help" className="mt-4 flex flex-col gap-2">
-        <legend className="mb-2 text-[13px] font-medium leading-[18px] text-muted">Color theme</legend>
+        <legend className="mb-2 text-[13px] font-medium leading-4.5 text-muted">Color theme</legend>
         {options.map((option) => (
           <label
             key={option.value}
@@ -269,8 +269,8 @@ function AppearanceSection() {
               className="mt-0.5 h-5 w-5 shrink-0 accent-(--accent) focus-visible:ring-2 focus-visible:ring-accent"
             />
             <span className="min-w-0">
-              <span className="block text-[16px] font-medium leading-6 text-fg">{option.label}</span>
-              <span className="block text-[13px] leading-[18px] text-muted">{option.description}</span>
+              <span className="block text-base font-medium leading-6 text-fg">{option.label}</span>
+              <span className="block text-[13px] leading-4.5 text-muted">{option.description}</span>
             </span>
           </label>
         ))}
@@ -284,7 +284,7 @@ export function SettingsPage() {
     <div className="mx-auto flex w-full flex-col gap-6">
       <header className="min-w-0">
         <h1 className="text-[22px] font-medium leading-7 text-fg">Settings</h1>
-        <p className="mt-1 text-[16px] leading-6 text-muted">
+        <p className="mt-1 text-base leading-6 text-muted">
           Manage your appearance, AI assistance, and study data on this device.
         </p>
       </header>

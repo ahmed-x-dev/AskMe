@@ -80,10 +80,10 @@ export function MoveTopicDialog({
           <h2 id="move-topic-title" className="text-[22px] font-medium leading-7">
             Move topic
           </h2>
-          <p className="mt-1 wrap-break-word text-[16px] leading-6 text-muted">{topic.title}</p>
+          <p className="mt-1 wrap-break-word text-base leading-6 text-muted">{topic.title}</p>
         </div>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           Roadmap
           <select
             value={roadmapId}
@@ -98,7 +98,7 @@ export function MoveTopicDialog({
           </select>
         </label>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           Group
           <select
             value={groupId}

@@ -56,7 +56,7 @@ export function AddTopicForm({ placeholder, inputId, onAdd }: AddTopicFormProps)
           disabled={isSaving || title.trim() === ""}
           aria-label="Add topic"
           aria-busy={isSaving}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-150 ease-out hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed"
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-2xl bg-accent text-on-accent transition duration-150 ease-out hover:opacity-90 active:scale-98 disabled:cursor-not-allowed"
         >
           <Plus aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
         </button>

@@ -31,7 +31,7 @@ export function TodayCard() {
             <span className="block text-[22px] font-medium leading-7 text-fg tabular-nums">
               {dueCount === 0 ? "All caught up" : `${plural(dueCount, "question")} due`}
             </span>
-            <span className="block text-[13px] leading-[18px] text-muted">
+            <span className="block text-[13px] leading-4.5 text-muted">
               {dueCount === 0 ? "Nothing to review today" : "Start today's review"}
             </span>
           </span>
@@ -46,7 +46,7 @@ export function TodayCard() {
             <span className="block text-[22px] font-medium leading-7 text-fg tabular-nums">
               {plural(streak.current, "day")} streak
             </span>
-            <span className="block text-[13px] leading-[18px] text-muted tabular-nums">
+            <span className="block text-[13px] leading-4.5 text-muted tabular-nums">
               {streak.studiedToday
                 ? `${plural(answeredToday, "answer")} today`
                 : streak.current > 0
@@ -59,7 +59,7 @@ export function TodayCard() {
 
         {weakTopics.length > 0 ? (
           <div className="rounded-2xl bg-card p-4 sm:col-span-2 xl:col-span-1">
-            <h2 className="flex items-center gap-2 text-[16px] font-medium leading-6 text-fg">
+            <h2 className="flex items-center gap-2 text-base font-medium leading-6 text-fg">
               <TrendingDown aria-hidden="true" className="h-5 w-5 text-muted" strokeWidth={1.5} />
               Needs more practice
             </h2>
@@ -71,10 +71,10 @@ export function TodayCard() {
                     className={`flex min-h-12 items-center justify-between gap-3 rounded-[14px] bg-bg px-3 py-2 transition-all duration-150 hover:bg-card-hover active:scale-[0.99] ${focusRing}`}
                   >
                     <span className="min-w-0">
-                      <span className="block wrap-break-word text-[16px] leading-6 text-fg">{topic.title}</span>
-                      <span className="block wrap-break-word text-[13px] leading-[18px] text-muted">{roadmap.title}</span>
+                      <span className="block wrap-break-word text-base leading-6 text-fg">{topic.title}</span>
+                      <span className="block wrap-break-word text-[13px] leading-4.5 text-muted">{roadmap.title}</span>
                     </span>
-                    <span className="shrink-0 text-[13px] font-medium leading-[18px] text-bad-fg tabular-nums">
+                    <span className="shrink-0 text-[13px] font-medium leading-4.5 text-bad-fg tabular-nums">
                       {Math.round(accuracy * 100)}% of {attempts}
                     </span>
                   </Link>

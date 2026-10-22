@@ -103,7 +103,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
           {roadmap ? "Edit roadmap" : "New roadmap"}
         </h2>
 
-        <label className="flex flex-col gap-2 text-[16px] font-medium leading-6">
+        <label className="flex flex-col gap-2 text-base font-medium leading-6">
           Name
           <input
             type="text"
@@ -121,7 +121,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
         <div className="flex flex-col gap-2">
           <label
             htmlFor="roadmap-icon"
-            className="text-[16px] font-medium leading-6"
+            className="text-base font-medium leading-6"
           >
             Icon <span className="font-normal text-muted">(optional)</span>
           </label>
@@ -151,7 +151,7 @@ export function RoadmapDialog({ roadmap, onSubmit, onClose }: RoadmapDialogProps
         </div>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-[16px] font-medium leading-6">Color</legend>
+          <legend className="mb-2 text-base font-medium leading-6">Color</legend>
           <div className="flex flex-wrap gap-3">
             {ROADMAP_COLORS.map((option) => (
               <label key={option.name} className="cursor-pointer">

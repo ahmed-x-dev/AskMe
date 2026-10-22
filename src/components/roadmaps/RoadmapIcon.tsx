@@ -11,7 +11,7 @@ export function RoadmapIcon({ roadmap }: RoadmapIconProps) {
   return (
     <span
       aria-hidden="true"
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[24px] font-medium leading-none"
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl font-medium leading-none"
       style={{
         backgroundColor: `color-mix(in oklab, ${hue} 22%, var(--bg))`,
         color: hue,

@@ -53,7 +53,7 @@ export function TopicPage() {
     return (
       <section className="mx-auto w-full max-w-xl rounded-2xl bg-card p-6 text-center">
         <h1 className="text-[22px] font-medium leading-7">Topic not found</h1>
-        <p className="mt-2 text-[16px] leading-6 text-muted">
+        <p className="mt-2 text-base leading-6 text-muted">
           It may have been deleted.
         </p>
         <Link href="/" className={`mt-6 ${buttonPrimary}`}>
@@ -113,7 +113,7 @@ export function TopicPage() {
             <h1 className="wrap-break-word text-[22px] font-medium leading-7 text-fg">
               {topic.title}
             </h1>
-            <p className="mt-1 max-w-[72ch] text-[16px] leading-6 text-muted">
+            <p className="mt-1 max-w-[72ch] text-base leading-6 text-muted">
               Learn the key ideas with your notes and lessons, then use practice
               questions to check your understanding.
             </p>
@@ -158,7 +158,7 @@ export function TopicPage() {
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-[16px] font-medium leading-6 text-fg">
+              <h2 className="text-base font-medium leading-6 text-fg">
                 Learning progress
               </h2>
               <span className="text-[13px] leading-4.5 text-muted tabular-nums">
