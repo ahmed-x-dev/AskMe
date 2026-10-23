@@ -100,11 +100,10 @@ describe('completeTopicsFromQuiz', () => {
     await setTopicStatus(ungrouped.id, 'known')
     expect(await completeTopicsFromQuiz([{ questionId: q3.id, correct: true }])).toEqual([])
     expect((await db.topics.get(ungrouped.id))!.status).toBe('known')
-    const five = await addQuestions(inGroup.id, [mcq('a'), mcq('b'), mcq('c')])
+    await addQuestions(inGroup.id, [mcq('a'), mcq('b'), mcq('c')])
     const all = await db.questions.where('topicId').equals(inGroup.id).toArray()
     expect(all).toHaveLength(5)
     const answers = all.map((q, i) => ({ questionId: q.id, correct: i !== 0 }))
-    expect(five).toBeDefined()
     expect((await completeTopicsFromQuiz(answers)).map((t) => t.id)).toEqual([inGroup.id])
   })
 

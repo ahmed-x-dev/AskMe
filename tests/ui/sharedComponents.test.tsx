@@ -95,6 +95,12 @@ function button(label: string, scope: ParentNode = container) {
   ) as HTMLButtonElement | undefined;
 }
 
+function brandLink() {
+  return [...container.querySelectorAll("header a")].find((link) =>
+    link.textContent?.includes("AskMe"),
+  );
+}
+
 describe("ActionMenu", () => {
   it("supports menu keys, skips disabled actions, and restores focus on Escape", async () => {
     render(
@@ -294,9 +300,7 @@ describe("AppLayout navigation", () => {
         </AppLayout>,
       );
 
-      expect(
-        container.querySelector('[data-brand="askme"]')?.textContent,
-      ).toContain("AskMe");
+      expect(brandLink()?.textContent).toContain("AskMe");
     },
   );
 
@@ -308,7 +312,7 @@ describe("AppLayout navigation", () => {
       </AppLayout>,
     );
 
-    expect(container.querySelector('[data-brand="askme"]')).toBeNull();
+    expect(brandLink()).toBeUndefined();
   });
 });
 

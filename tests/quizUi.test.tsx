@@ -212,7 +212,7 @@ describe('QuizResults', () => {
   })
 
   it('surfaces failed history/completion updates without hiding the score', async () => {
-    const { topic, questions } = await seed(1)
+    const { questions } = await seed(1)
     const html = renderToStaticMarkup(
       <QuizResults
         queue={questions}
@@ -232,7 +232,6 @@ describe('QuizResults', () => {
     expect(html).toContain('IndexedDB unavailable')
     expect(html).toContain('Topic could not be updated.')
     expect(html).toContain('Back')
-    expect(topic.title).toBe('T')
   })
 
   it('celebrates a perfect run and hides the retry button', async () => {

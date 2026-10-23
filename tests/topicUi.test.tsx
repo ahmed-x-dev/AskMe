@@ -169,7 +169,11 @@ describe("topic learning page", () => {
     expect(
       container.querySelector(`a[href="/topic/${topic.id}/quiz"]`),
     ).toBeNull();
-    expect(container.textContent).not.toContain("Add question");
+    expect(
+      container.querySelector(
+        `#questions-section a[href="/topic/${topic.id}/q/new"]`,
+      )?.textContent,
+    ).toContain("Add question");
     expect(container.textContent).toContain("Add a lesson to organize");
   });
 
