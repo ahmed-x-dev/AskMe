@@ -48,3 +48,4 @@ Some early guides describe previous implementations. For the current product sco
 - [31 — Settings and data management](./31-settings-and-data-management.md): How appearance and AI preferences share app state, and how backup/restore actions explain their effects.
 - [32 — Optional question types](./32-question-types.md): How new question variants extend the shared schema without breaking the quiz or AI pipelines.
 - [33 — Topic lessons and local documents](./33-topic-lessons-and-local-documents.md): How lessons group materials and questions, store local documents, and preview/edit Markdown files in the app.
+- [34 — Editing AI prompts](./34-ai-prompt-configuration.md): How AI instruction wording is kept in one editable configuration file.

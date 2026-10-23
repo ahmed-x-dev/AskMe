@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   generateQuestions,
+  planAutomaticCoverage,
   explainQuestionAnswer,
   gradeEssayAnswer,
   validateAnswerExplanation,
@@ -230,29 +231,27 @@ describe('AI calls', () => {
   it('grades essay answers using the Gemini API', async () => {
     saveGeminiApiKey('test-key')
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          candidates: [
-            {
-              content: {
-                parts: [
-                  {
-                    text: JSON.stringify({
-                      score: 8,
-                      feedback: 'Strong answer with a few gaps.',
-                      missingPoints: 2,
-                    }),
-                  },
-                ],
-              },
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    score: 8,
+                    feedback: 'Strong answer with a few gaps.',
+                    missingPoints: 2,
+                  }),
+                },
+              ],
             },
-          ],
-        }),
+          },
+        ],
       }),
-    )
+    })
+    vi.stubGlobal('fetch', fetchMock)
 
     const result = await gradeEssayAnswer({
       questionText: 'Explain photosynthesis.',
@@ -263,6 +262,42 @@ describe('AI calls', () => {
     expect(result.score).toBe(8)
     expect(result.feedback).toContain('Strong')
     expect(result.missingPoints).toBe(2)
+    const [, requestOptions] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(JSON.stringify(requestOptions.body)).toContain(
+      'Grade the learner answer against the question and optional reference answer.',
+    )
+  })
+
+  it('plans automatic coverage using its configured instructions', async () => {
+    saveGeminiApiKey('test-key')
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [{ text: JSON.stringify({ coveragePoints: ['Understand the lifecycle.'] }) }],
+            },
+          },
+        ],
+      }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      planAutomaticCoverage({
+        topicTitle: 'React effects',
+        existingQuestions: ['What is an effect?'],
+      }),
+    ).resolves.toEqual(['Understand the lifecycle.'])
+
+    const [, requestOptions] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(JSON.stringify(requestOptions.body)).toContain(
+      'Plan a concise but thorough revision question set from the supplied study material.',
+    )
+    expect(JSON.stringify(requestOptions.body)).toContain(
+      'Existing questions already cover these prompts. Do not plan duplicates:',
+    )
   })
 
   it('explains a question answer using the configured AI provider', async () => {
@@ -296,6 +331,9 @@ describe('AI calls', () => {
     const [, requestOptions] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(JSON.stringify(requestOptions.body)).toContain('Correct answer: Mars')
     expect(JSON.stringify(requestOptions.body)).toContain('Learner selected: Venus')
+    expect(JSON.stringify(requestOptions.body)).toContain(
+      'Explain the answer to this revision question in clear, concise language.',
+    )
   })
 
   it('uses the OpenAI provider when selected', async () => {

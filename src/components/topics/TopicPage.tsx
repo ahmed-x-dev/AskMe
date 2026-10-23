@@ -226,6 +226,12 @@ export function TopicPage() {
           roadmapTitle: roadmap.title,
           groupTitle: group?.title,
           notes: topic.notes,
+          resources: lessons.flatMap((lesson) =>
+            lesson.resources.map((resource) => ({
+              resource,
+              lessonTitle: lesson.title,
+            })),
+          ),
         }}
       />
 

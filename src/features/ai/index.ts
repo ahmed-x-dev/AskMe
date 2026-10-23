@@ -5,6 +5,7 @@ import {
 } from "@/platform/secureStorage";
 import type { QuestionInput } from "@/lib/data";
 import type { QuestionDifficulty, QuestionType } from "@/types/study";
+import { AI_PROMPTS } from "./prompts";
 
 const GEMINI_MODEL = "gemini-3.8-flash";
 const OPENAI_MODEL = "gpt-4o-mini";
@@ -24,6 +25,7 @@ const DIFFICULTIES: readonly QuestionDifficulty[] = ["easy", "medium", "hard"];
 const MAX_NOTES_CHARS = 4000;
 const MAX_EXISTING_QUESTIONS = 30;
 const MAX_EXISTING_QUESTION_CHARS = 200;
+const MAX_SOURCE_MATERIAL_CHARS = 24_000;
 
 export type GeneratedQuestionPayload = {
   questions: GeneratedQuestion[];
@@ -461,7 +463,7 @@ async function callAi<T>(
 }
 
 export type GenerateQuestionsOptions = {
-  type: QuestionType;
+  type: QuestionType | "automatic";
   /** Capped to 1–20. */
   count: number;
   /** What the questions are about. */
@@ -474,6 +476,10 @@ export type GenerateQuestionsOptions = {
   groupTitle?: string;
   /** The learner's own notes on the topic, used as reference material. */
   notes?: string;
+  /** Readable contents of resources selected for generation. */
+  sourceMaterial?: { title: string; content: string }[];
+  /** Concepts identified by the automatic coverage planner. */
+  coveragePoints?: string[];
   /** Texts of questions the topic already has, so the AI does not repeat them. */
   existingQuestions?: string[];
   difficulty?: QuestionDifficulty;
@@ -488,6 +494,48 @@ function limitText(value: string, maxChars: number): string {
   return text.length > maxChars ? `${text.slice(0, maxChars)}…` : text;
 }
 
+function formatPrompt(template: string, values: Record<string, string> = {}): string {
+  return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
+    const value = values[key];
+    if (value === undefined) {
+      throw new Error(`Missing value for AI prompt placeholder: ${placeholder}`);
+    }
+
+    return value;
+  });
+}
+
+function formatSourceMaterial(
+  sourceMaterial: GenerateQuestionsOptions["sourceMaterial"] = [],
+): string[] {
+  let remaining = MAX_SOURCE_MATERIAL_CHARS;
+
+  return sourceMaterial.flatMap(({ title, content }) => {
+    const safeContent = content.trim();
+    const resourceTitle = formatPrompt(AI_PROMPTS.sourceMaterial.title, {
+      title: limitText(title, 200),
+    });
+    if (!safeContent) {
+      return [`${resourceTitle}\n${AI_PROMPTS.sourceMaterial.empty}`];
+    }
+    if (remaining <= 0) {
+      return [
+        `${resourceTitle}\n${AI_PROMPTS.sourceMaterial.limitReached}`,
+      ];
+    }
+
+    const included = limitText(safeContent, remaining);
+    remaining = Math.max(0, remaining - included.length);
+    return [
+      `${resourceTitle}\n${included}${
+        safeContent.length > included.length
+          ? `\n${AI_PROMPTS.sourceMaterial.truncated}`
+          : ""
+      }`,
+    ];
+  });
+}
+
 /** Builds the generation prompt. Exported so tests can check what the AI is told. */
 export function buildGenerationPrompt({
   type,
@@ -497,74 +545,123 @@ export function buildGenerationPrompt({
   roadmapTitle,
   groupTitle,
   notes,
+  sourceMaterial,
+  coveragePoints = [],
   existingQuestions = [],
   difficulty,
   prompt,
 }: GenerateQuestionsOptions): string {
   const safeCount = Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1));
   const typeLabel =
-    type === "mcq"
-      ? "multiple-choice"
+    type === "automatic"
+      ? AI_PROMPTS.generation.typeLabels.automatic
+      : type === "mcq"
+      ? AI_PROMPTS.generation.typeLabels.mcq
       : type === "true-false"
-        ? "true/false"
+        ? AI_PROMPTS.generation.typeLabels.trueFalse
         : type === "fill-blank"
-          ? "fill in the blank"
+          ? AI_PROMPTS.generation.typeLabels.fillBlank
           : type === "flashcard"
-            ? "flashcard"
-            : "essay";
+            ? AI_PROMPTS.generation.typeLabels.flashcard
+            : AI_PROMPTS.generation.typeLabels.essay;
   const context = [
-    topicTitle?.trim() ? `Topic: ${topicTitle.trim()}` : "",
-    lessonTitle?.trim() ? `Lesson: ${lessonTitle.trim()}` : "",
-    groupTitle?.trim() ? `Part of the group: ${groupTitle.trim()}` : "",
-    roadmapTitle?.trim() ? `In the subject: ${roadmapTitle.trim()}` : "",
+    topicTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.generation.topic, { title: topicTitle.trim() })
+      : "",
+    lessonTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.generation.lesson, { title: lessonTitle.trim() })
+      : "",
+    groupTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.generation.group, { title: groupTitle.trim() })
+      : "",
+    roadmapTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.generation.subject, { title: roadmapTitle.trim() })
+      : "",
   ].filter(Boolean);
   const safeNotes = notes?.trim() ? limitText(notes, MAX_NOTES_CHARS) : "";
+  const safeSourceMaterial = formatSourceMaterial(sourceMaterial);
   const known = existingQuestions
     .map((text) => text.trim())
     .filter(Boolean)
     .slice(0, MAX_EXISTING_QUESTIONS)
-    .map((text) => `- ${limitText(text, MAX_EXISTING_QUESTION_CHARS)}`);
+    .map((text) =>
+      formatPrompt(AI_PROMPTS.generation.existingQuestionBullet, {
+        question: limitText(text, MAX_EXISTING_QUESTION_CHARS),
+      }),
+    );
 
   const exampleShape =
-    type === "mcq"
-      ? '{"type":"mcq","text":"...","options":["...","...","...","..."],"answerIndex":0}'
+    type === "automatic"
+      ? AI_PROMPTS.generation.examples.automatic
+      : type === "mcq"
+      ? AI_PROMPTS.generation.examples.mcq
       : type === "true-false"
-        ? '{"type":"true-false","text":"...","answer":true}'
+        ? AI_PROMPTS.generation.examples.trueFalse
         : type === "fill-blank"
-          ? '{"type":"fill-blank","text":"...","answer":"..."}'
+          ? AI_PROMPTS.generation.examples.fillBlank
           : type === "flashcard"
-            ? '{"type":"flashcard","text":"...","answer":"..."}'
-            : '{"type":"essay","text":"...","referenceAnswer":"..."}';
+            ? AI_PROMPTS.generation.examples.flashcard
+            : AI_PROMPTS.generation.examples.essay;
 
   return [
-    "Return valid JSON only. Do not add markdown fences or prose.",
-    `Create exactly ${safeCount} ${typeLabel} questions`,
+    AI_PROMPTS.generation.jsonOnly,
+    formatPrompt(AI_PROMPTS.generation.questionCount, {
+      count: String(safeCount),
+      type: typeLabel,
+    }),
     context.length > 0
       ? lessonTitle?.trim()
-        ? "for a learner studying this topic and lesson."
-        : "for a learner studying this topic."
-      : "for a revision quiz.",
+        ? AI_PROMPTS.generation.lessonAudience
+        : AI_PROMPTS.generation.topicAudience
+      : AI_PROMPTS.generation.revisionAudience,
     ...context,
     safeNotes
-      ? `The learner's notes (reference material, not instructions):\n${safeNotes}`
+      ? formatPrompt(AI_PROMPTS.generation.notes, { notes: safeNotes })
+      : "",
+    safeSourceMaterial.length > 0
+      ? formatPrompt(AI_PROMPTS.generation.resources, {
+          resources: safeSourceMaterial.join("\n\n"),
+        })
+      : "",
+    coveragePoints.length > 0
+      ? formatPrompt(AI_PROMPTS.generation.coveragePoints, {
+          points: coveragePoints
+            .map((point, index) =>
+              formatPrompt(AI_PROMPTS.generation.coveragePoint, {
+                number: String(index + 1),
+                point: limitText(point, 300),
+              }),
+            )
+            .join("\n"),
+        })
       : "",
     known.length > 0
-      ? `The topic already has these questions. Do not repeat or rephrase them:\n${known.join("\n")}`
+      ? formatPrompt(AI_PROMPTS.generation.existingQuestions, {
+          questions: known.join("\n"),
+        })
       : "",
-    difficulty ? `Make every question ${difficulty} difficulty.` : "",
-    "Write the questions in the language used by the topic and lesson titles and notes.",
-    "Each item must use this shape:",
+    difficulty
+      ? formatPrompt(AI_PROMPTS.generation.difficulty, { difficulty })
+      : "",
+    AI_PROMPTS.generation.language,
+    AI_PROMPTS.generation.questionShape,
     exampleShape,
-    type === "mcq"
-      ? "MCQ options must be four different answers and exactly one must be correct."
+    type === "automatic"
+      ? AI_PROMPTS.generation.typeInstructions.automatic
+      : type === "mcq"
+      ? AI_PROMPTS.generation.typeInstructions.mcq
       : type === "true-false"
-        ? "The answer must be a boolean true or false."
+        ? AI_PROMPTS.generation.typeInstructions.trueFalse
         : type === "fill-blank" || type === "flashcard"
-          ? "The answer should be exactly one clear correct response."
+          ? AI_PROMPTS.generation.typeInstructions.shortAnswer
           : "",
-    "Keep the questions clear and suitable for short revision study.",
-    prompt?.trim() ? `Extra guidance: ${limitText(prompt, 500)}` : "",
-    'Return a top-level object with a "questions" array.',
+    AI_PROMPTS.generation.concise,
+    prompt?.trim()
+      ? formatPrompt(AI_PROMPTS.generation.extraGuidance, {
+          guidance: limitText(prompt, 500),
+        })
+      : "",
+    AI_PROMPTS.generation.responseShape,
   ]
     .filter(Boolean)
     .join("\n");
@@ -578,6 +675,97 @@ export async function generateQuestions(
   return callAi<GeneratedQuestion[]>(provider, buildGenerationPrompt(options), (value) =>
     validateGeneratedQuestions(value, difficulty ?? "medium"),
   );
+}
+
+/** Plans one distinct question per uncovered, testable point in the selected material. */
+export async function planAutomaticCoverage(
+  options: Pick<
+    GenerateQuestionsOptions,
+    | "topicTitle"
+    | "lessonTitle"
+    | "roadmapTitle"
+    | "groupTitle"
+    | "notes"
+    | "sourceMaterial"
+    | "existingQuestions"
+    | "prompt"
+    | "provider"
+  >,
+): Promise<string[]> {
+  const sourceMaterial = formatSourceMaterial(options.sourceMaterial);
+  const context = [
+    options.topicTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.topic, { title: options.topicTitle.trim() })
+      : "",
+    options.lessonTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.lesson, { title: options.lessonTitle.trim() })
+      : "",
+    options.groupTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.group, { title: options.groupTitle.trim() })
+      : "",
+    options.roadmapTitle?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.subject, { title: options.roadmapTitle.trim() })
+      : "",
+  ].filter(Boolean);
+  const known = (options.existingQuestions ?? [])
+    .map((question) => question.trim())
+    .filter(Boolean)
+    .slice(0, MAX_EXISTING_QUESTIONS)
+    .map((question) =>
+      formatPrompt(AI_PROMPTS.coveragePlanning.existingQuestionBullet, {
+        question: limitText(question, MAX_EXISTING_QUESTION_CHARS),
+      }),
+    );
+  const prompt = [
+    AI_PROMPTS.coveragePlanning.jsonOnly,
+    AI_PROMPTS.coveragePlanning.purpose,
+    AI_PROMPTS.coveragePlanning.scope,
+    ...context,
+    options.notes?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.notes, {
+          notes: limitText(options.notes, MAX_NOTES_CHARS),
+        })
+      : "",
+    sourceMaterial.length > 0
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.resources, {
+          resources: sourceMaterial.join("\n\n"),
+        })
+      : "",
+    known.length > 0
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.existingQuestions, {
+          questions: known.join("\n"),
+        })
+      : "",
+    options.prompt?.trim()
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.extraGuidance, {
+          guidance: limitText(options.prompt, 500),
+        })
+      : "",
+    AI_PROMPTS.coveragePlanning.responseShape,
+    AI_PROMPTS.coveragePlanning.coverageLimit,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return callAi(options.provider ?? getAiProvider(), prompt, (value) => {
+    if (!isRecord(value) || !Array.isArray(value.coveragePoints)) {
+      throw new Error("The AI coverage plan did not include a coveragePoints array.");
+    }
+
+    const points = value.coveragePoints.map((point) =>
+      typeof point === "string" ? point.trim() : "",
+    );
+    if (points.some((point) => !point)) {
+      throw new Error("The AI coverage plan contains an empty learning point.");
+    }
+
+    const uniquePoints = [...new Map(points.map((point) => [point.toLocaleLowerCase(), point])).values()];
+    if (uniquePoints.length === 0) {
+      throw new Error("The AI could not find any study points to cover.");
+    }
+
+    return uniquePoints;
+  });
 }
 
 export async function gradeEssayAnswer({
@@ -595,14 +783,16 @@ export async function gradeEssayAnswer({
   const safeAnswer = ensureValidText(userAnswer, "user answer");
 
   const prompt = [
-    "Return valid JSON only. Do not add markdown fences or prose.",
-    "Grade the learner answer against the question and optional reference answer.",
-    `Question: ${safeQuestion}`,
-    `Reference answer: ${referenceAnswer?.trim() || "No reference answer was supplied."}`,
-    `Learner answer: ${safeAnswer}`,
-    "Assess how complete and accurate the answer is.",
-    "Return a top-level object with score, feedback, and missingPoints.",
-    "score must be a number from 0 to 10, missingPoints should be max(0, 10 - score).",
+    AI_PROMPTS.essayGrading.jsonOnly,
+    AI_PROMPTS.essayGrading.purpose,
+    formatPrompt(AI_PROMPTS.essayGrading.question, { question: safeQuestion }),
+    formatPrompt(AI_PROMPTS.essayGrading.referenceAnswer, {
+      answer: referenceAnswer?.trim() || AI_PROMPTS.answerExplanation.noReferenceAnswer,
+    }),
+    formatPrompt(AI_PROMPTS.essayGrading.learnerAnswer, { answer: safeAnswer }),
+    AI_PROMPTS.essayGrading.assess,
+    AI_PROMPTS.essayGrading.responseShape,
+    AI_PROMPTS.essayGrading.scoreRange,
   ].join("\n");
 
   return callAi<EssayGradeResult>(provider, prompt, (value) =>
@@ -622,38 +812,72 @@ export async function explainQuestionAnswer({
   const questionDetails =
     question.type === "mcq"
       ? [
-          `Options: ${question.options.map((option, index) => `${index + 1}. ${option}`).join(" | ")}`,
-          `Correct answer: ${question.options[question.answerIndex]}`,
-          `Learner selected: ${typeof userAnswer === "number" ? question.options[userAnswer] ?? "No answer selected." : "No answer selected."}`,
+          formatPrompt(AI_PROMPTS.answerExplanation.options, {
+            options: question.options.map((option, index) => `${index + 1}. ${option}`).join(" | "),
+          }),
+          formatPrompt(AI_PROMPTS.answerExplanation.correctAnswer, {
+            answer: question.options[question.answerIndex],
+          }),
+          formatPrompt(AI_PROMPTS.answerExplanation.learnerSelected, {
+            answer:
+              typeof userAnswer === "number"
+                ? question.options[userAnswer] ?? AI_PROMPTS.answerExplanation.noAnswerSelected
+                : AI_PROMPTS.answerExplanation.noAnswerSelected,
+          }),
         ]
       : question.type === "true-false"
         ? [
-            `Correct answer: ${question.answer ? "True" : "False"}`,
-            `Learner selected: ${typeof userAnswer === "boolean" ? (userAnswer ? "True" : "False") : "No answer selected."}`,
+            formatPrompt(AI_PROMPTS.answerExplanation.correctAnswer, {
+              answer: question.answer ? "True" : "False",
+            }),
+            formatPrompt(AI_PROMPTS.answerExplanation.learnerSelected, {
+              answer:
+                typeof userAnswer === "boolean"
+                  ? userAnswer
+                    ? "True"
+                    : "False"
+                  : AI_PROMPTS.answerExplanation.noAnswerSelected,
+            }),
           ]
         : question.type === "fill-blank" || question.type === "flashcard"
           ? [
-              `Correct answer: ${question.answer}`,
-              `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
+              formatPrompt(AI_PROMPTS.answerExplanation.correctAnswer, {
+                answer: question.answer,
+              }),
+              formatPrompt(AI_PROMPTS.answerExplanation.learnerAnswer, {
+                answer:
+                  typeof userAnswer === "string" && userAnswer.trim()
+                    ? userAnswer.trim()
+                    : AI_PROMPTS.answerExplanation.noAnswerSupplied,
+              }),
             ]
           : (() => {
               const essayQuestion = question as { type: "essay"; referenceAnswer?: string };
 
               return [
-                `Reference answer: ${essayQuestion.referenceAnswer?.trim() || "No reference answer was supplied."}`,
-                `Learner answer: ${typeof userAnswer === "string" && userAnswer.trim() ? userAnswer.trim() : "No answer supplied."}`,
+                formatPrompt(AI_PROMPTS.answerExplanation.referenceAnswer, {
+                  answer:
+                    essayQuestion.referenceAnswer?.trim() ||
+                    AI_PROMPTS.answerExplanation.noReferenceAnswer,
+                }),
+                formatPrompt(AI_PROMPTS.answerExplanation.learnerAnswer, {
+                  answer:
+                    typeof userAnswer === "string" && userAnswer.trim()
+                      ? userAnswer.trim()
+                      : AI_PROMPTS.answerExplanation.noAnswerSupplied,
+                }),
               ];
             })();
 
   const prompt = [
-    "Return valid JSON only. Do not add markdown fences or prose.",
-    "Explain the answer to this revision question in clear, concise language.",
-    "For a multiple-choice question, explain why the correct answer is right and address the learner's choice if provided.",
-    "For a true/false question, explain why the correct boolean is right and address the learner's choice if provided.",
-    "For a short-answer question, explain the key idea and the accepted answer.",
-    `Question: ${question.text}`,
+    AI_PROMPTS.answerExplanation.jsonOnly,
+    AI_PROMPTS.answerExplanation.purpose,
+    AI_PROMPTS.answerExplanation.mcq,
+    AI_PROMPTS.answerExplanation.trueFalse,
+    AI_PROMPTS.answerExplanation.shortAnswer,
+    formatPrompt(AI_PROMPTS.answerExplanation.question, { question: question.text }),
     ...questionDetails,
-    'Return a top-level object with an "explanation" string.',
+    AI_PROMPTS.answerExplanation.responseShape,
   ].join("\n");
 
   const result = await callAi<AnswerExplanation>(provider, prompt, (value) =>

@@ -1,5 +1,6 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 
+import type { QuestionInput } from './data/questions'
 import { newId } from './data/util'
 import {
   progressFileSchema,
@@ -32,6 +33,75 @@ function parseWith<T>(text: string, schema: z.ZodType<T>, what: string): T {
 
   if (!result.success) {
     throw new Error(`This is not a valid ${what} file. ${describeIssue(result.error)}`)
+  }
+
+  return result.data
+}
+
+const questionInputSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('mcq'),
+    text: z.string().trim().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    tags: z.array(z.string()).optional(),
+    options: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+    answerIndex: z.number().int().min(0).max(3),
+  }),
+  z.object({
+    type: z.literal('essay'),
+    text: z.string().trim().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    tags: z.array(z.string()).optional(),
+    referenceAnswer: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal('true-false'),
+    text: z.string().trim().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    tags: z.array(z.string()).optional(),
+    answer: z.union([z.boolean(), z.enum(['true', 'false', 'yes', 'no']), z.literal(0), z.literal(1)]),
+  }),
+  z.object({
+    type: z.literal('fill-blank'),
+    text: z.string().trim().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    tags: z.array(z.string()).optional(),
+    answer: z.string(),
+  }),
+  z.object({
+    type: z.literal('flashcard'),
+    text: z.string().trim().min(1),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    tags: z.array(z.string()).optional(),
+    answer: z.string(),
+  }),
+])
+
+/** Parses standalone question JSON arrays and exported files containing a `questions` array. */
+export function parseQuestionFile(text: string): QuestionInput[] {
+  let value: unknown
+
+  try {
+    value = JSON.parse(text)
+  } catch {
+    throw new Error('This is not a valid questions file (it is not JSON).')
+  }
+
+  const questions =
+    Array.isArray(value)
+      ? value
+      : typeof value === 'object' && value !== null && 'questions' in value
+        ? value.questions
+        : undefined
+
+  if (questions === undefined) {
+    throw new Error('The questions JSON must be an array or contain a questions array.')
+  }
+
+  const result = z.array(questionInputSchema).min(1).safeParse(questions)
+
+  if (!result.success) {
+    throw new Error(`This questions file is invalid. ${describeIssue(result.error)}`)
   }
 
   return result.data

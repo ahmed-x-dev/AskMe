@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { useHeaderBackLink } from '@/components/layout/AppLayout'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import {
   buttonDestructive,
@@ -11,13 +12,44 @@ import {
   buttonSecondary,
   fieldOnCardClassName,
 } from '@/components/ui/styles'
-import { addQuestion, deleteQuestion, updateQuestion, type QuestionInput } from '@/lib/data'
+import { addQuestion, addQuestions, deleteQuestion, updateQuestion, type QuestionInput } from '@/lib/data'
+import { parseQuestionFile } from '@/lib/importExport'
 import type { Lesson, Question, QuestionDifficulty, QuestionType, Topic } from '@/types/study'
 import { EssayFields } from './EssayFields'
 import { McqFields, type McqOptions } from './McqFields'
 
 const EMPTY_OPTIONS: McqOptions = ['', '', '', '']
 const DIFFICULTIES: QuestionDifficulty[] = ['easy', 'medium', 'hard']
+const QUESTION_JSON_PLACEHOLDER = `[
+  {
+    "type": "mcq",
+    "text": "Which is correct?",
+    "options": ["A", "B", "C", "D"],
+    "answerIndex": 0,
+    "difficulty": "medium",
+    "tags": ["example"]
+  },
+  {
+    "type": "true-false",
+    "text": "This statement is true.",
+    "answer": true
+  },
+  {
+    "type": "essay",
+    "text": "Explain the idea.",
+    "referenceAnswer": "An example answer."
+  },
+  {
+    "type": "fill-blank",
+    "text": "The capital of France is ___.",
+    "answer": "Paris"
+  },
+  {
+    "type": "flashcard",
+    "text": "Capital of France",
+    "answer": "Paris"
+  }
+]`
 
 /** Segmented-control styling for the MCQ/Essay and difficulty toggles on the editor card. */
 const segmentContainer = 'flex gap-1 rounded-[14px] bg-bg p-0.75'
@@ -47,7 +79,11 @@ export function QuestionEditorForm({
 }: QuestionEditorFormProps) {
   const router = useRouter()
   const topicUrl = `/topic/${topic.id}`
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  useHeaderBackLink({ href: topicUrl, label: topic.title })
 
+  const [entryMode, setEntryMode] = useState<'manual' | 'json'>('manual')
+  const [jsonText, setJsonText] = useState('')
   const [activeType, setActiveType] = useState<QuestionType>(existingQuestion?.type ?? 'mcq')
   const [text, setText] = useState(existingQuestion?.text ?? '')
   const [difficulty, setDifficulty] = useState<QuestionDifficulty>(
@@ -123,6 +159,32 @@ export function QuestionEditorForm({
     }
   }
 
+  const handleImportText = async (content: string) => {
+    setIsSaving(true)
+    setErrorMessage('')
+
+    try {
+      const questions = parseQuestionFile(content)
+      await addQuestions(topic.id, questions, { lessonId: lesson?.id })
+      router.push(topicUrl)
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not import the questions.')
+      setIsSaving(false)
+    }
+  }
+
+  const handleImportFile = async (file: File | undefined) => {
+    if (!file) return
+
+    try {
+      await handleImportText(await file.text())
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not read the questions file.')
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleDelete = async () => {
     if (!existingQuestion) return
 
@@ -161,109 +223,178 @@ export function QuestionEditorForm({
         </button>
       </div>
 
-      <div className={`${segmentContainer} flex-wrap`}>
-        {(['mcq', 'true-false', 'fill-blank', 'flashcard', 'essay'] as const).map((type) => (
-          <button
-            key={type}
-            type="button"
-            onClick={() => setActiveType(type)}
-            aria-pressed={activeType === type}
-            className={`${segmentBase} ${activeType === type ? segmentActive : segmentInactive}`}
-          >
-            {type === 'mcq' ? 'MCQ' : type === 'true-false' ? 'True/False' : type === 'fill-blank' ? 'Fill blank' : type === 'flashcard' ? 'Flashcard' : 'Essay'}
-          </button>
-        ))}
-      </div>
-
-      <div>
-        <label htmlFor="question-text" className="block text-[13px] font-medium leading-4.5 text-muted">
-          Question
-        </label>
-        <textarea
-          id="question-text"
-          value={text}
-          aria-invalid={invalidField === 'text' || undefined}
-          aria-describedby={invalidField === 'text' ? 'question-editor-error' : undefined}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Type the question here…"
-          className={`mt-2 min-h-30 resize-y py-3 ${fieldOnCardClassName}`}
-        />
-      </div>
-
-      <fieldset>
-        <legend className="text-[13px] font-medium leading-4.5 text-muted">Difficulty</legend>
-        <div className={`mt-2 ${segmentContainer}`}>
-          {DIFFICULTIES.map((level) => (
+      {!existingQuestion ? (
+        <div className={segmentContainer} role="group" aria-label="Question entry method">
+          {(['manual', 'json'] as const).map((mode) => (
             <button
-              key={level}
+              key={mode}
               type="button"
-              onClick={() => setDifficulty(level)}
-              aria-pressed={difficulty === level}
-              className={`${segmentBase} px-2 ${difficulty === level ? segmentActive : segmentInactive}`}
+              onClick={() => setEntryMode(mode)}
+              aria-pressed={entryMode === mode}
+              className={`${segmentBase} ${entryMode === mode ? segmentActive : segmentInactive}`}
             >
-              {level[0].toUpperCase() + level.slice(1)}
+              {mode === 'manual' ? 'Manual' : 'Import JSON'}
             </button>
           ))}
         </div>
-      </fieldset>
+      ) : null}
 
-      <div>
-        <label htmlFor="question-tags" className="block text-[13px] font-medium leading-4.5 text-muted">
-          Tags (one per line)
-        </label>
-        <textarea
-          id="question-tags"
-          value={tagsText}
-          onChange={(event) => setTagsText(event.target.value)}
-          placeholder={'deprecated\nhtml'}
-          rows={2}
-          className={`mt-2 min-h-22 resize-y py-3 ${fieldOnCardClassName}`}
-        />
-        <p className="mt-1 text-[13px] leading-4.5 text-muted">
-          Use “deprecated” to label outdated information. Tags do not change quiz behavior.
-        </p>
-      </div>
-
-      {activeType === 'mcq' ? (
-        <McqFields
-          options={options}
-          answerIndex={answerIndex}
-          isInvalid={invalidField === 'options'}
-          onOptionChange={handleOptionChange}
-          onAnswerChange={setAnswerIndex}
-        />
-      ) : activeType === 'true-false' ? (
-        <fieldset>
-          <legend className="text-[13px] font-medium leading-4.5 text-muted">Correct answer</legend>
-          <div className={`mt-2 ${segmentContainer}`}>
-            {([true, false] as const).map((value) => (
+      {entryMode === 'json' && !existingQuestion ? (
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-base font-medium leading-6 text-fg">Import questions from JSON</h2>
+            <p className="mt-1 text-[13px] leading-4.5 text-muted">
+              Paste a JSON array below or choose a JSON file. All questions are validated and added
+              together to this {lesson ? 'lesson' : 'topic'}.
+            </p>
+          </div>
+          <div>
+            <label htmlFor="question-json" className="block text-[13px] font-medium leading-4.5 text-muted">
+              Questions JSON
+            </label>
+            <textarea
+              id="question-json"
+              value={jsonText}
+              onChange={(event) => setJsonText(event.target.value)}
+              placeholder={QUESTION_JSON_PLACEHOLDER}
+              spellCheck={false}
+              className={`mt-2 min-h-80 resize-y py-3 font-mono text-[13px] leading-5 ${fieldOnCardClassName}`}
+            />
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(event) => void handleImportFile(event.currentTarget.files?.[0])}
+          />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => void handleImportText(jsonText)}
+              disabled={isSaving}
+              aria-busy={isSaving}
+              className={`flex-1 ${buttonPrimary}`}
+            >
+              {isSaving ? 'Importing…' : 'Add questions'}
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isSaving}
+              className={`flex-1 ${buttonSecondary}`}
+            >
+              Choose JSON file
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={`${segmentContainer} flex-wrap`}>
+            {(['mcq', 'true-false', 'fill-blank', 'flashcard', 'essay'] as const).map((type) => (
               <button
-                key={String(value)}
+                key={type}
                 type="button"
-                onClick={() => setBooleanAnswer(value)}
-                aria-pressed={booleanAnswer === value}
-                className={`${segmentBase} ${booleanAnswer === value ? segmentActive : segmentInactive}`}
+                onClick={() => setActiveType(type)}
+                aria-pressed={activeType === type}
+                className={`${segmentBase} ${activeType === type ? segmentActive : segmentInactive}`}
               >
-                {value ? 'True' : 'False'}
+                {type === 'mcq' ? 'MCQ' : type === 'true-false' ? 'True/False' : type === 'fill-blank' ? 'Fill blank' : type === 'flashcard' ? 'Flashcard' : 'Essay'}
               </button>
             ))}
           </div>
-        </fieldset>
-      ) : activeType === 'fill-blank' || activeType === 'flashcard' ? (
-        <div>
-          <label htmlFor="question-answer" className="block text-[13px] font-medium leading-4.5 text-muted">
-            {activeType === 'fill-blank' ? 'Expected answer' : 'Flashcard answer'}
-          </label>
-          <input
-            id="question-answer"
-            value={shortAnswer}
-            onChange={(event) => setShortAnswer(event.target.value)}
-            placeholder={activeType === 'fill-blank' ? 'The capital of France.' : 'Paris'}
-            className={`mt-2 ${fieldOnCardClassName}`}
-          />
-        </div>
-      ) : (
-        <EssayFields referenceAnswer={referenceAnswer} onChange={setReferenceAnswer} />
+
+          <div>
+            <label htmlFor="question-text" className="block text-[13px] font-medium leading-4.5 text-muted">
+              Question
+            </label>
+            <textarea
+              id="question-text"
+              value={text}
+              aria-invalid={invalidField === 'text' || undefined}
+              aria-describedby={invalidField === 'text' ? 'question-editor-error' : undefined}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Type the question here…"
+              className={`mt-2 min-h-30 resize-y py-3 ${fieldOnCardClassName}`}
+            />
+          </div>
+
+          <fieldset>
+            <legend className="text-[13px] font-medium leading-4.5 text-muted">Difficulty</legend>
+            <div className={`mt-2 ${segmentContainer}`}>
+              {DIFFICULTIES.map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDifficulty(level)}
+                  aria-pressed={difficulty === level}
+                  className={`${segmentBase} px-2 ${difficulty === level ? segmentActive : segmentInactive}`}
+                >
+                  {level[0].toUpperCase() + level.slice(1)}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div>
+            <label htmlFor="question-tags" className="block text-[13px] font-medium leading-4.5 text-muted">
+              Tags (one per line)
+            </label>
+            <textarea
+              id="question-tags"
+              value={tagsText}
+              onChange={(event) => setTagsText(event.target.value)}
+              placeholder={'deprecated\nhtml'}
+              rows={2}
+              className={`mt-2 min-h-22 resize-y py-3 ${fieldOnCardClassName}`}
+            />
+            <p className="mt-1 text-[13px] leading-4.5 text-muted">
+              Use “deprecated” to label outdated information. Tags do not change quiz behavior.
+            </p>
+          </div>
+
+          {activeType === 'mcq' ? (
+            <McqFields
+              options={options}
+              answerIndex={answerIndex}
+              isInvalid={invalidField === 'options'}
+              onOptionChange={handleOptionChange}
+              onAnswerChange={setAnswerIndex}
+            />
+          ) : activeType === 'true-false' ? (
+            <fieldset>
+              <legend className="text-[13px] font-medium leading-4.5 text-muted">Correct answer</legend>
+              <div className={`mt-2 ${segmentContainer}`}>
+                {([true, false] as const).map((value) => (
+                  <button
+                    key={String(value)}
+                    type="button"
+                    onClick={() => setBooleanAnswer(value)}
+                    aria-pressed={booleanAnswer === value}
+                    className={`${segmentBase} ${booleanAnswer === value ? segmentActive : segmentInactive}`}
+                  >
+                    {value ? 'True' : 'False'}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          ) : activeType === 'fill-blank' || activeType === 'flashcard' ? (
+            <div>
+              <label htmlFor="question-answer" className="block text-[13px] font-medium leading-4.5 text-muted">
+                {activeType === 'fill-blank' ? 'Expected answer' : 'Flashcard answer'}
+              </label>
+              <input
+                id="question-answer"
+                value={shortAnswer}
+                onChange={(event) => setShortAnswer(event.target.value)}
+                placeholder={activeType === 'fill-blank' ? 'The capital of France.' : 'Paris'}
+                className={`mt-2 ${fieldOnCardClassName}`}
+              />
+            </div>
+          ) : (
+            <EssayFields referenceAnswer={referenceAnswer} onChange={setReferenceAnswer} />
+          )}
+        </>
       )}
 
       {errorMessage ? (
@@ -272,25 +403,27 @@ export function QuestionEditorForm({
         </ErrorMessage>
       ) : null}
 
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => void handleSave()}
-          disabled={isSaving}
-          aria-busy={isSaving}
-          className={`flex-1 ${buttonPrimary}`}
-        >
-          {isSaving ? 'Saving…' : 'Save'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push(topicUrl)}
-          disabled={isSaving}
-          className={`flex-1 ${buttonSecondary}`}
-        >
-          Back
-        </button>
-      </div>
+      {entryMode === 'manual' || existingQuestion ? (
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving}
+            aria-busy={isSaving}
+            className={`flex-1 ${buttonPrimary}`}
+          >
+            {isSaving ? 'Saving…' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(topicUrl)}
+            disabled={isSaving}
+            className={`flex-1 ${buttonSecondary}`}
+          >
+            Back
+          </button>
+        </div>
+      ) : null}
 
       {existingQuestion ? (
         <button

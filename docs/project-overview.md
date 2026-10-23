@@ -27,7 +27,7 @@ The product should remain useful without an account or application server. The l
 - Topic lessons, Markdown notes, and local documents, with per-lesson questions pooled into the topic quiz; Markdown editing and supported video playback use an in-app resource page.
 - Question authoring, import/export, quiz setup and sessions, results, and saved attempts.
 - Due-question review and progress summaries.
-- Optional AI question generation and essay grading with validated provider responses.
+- Optional AI question generation and essay grading with validated provider responses, including automatic question coverage from selected topic or lesson resources.
 - Appearance and AI settings, data backup and restore, and PWA installation/offline behavior.
 
 ## Code Structure
@@ -36,7 +36,7 @@ The product should remain useful without an account or application server. The l
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `src/app/`                                  | Next.js routes and app-wide layout, manifest, service worker, and offline page.                     |
 | `src/components/`                           | Reusable screens and UI grouped by feature (topics, quiz, review, settings, backup, and layout).    |
-| `src/features/ai/` and `src/features/quiz/` | Domain workflows that are shared by the UI and tests.                                               |
+| `src/features/ai/` and `src/features/quiz/` | Domain workflows shared by the UI and tests; AI wording is editable in `src/features/ai/prompts.ts`. |
 | `src/lib/data/`                             | Dexie database, queries, mutations, and backup persistence. Keep database access within this layer. |
 | `src/lib/`                                  | Shared validation, formatting, progress, scheduling, file, and backup helpers.                      |
 | `src/platform/`                             | Browser platform adapters, including secure-storage and backup-storage boundaries.                  |

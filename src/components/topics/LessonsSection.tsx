@@ -505,6 +505,7 @@ export function LessonsSection({
             topicId,
             lessonId: generatingLesson.id,
             lessonTitle: generatingLesson.title,
+            resources: generatingLesson.resources.map((resource) => ({ resource })),
             existingQuestions: questions.map((question) => question.text),
           }}
           onClose={() => setGeneratingLesson(null)}

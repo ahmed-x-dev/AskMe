@@ -29,7 +29,7 @@ type QuestionsSectionProps = {
   /** What the AI is told about the topic. `topicId` and `existingQuestions` are filled in here. */
   topicContext: Pick<
     GenerationContext,
-    "topicTitle" | "roadmapTitle" | "groupTitle" | "notes"
+    "topicTitle" | "roadmapTitle" | "groupTitle" | "notes" | "resources"
   >;
 };
 
@@ -159,6 +159,12 @@ export function QuestionsSection({
             ...topicContext,
             topicId,
             existingQuestions: questions.map((question) => question.text),
+            resources: lessons.flatMap((lesson) =>
+              lesson.resources.map((resource) => ({
+                resource,
+                lessonTitle: lesson.title,
+              })),
+            ),
           }}
           onClose={() => setIsGenerating(false)}
         />
