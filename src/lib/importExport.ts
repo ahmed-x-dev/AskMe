@@ -6,6 +6,7 @@ import {
   roadmapFileImportSchema,
   type ProgressFile,
   type LegacyRoadmapFile,
+  type LegacyRoadmapFileV2,
   type RoadmapFile,
 } from './schemas'
 
@@ -40,18 +41,27 @@ function parseWith<T>(text: string, schema: z.ZodType<T>, what: string): T {
 export function parseRoadmapFile(text: string): RoadmapFile {
   const parsed = parseWith(text, roadmapFileImportSchema, 'AskMe roadmap')
 
-  if (parsed.version === 2) {
+  if (parsed.version === 3) {
     return parsed
   }
 
-  return migrateRoadmapFile(parsed)
+  if (parsed.version === 2) {
+    return migrateRoadmapFileV2(parsed)
+  }
+
+  return migrateRoadmapFileV1(parsed)
+}
+
+/** Adds the lesson-question support introduced in version 3. */
+function migrateRoadmapFileV2(file: LegacyRoadmapFileV2): RoadmapFile {
+  return { ...file, version: 3 }
 }
 
 /** Converts a version-one roadmap's topic links into one-resource lessons. */
-function migrateRoadmapFile(file: LegacyRoadmapFile): RoadmapFile {
+function migrateRoadmapFileV1(file: LegacyRoadmapFile): RoadmapFile {
   return {
     format: 'askme-roadmap',
-    version: 2,
+    version: 3,
     exportedAt: file.exportedAt,
     roadmap: file.roadmap,
     groups: file.groups,
@@ -87,7 +97,7 @@ export function stringifyFile(file: RoadmapFile | ProgressFile): string {
 /**
  * Gives every record of a roadmap file a new id, so importing never collides with data that is
  * already stored (importing the same file twice makes two copies). Links between records
- * (topic to group, question to topic, and so on) are kept. `makeId` can be replaced in tests.
+ * (topic to group, question to topic or lesson, and so on) are kept. `makeId` can be replaced in tests.
  */
 export function cloneWithNewIds(file: RoadmapFile, makeId: () => string = newId): RoadmapFile {
   const ids = new Map<string, string>()
@@ -129,6 +139,7 @@ export function cloneWithNewIds(file: RoadmapFile, makeId: () => string = newId)
       ...question,
       id: remap(question.id),
       topicId: remap(question.topicId),
+      lessonId: question.lessonId ? remap(question.lessonId) : undefined,
       roadmapId,
     })),
   }

@@ -12,7 +12,7 @@ import {
   fieldOnCardClassName,
 } from '@/components/ui/styles'
 import { addQuestion, deleteQuestion, updateQuestion, type QuestionInput } from '@/lib/data'
-import type { Question, QuestionDifficulty, QuestionType, Topic } from '@/types/study'
+import type { Lesson, Question, QuestionDifficulty, QuestionType, Topic } from '@/types/study'
 import { EssayFields } from './EssayFields'
 import { McqFields, type McqOptions } from './McqFields'
 
@@ -28,6 +28,7 @@ const segmentInactive = 'text-muted hover:bg-card-hover hover:text-fg'
 
 type QuestionEditorFormProps = {
   topic: Topic
+  lesson?: Lesson
   /** Set when editing; leave out to create a new question. */
   existingQuestion?: Question
 }
@@ -39,7 +40,11 @@ function invalidFieldOf(message: string): 'text' | 'options' | null {
   return null
 }
 
-export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFormProps) {
+export function QuestionEditorForm({
+  topic,
+  lesson,
+  existingQuestion,
+}: QuestionEditorFormProps) {
   const router = useRouter()
   const topicUrl = `/topic/${topic.id}`
 
@@ -108,7 +113,7 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
       if (existingQuestion) {
         await updateQuestion(existingQuestion.id, input)
       } else {
-        await addQuestion(topic.id, input)
+        await addQuestion(topic.id, input, { lessonId: lesson?.id })
       }
 
       router.push(topicUrl)
@@ -141,7 +146,10 @@ export function QuestionEditorForm({ topic, existingQuestion }: QuestionEditorFo
           <h1 className="text-[22px] font-medium leading-7 text-fg">
             {existingQuestion ? 'Edit question' : 'New question'}
           </h1>
-          <p className="mt-1 break-words text-base leading-6 text-muted">{topic.title}</p>
+          <p className="mt-1 break-words text-base leading-6 text-muted">
+            {topic.title}
+            {lesson ? ` · ${lesson.title}` : ""}
+          </p>
         </div>
         <button
           type="button"

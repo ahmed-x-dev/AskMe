@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronRight, CircleHelp, Plus, Sparkles } from "lucide-react";
 import { buttonSecondary } from "@/components/ui/styles";
 import { plural } from "@/lib/format";
-import type { Question } from "@/types/study";
+import type { Lesson, Question } from "@/types/study";
 import {
   GenerateQuestionsDialog,
   type GenerationContext,
@@ -25,6 +25,7 @@ const TYPE_BADGE: Record<
 type QuestionsSectionProps = {
   topicId: string;
   questions: Question[];
+  lessons: Lesson[];
   /** What the AI is told about the topic. `topicId` and `existingQuestions` are filled in here. */
   topicContext: Pick<
     GenerationContext,
@@ -36,6 +37,7 @@ type QuestionsSectionProps = {
 export function QuestionsSection({
   topicId,
   questions,
+  lessons,
   topicContext,
 }: QuestionsSectionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,6 +48,8 @@ export function QuestionsSection({
     },
     { mcq: 0, essay: 0, "true-false": 0, "fill-blank": 0, flashcard: 0 },
   );
+  const hasLessonQuestions = questions.some((question) => question.lessonId);
+  const lessonTitles = new Map(lessons.map((lesson) => [lesson.id, lesson.title]));
 
   return (
     <section
@@ -64,7 +68,7 @@ export function QuestionsSection({
           <p className="text-[13px] leading-4.5 text-muted tabular-nums">
             {questions.length === 0
               ? "Add practice questions to check what you have learned."
-              : `${plural(questions.length, "question")} · ${plural(typeCounts.mcq, "MCQ")} · ${plural(typeCounts.essay, "essay")}`}
+              : `${plural(questions.length, "question")} · ${plural(typeCounts.mcq, "MCQ")} · ${plural(typeCounts.essay, "essay")}${hasLessonQuestions ? " · includes lesson questions" : ""}`}
           </p>
         </div>
 
@@ -130,6 +134,11 @@ export function QuestionsSection({
                       <span className="rounded-full bg-bg px-2.5 py-0.5 text-[13px] leading-4.5 text-muted">
                         {question.difficulty}
                       </span>
+                      {question.lessonId ? (
+                        <span className="rounded-full bg-bg px-2.5 py-0.5 text-[13px] leading-4.5 text-muted">
+                          {lessonTitles.get(question.lessonId) ?? "Lesson"}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <ChevronRight

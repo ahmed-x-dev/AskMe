@@ -9,6 +9,7 @@ import { QuestionEditorForm } from './QuestionEditorForm'
 
 type QuestionEditorPageProps = {
   topicId: string
+  lessonId?: string
   /** The question to edit. Leave out to create a new one. */
   qid?: string
 }
@@ -24,8 +25,15 @@ function NotFound({ title, href, label }: { title: string; href: string; label: 
   )
 }
 
-export function QuestionEditorPage({ topicId, qid }: QuestionEditorPageProps) {
-  const data = useLiveQuery(() => getQuestionEditorData(topicId, qid), [topicId, qid])
+export function QuestionEditorPage({
+  topicId,
+  lessonId,
+  qid,
+}: QuestionEditorPageProps) {
+  const data = useLiveQuery(
+    () => getQuestionEditorData(topicId, qid, lessonId),
+    [topicId, qid, lessonId],
+  )
 
   if (data === undefined) {
     return (
@@ -51,10 +59,15 @@ export function QuestionEditorPage({ topicId, qid }: QuestionEditorPageProps) {
     return <NotFound title="Question not found" href={`/topic/${topicId}`} label="Back to topic" />
   }
 
+  if (lessonId && !data.lesson) {
+    return <NotFound title="Lesson not found" href={`/topic/${topicId}`} label="Back to topic" />
+  }
+
   return (
     <QuestionEditorForm
-      key={data.question?.id ?? 'new'}
+      key={data.question?.id ?? data.lesson?.id ?? 'new'}
       topic={data.topic}
+      lesson={data.lesson ?? undefined}
       existingQuestion={data.question ?? undefined}
     />
   )

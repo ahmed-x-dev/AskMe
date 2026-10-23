@@ -87,6 +87,7 @@ export const lessonSchema: z.ZodType<Lesson> = z.object({
 const questionBase = {
   id,
   topicId: id,
+  lessonId: id.optional(),
   roadmapId: id,
   text: z.string().trim().min(1),
   difficulty: z.enum(['easy', 'medium', 'hard']),
@@ -180,6 +181,15 @@ const roadmapFileV1Schema = z
       problems.push('A question points to a topic that is not in the file.')
     }
 
+    const resourcesById = new Map(file.resources.map((resource) => [resource.id, resource]))
+    if (file.questions.some((question) => {
+      if (!question.lessonId) return false
+      const resource = resourcesById.get(question.lessonId)
+      return !resource || resource.topicId !== question.topicId
+    })) {
+      problems.push('A question points to a lesson that is not in the file.')
+    }
+
     if (file.questions.some((question) => question.roadmapId !== file.roadmap.id)) {
       problems.push('A question belongs to a different roadmap.')
     }
@@ -189,7 +199,7 @@ const roadmapFileV1Schema = z
     }
   })
 
-export const roadmapFileSchema = z
+const roadmapFileV2Schema = z
   .object({
     format: z.literal('askme-roadmap'),
     version: z.literal(2),
@@ -200,9 +210,20 @@ export const roadmapFileSchema = z
     lessons: z.array(lessonSchema),
     questions: z.array(questionSchema),
   })
-  .superRefine((file, context) => {
+
+function validateRoadmapFileRelations(
+  file: {
+    roadmap: Roadmap
+    groups: Group[]
+    topics: Topic[]
+    lessons: Lesson[]
+    questions: Question[]
+  },
+  context: z.RefinementCtx,
+): void {
     const groupIds = new Set(file.groups.map((group) => group.id))
     const topicIds = new Set(file.topics.map((topic) => topic.id))
+    const lessonsById = new Map(file.lessons.map((lesson) => [lesson.id, lesson]))
     const problems: string[] = []
 
     if (file.groups.some((group) => group.roadmapId !== file.roadmap.id)) {
@@ -223,15 +244,46 @@ export const roadmapFileSchema = z
     if (file.questions.some((question) => question.roadmapId !== file.roadmap.id)) {
       problems.push('A question belongs to a different roadmap.')
     }
+    if (file.questions.some((question) => {
+      if (!question.lessonId) return false
+      const lesson = lessonsById.get(question.lessonId)
+      return !lesson || lesson.topicId !== question.topicId
+    })) {
+      problems.push('A question points to a lesson that is not in its topic.')
+    }
 
     for (const message of problems) {
       context.addIssue({ code: 'custom', message })
     }
+}
+
+export const roadmapFileV3Schema = z
+  .object({
+    format: z.literal('askme-roadmap'),
+    version: z.literal(3),
+    exportedAt: timestamp,
+    roadmap: roadmapSchema,
+    groups: z.array(groupSchema),
+    topics: z.array(topicSchema),
+    lessons: z.array(lessonSchema),
+    questions: z.array(questionSchema),
   })
+  .superRefine(validateRoadmapFileRelations)
 
-export const roadmapFileImportSchema = z.union([roadmapFileSchema, roadmapFileV1Schema])
+const roadmapFileV2WithRelationsSchema = roadmapFileV2Schema.superRefine(
+  validateRoadmapFileRelations,
+)
 
-export type RoadmapFile = z.infer<typeof roadmapFileSchema>
+export const roadmapFileSchema = roadmapFileV3Schema
+
+export const roadmapFileImportSchema = z.union([
+  roadmapFileV3Schema,
+  roadmapFileV2WithRelationsSchema,
+  roadmapFileV1Schema,
+])
+
+export type RoadmapFile = z.infer<typeof roadmapFileV3Schema>
+export type LegacyRoadmapFileV2 = z.infer<typeof roadmapFileV2Schema>
 export type LegacyRoadmapFile = z.infer<typeof roadmapFileV1Schema>
 
 /** The progress half of a full backup: what the learner answered and when each question is due. */

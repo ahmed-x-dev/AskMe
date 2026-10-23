@@ -37,6 +37,11 @@ export interface FlashcardInput extends QuestionInputBase {
 /** Question content as entered by the user or produced by the AI generator. */
 export type QuestionInput = McqInput | EssayInput | TrueFalseInput | FillBlankInput | FlashcardInput
 
+export interface QuestionLocation {
+  /** Associate the question with a lesson in the same topic. */
+  lessonId?: string
+}
+
 function normalizeQuestionType(type: QuestionInput['type'] | string): QuestionInput['type'] {
   const normalized = type.trim().toLowerCase()
 
@@ -147,13 +152,25 @@ export async function listQuestionsByTopics(topicIds: string[]): Promise<Questio
   return db.questions.where('topicId').anyOf(topicIds).toArray()
 }
 
-/** Adds several questions to a topic at once, for example AI-generated ones. All or none are saved. */
-export async function addQuestions(topicId: string, inputs: QuestionInput[]): Promise<Question[]> {
-  return db.transaction('rw', db.topics, db.questions, async () => {
+/** Adds questions to a topic, optionally associating them with one of its lessons. All or none are saved. */
+export async function addQuestions(
+  topicId: string,
+  inputs: QuestionInput[],
+  location: QuestionLocation = {},
+): Promise<Question[]> {
+  return db.transaction('rw', db.topics, db.lessons, db.questions, async () => {
     const topic = await db.topics.get(topicId)
 
     if (!topic) {
       throw new Error('Topic not found.')
+    }
+
+    if (location.lessonId) {
+      const lesson = await db.lessons.get(location.lessonId)
+
+      if (!lesson || lesson.topicId !== topicId) {
+        throw new Error('Lesson not found in this topic.')
+      }
     }
 
     const timestamp = nowIso()
@@ -162,6 +179,7 @@ export async function addQuestions(topicId: string, inputs: QuestionInput[]): Pr
         ...normalize(input),
         id: newId(),
         topicId,
+        ...(location.lessonId ? { lessonId: location.lessonId } : {}),
         roadmapId: topic.roadmapId,
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -174,8 +192,12 @@ export async function addQuestions(topicId: string, inputs: QuestionInput[]): Pr
 }
 
 /** Adds one question to a topic. */
-export async function addQuestion(topicId: string, input: QuestionInput): Promise<Question> {
-  const [question] = await addQuestions(topicId, [input])
+export async function addQuestion(
+  topicId: string,
+  input: QuestionInput,
+  location: QuestionLocation = {},
+): Promise<Question> {
+  const [question] = await addQuestions(topicId, [input], location)
 
   return question
 }
@@ -193,6 +215,7 @@ export async function updateQuestion(id: string, input: QuestionInput): Promise<
       ...normalize(input),
       id: existing.id,
       topicId: existing.topicId,
+      ...(existing.lessonId ? { lessonId: existing.lessonId } : {}),
       roadmapId: existing.roadmapId,
       createdAt: existing.createdAt,
       updatedAt: nowIso(),

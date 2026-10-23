@@ -39,13 +39,19 @@ import {
   openLessonFile,
 } from "@/lib/lessonFiles";
 import { plural } from "@/lib/format";
-import type { Lesson, LessonResource, ResourceKind } from "@/types/study";
+import type {
+  Lesson,
+  LessonResource,
+  Question,
+  ResourceKind,
+} from "@/types/study";
 import { LessonResourceDialog } from "./LessonResourceDialog";
 import { hostOf, isSafeLink, RESOURCE_KINDS } from "./resourceKinds";
 
 type LessonsSectionProps = {
   topicId: string;
   lessons: Lesson[];
+  questions: Question[];
 };
 
 const RESOURCE_ICONS: Record<ResourceKind, LucideIcon> = {
@@ -56,7 +62,11 @@ const RESOURCE_ICONS: Record<ResourceKind, LucideIcon> = {
 };
 
 /** Lessons in one topic, with multiple links or locally saved documents per lesson. */
-export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
+export function LessonsSection({
+  topicId,
+  lessons,
+  questions,
+}: LessonsSectionProps) {
   const [isAddingLesson, setIsAddingLesson] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [deletingLesson, setDeletingLesson] = useState<Lesson | null>(null);
@@ -155,8 +165,13 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
         </div>
       ) : (
         <ol className="flex flex-col gap-3">
-          {lessons.map((lesson, index) => (
-            <li key={lesson.id} className="min-w-0 rounded-2xl bg-card p-4">
+          {lessons.map((lesson, index) => {
+            const lessonQuestions = questions.filter(
+              (question) => question.lessonId === lesson.id,
+            );
+
+            return (
+              <li key={lesson.id} className="min-w-0 rounded-2xl bg-card p-4">
               <div className="flex min-w-0 items-start gap-3">
                 <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center">
                   <input
@@ -184,7 +199,8 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                     {lesson.title}
                   </h3>
                   <p className="text-[13px] leading-4.5 text-muted">
-                    {plural(lesson.resources.length, "resource")}
+                    {plural(lesson.resources.length, "resource")} ·{" "}
+                    {plural(lessonQuestions.length, "question")}
                   </p>
                 </div>
                 <ActionMenu
@@ -216,6 +232,36 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                   ]}
                 />
               </div>
+
+              {lessonQuestions.length > 0 ? (
+                <ul
+                  aria-label={`Questions for ${lesson.title}`}
+                  className="ms-[52px] mt-3 flex flex-col gap-2"
+                >
+                  {lessonQuestions.map((question) => (
+                    <li key={question.id}>
+                      <Link
+                        href={`/topic/${topicId}/q/${question.id}`}
+                        className="block min-w-0 wrap-break-word rounded-xl bg-bg p-3 text-sm leading-5 text-fg hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        {question.text}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              <Link
+                href={`/topic/${topicId}/q/new?lessonId=${lesson.id}`}
+                className="ms-[52px] mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-4.5 text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <Plus
+                  aria-hidden="true"
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                />
+                Add lesson question
+              </Link>
 
               {lesson.resources.length > 0 ? (
                 <ul className="ms-[52px] mt-3 flex flex-col gap-2">
@@ -364,8 +410,9 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
                 />
                 Add resource
               </button>
-            </li>
-          ))}
+                </li>
+              );
+            })}
         </ol>
       )}
 
@@ -402,7 +449,7 @@ export function LessonsSection({ topicId, lessons }: LessonsSectionProps) {
       {deletingLesson ? (
         <ConfirmDialog
           title="Delete lesson?"
-          message={`“${deletingLesson.title}” and its ${plural(deletingLesson.resources.length, "resource")} will be deleted. This cannot be undone.`}
+          message={`“${deletingLesson.title}” and its ${plural(deletingLesson.resources.length, "resource")} will be deleted. ${plural(questions.filter((question) => question.lessonId === deletingLesson.id).length, "question")} will stay in the topic question list. This cannot be undone.`}
           confirmLabel="Delete lesson"
           onClose={() => setDeletingLesson(null)}
           onConfirm={() => deleteLesson(deletingLesson.id)}

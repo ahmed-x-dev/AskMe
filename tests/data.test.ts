@@ -102,7 +102,7 @@ describe('roadmaps', () => {
     expect(questionSchema.safeParse(q).success).toBe(true)
     expect(questionSchema.safeParse(e).success).toBe(true)
     expect(lessonSchema.safeParse(savedLesson).success).toBe(true)
-    const file = { format: 'askme-roadmap', version: 2, exportedAt: new Date().toISOString(), roadmap: r, groups: [g], topics: [await db.topics.get(t.id)], lessons: [savedLesson], questions: [q, e] }
+    const file = { format: 'askme-roadmap', version: 3, exportedAt: new Date().toISOString(), roadmap: r, groups: [g], topics: [await db.topics.get(t.id)], lessons: [savedLesson], questions: [q, e] }
     expect(roadmapFileSchema.safeParse(file).success).toBe(true)
     const bad = { ...file, topics: [{ ...(await db.topics.get(t.id)), groupId: 'missing' }] }
     expect(roadmapFileSchema.safeParse(bad).success).toBe(false)

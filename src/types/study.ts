@@ -101,6 +101,7 @@ export interface Resource {
 export interface BaseQuestion extends Timestamps {
   id: string
   topicId: string
+  lessonId?: string
   roadmapId: string
   type: QuestionType
   text: string

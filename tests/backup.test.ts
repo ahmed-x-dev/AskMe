@@ -95,7 +95,7 @@ describe("roadmap file", () => {
   it("exports content only: statuses reset, links not done, no progress", async () => {
     const { roadmap } = await seed();
     const file = (await buildRoadmapFile(roadmap.id))!;
-    expect(file).toMatchObject({ format: "askme-roadmap", version: 2 });
+    expect(file).toMatchObject({ format: "askme-roadmap", version: 3 });
     expect(file.topics.map((t) => t.status)).toEqual(["todo", "todo"]);
     expect(file.lessons.every((lesson) => lesson.done === false)).toBe(true);
     expect(file.lessons[0].resources[1]).toMatchObject({
@@ -138,7 +138,7 @@ describe("roadmap file", () => {
     delete (oldFile as Partial<typeof oldFile>).lessons;
 
     const migrated = parseRoadmapFile(JSON.stringify(oldFile));
-    expect(migrated.version).toBe(2);
+    expect(migrated.version).toBe(3);
     expect(migrated.lessons).toHaveLength(1);
     expect(migrated.lessons[0]).toMatchObject({
       title: "Docs",

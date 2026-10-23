@@ -38,6 +38,8 @@ export async function getTopicPage(topicId: string): Promise<TopicPageData | nul
 /** What the question editor needs: the topic, and the question when editing one. */
 export interface QuestionEditorData {
   topic: Topic
+  /** The target lesson for a new question, or `null` if the lesson is missing or belongs elsewhere. */
+  lesson: Lesson | null
   /** `null` when creating, or when the requested question is not in this topic. */
   question: Question | null
 }
@@ -46,6 +48,7 @@ export interface QuestionEditorData {
 export async function getQuestionEditorData(
   topicId: string,
   questionId?: string,
+  lessonId?: string,
 ): Promise<QuestionEditorData | null> {
   const topic = await db.topics.get(topicId)
 
@@ -53,11 +56,18 @@ export async function getQuestionEditorData(
     return null
   }
 
-  if (!questionId) {
-    return { topic, question: null }
+  const question = questionId ? await db.questions.get(questionId) : undefined
+  const targetLessonId = questionId ? question?.lessonId : lessonId
+  const lesson = targetLessonId
+    ? await db.lessons.get(targetLessonId)
+    : undefined
+
+  return {
+    topic,
+    lesson:
+      targetLessonId && lesson?.topicId === topicId
+        ? lesson
+        : null,
+    question: question && question.topicId === topicId ? question : null,
   }
-
-  const question = await db.questions.get(questionId)
-
-  return { topic, question: question && question.topicId === topicId ? question : null }
 }

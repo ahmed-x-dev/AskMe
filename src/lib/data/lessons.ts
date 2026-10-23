@@ -217,5 +217,21 @@ export async function deleteLessonResource(
 
 /** Deletes a lesson and its nested resources. */
 export async function deleteLesson(id: string): Promise<void> {
-  await db.lessons.delete(id);
+  await db.transaction("rw", db.lessons, db.questions, async () => {
+    const lesson = await db.lessons.get(id);
+
+    if (!lesson) return;
+
+    const questions = await db.questions
+      .where("topicId")
+      .equals(lesson.topicId)
+      .toArray();
+
+    for (const question of questions.filter((item) => item.lessonId === id)) {
+      const topicQuestion = { ...question };
+      delete topicQuestion.lessonId;
+      await db.questions.put(topicQuestion);
+    }
+    await db.lessons.delete(id);
+  });
 }

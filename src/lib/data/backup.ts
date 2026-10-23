@@ -13,7 +13,7 @@ async function readRoadmap(roadmap: Roadmap): Promise<RoadmapFile> {
 
   return {
     format: 'askme-roadmap',
-    version: 2,
+    version: 3,
     exportedAt: nowIso(),
     roadmap,
     groups: byOrder(await db.groups.where('roadmapId').equals(roadmap.id).toArray()),

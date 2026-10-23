@@ -7,8 +7,8 @@ This document describes the product and code that exist today. Update it when th
 AskMe is a personal, local-first study workspace. It helps a learner move from organizing material to practicing recall:
 
 1. Organize a subject as a roadmap with topics and groups.
-2. Keep notes, lessons, links, and local documents with the topic they support.
-3. Build and take quizzes, then revisit questions through spaced review.
+2. Keep notes, lesson resources, and questions with the topic they support.
+3. Build and take quizzes from both topic-level questions and questions grouped under lessons, then revisit them through spaced review.
 4. Use optional AI assistance for question generation and essay feedback.
 
 The product should remain useful without an account or application server. The learner's study library and progress belong to the browser profile where they were created, with backup and restore available for portability.
@@ -24,7 +24,7 @@ The product should remain useful without an account or application server. The l
 ## Current Feature Areas
 
 - Roadmap and topic management, including topic groups.
-- Topic lessons, Markdown notes, and local documents, with an in-app resource page for Markdown editing and supported video playback.
+- Topic lessons, Markdown notes, and local documents, with per-lesson questions pooled into the topic quiz; Markdown editing and supported video playback use an in-app resource page.
 - Question authoring, import/export, quiz setup and sessions, results, and saved attempts.
 - Due-question review and progress summaries.
 - Optional AI question generation and essay grading with validated provider responses.
