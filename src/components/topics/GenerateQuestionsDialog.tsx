@@ -14,7 +14,9 @@ import type { QuestionDifficulty, QuestionType } from "@/types/study";
 
 export type GenerationContext = {
   topicId: string;
+  lessonId?: string;
   topicTitle: string;
+  lessonTitle?: string;
   roadmapTitle: string;
   groupTitle?: string;
   notes?: string;
@@ -40,7 +42,7 @@ const DIFFICULTY_CHOICES: { value: DifficultyChoice; label: string }[] = [
 
 const inputClassName = `${fieldClassName} font-normal`;
 
-/** Generates questions for one topic with AI, lets the learner pick which to keep, then saves them. */
+/** Generates questions for a topic or lesson with AI, then saves the learner's selections. */
 export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsDialogProps) {
   const [hasKey] = useState(() => Boolean(getAiApiKey(getAiProvider())));
   const [step, setStep] = useState<Step>("form");
@@ -68,6 +70,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
         type,
         count,
         topicTitle: context.topicTitle,
+        lessonTitle: context.lessonTitle,
         roadmapTitle: context.roadmapTitle,
         groupTitle: context.groupTitle,
         notes: context.notes,
@@ -108,6 +111,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
       await addQuestions(
         context.topicId,
         generated.filter((_, index) => selected.has(index)),
+        context.lessonId ? { lessonId: context.lessonId } : undefined,
       );
       onClose();
     } catch (saveError) {
@@ -124,7 +128,11 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           <h2 id="generate-dialog-title" className="text-[22px] font-medium leading-7 text-fg">
             Generate with AI
           </h2>
-          <p className="mt-1 wrap-break-word text-base leading-6 text-muted">{context.topicTitle}</p>
+          <p className="mt-1 wrap-break-word text-base leading-6 text-muted">
+            {context.lessonTitle
+              ? `${context.topicTitle} · ${context.lessonTitle}`
+              : context.topicTitle}
+          </p>
         </div>
 
         {!hasKey ? (

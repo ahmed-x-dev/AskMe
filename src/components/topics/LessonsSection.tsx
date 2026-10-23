@@ -12,6 +12,7 @@ import {
   Link as LinkIcon,
   Pencil,
   Plus,
+  Sparkles,
   Trash2,
   Video,
   type LucideIcon,
@@ -20,7 +21,10 @@ import { ActionMenu } from "@/components/ui/ActionMenu";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { NameDialog } from "@/components/ui/NameDialog";
-import { buttonPrimary } from "@/components/ui/styles";
+import {
+  buttonPrimary,
+  buttonSecondaryCompact,
+} from "@/components/ui/styles";
 import {
   addLesson,
   addLessonResource,
@@ -45,6 +49,10 @@ import type {
   Question,
   ResourceKind,
 } from "@/types/study";
+import {
+  GenerateQuestionsDialog,
+  type GenerationContext,
+} from "./GenerateQuestionsDialog";
 import { LessonResourceDialog } from "./LessonResourceDialog";
 import { hostOf, isSafeLink, RESOURCE_KINDS } from "./resourceKinds";
 
@@ -52,6 +60,10 @@ type LessonsSectionProps = {
   topicId: string;
   lessons: Lesson[];
   questions: Question[];
+  topicContext: Pick<
+    GenerationContext,
+    "topicTitle" | "roadmapTitle" | "groupTitle" | "notes"
+  >;
 };
 
 const RESOURCE_ICONS: Record<ResourceKind, LucideIcon> = {
@@ -66,6 +78,7 @@ export function LessonsSection({
   topicId,
   lessons,
   questions,
+  topicContext,
 }: LessonsSectionProps) {
   const [isAddingLesson, setIsAddingLesson] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
@@ -78,6 +91,7 @@ export function LessonsSection({
     lesson: Lesson;
     resource: LessonResource;
   } | null>(null);
+  const [generatingLesson, setGeneratingLesson] = useState<Lesson | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const addingRef = useRef(false);
 
@@ -251,17 +265,32 @@ export function LessonsSection({
                 </ul>
               ) : null}
 
-              <Link
-                href={`/topic/${topicId}/q/new?lessonId=${lesson.id}`}
-                className="ms-[52px] mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-4.5 text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                <Plus
-                  aria-hidden="true"
-                  className="h-4 w-4"
-                  strokeWidth={1.5}
-                />
-                Add lesson question
-              </Link>
+              <div className="ms-[52px] mt-3 flex flex-wrap gap-2">
+                <Link
+                  href={`/topic/${topicId}/q/new?lessonId=${lesson.id}`}
+                  className="inline-flex min-h-12 items-center gap-2 rounded-xl px-3 text-[13px] font-medium leading-4.5 text-accent-text hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <Plus
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                    strokeWidth={1.5}
+                  />
+                  Add lesson question
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setGeneratingLesson(lesson)}
+                  aria-label={`Generate questions for ${lesson.title} with AI`}
+                  className={buttonSecondaryCompact}
+                >
+                  <Sparkles
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                    strokeWidth={1.5}
+                  />
+                  Generate with AI
+                </button>
+              </div>
 
               {lesson.resources.length > 0 ? (
                 <ul className="ms-[52px] mt-3 flex flex-col gap-2">
@@ -467,6 +496,18 @@ export function LessonsSection({
               deletingResource.resource.id,
             )
           }
+        />
+      ) : null}
+      {generatingLesson ? (
+        <GenerateQuestionsDialog
+          context={{
+            ...topicContext,
+            topicId,
+            lessonId: generatingLesson.id,
+            lessonTitle: generatingLesson.title,
+            existingQuestions: questions.map((question) => question.text),
+          }}
+          onClose={() => setGeneratingLesson(null)}
         />
       ) : null}
     </section>

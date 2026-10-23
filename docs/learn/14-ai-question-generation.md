@@ -2,7 +2,7 @@
 
 ## Goal
 
-Turn a prompt into ready-to-use MCQ or essay questions in the user's set.
+Turn a prompt into ready-to-use questions for a topic or one of its lessons.
 
 ## Why we need it
 
@@ -10,7 +10,7 @@ The app needs reusable content, not a model output dumped onto the page. Questio
 
 ## The concept, simply
 
-The generator prompts the selected AI provider for JSON, validates the payload, and reshapes each item into a real `Question` record. The requested count is rounded and bounded to 1–20 before it is sent, so the model gets a clear limit and does not receive an unbounded request.
+The generator prompts the selected AI provider for JSON, validates the payload, and reshapes each item into a real `Question` record. It can include the topic and lesson titles as context. The requested count is rounded and bounded to 1–20 before it is sent, so the model gets a clear limit and does not receive an unbounded request.
 
 A nice UX is to preview the generated items before saving them. That keeps the user in control and makes it obvious what is being added.
 
@@ -34,7 +34,7 @@ export async function generateQuestions({
 }
 ```
 
-The count control on the set screen also allows values up to 20. A settings gear beside the generator title links to provider setup without taking space with a key-status button. The preview is inserted into the set by `addQuestion`, which uses the same repository flow as manual edits.
+The preview is inserted by `addQuestions`, which uses the same repository flow as manual edits. When generation starts from a lesson, `addQuestions` receives that lesson's ID so each accepted question remains grouped there while still belonging to the topic's question pool.
 
 ## ✅ / ❌ examples
 
@@ -43,7 +43,7 @@ The count control on the set screen also allows values up to 20. A settings gear
 
 ## Try it yourself
 
-1. Generate a couple of MCQ questions for a set.
+1. Generate a couple of MCQ questions for a lesson.
 2. Add one to the active set.
 3. Open the set and verify it appears in the quiz queue.
 4. Request 20 questions, then enter a count above 20 and verify the app caps the request at 20.

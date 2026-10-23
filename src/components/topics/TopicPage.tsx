@@ -210,6 +210,12 @@ export function TopicPage() {
         topicId={topic.id}
         lessons={lessons}
         questions={questions}
+        topicContext={{
+          topicTitle: topic.title,
+          roadmapTitle: roadmap.title,
+          groupTitle: group?.title,
+          notes: topic.notes,
+        }}
       />
       <QuestionsSection
         topicId={topic.id}
