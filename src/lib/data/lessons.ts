@@ -224,24 +224,24 @@ export async function deleteLesson(id: string): Promise<void> {
     db.attempts,
     db.reviews,
     async () => {
-    const lesson = await db.lessons.get(id);
+      const lesson = await db.lessons.get(id);
 
-    if (!lesson) return;
+      if (!lesson) return;
 
-    const questions = await db.questions
-      .where("topicId")
-      .equals(lesson.topicId)
-      .filter((question) => question.lessonId === id)
-      .toArray();
-    const questionIds = questions.map((question) => question.id);
+      const questions = await db.questions
+        .where("topicId")
+        .equals(lesson.topicId)
+        .filter((question) => question.lessonId === id)
+        .toArray();
+      const questionIds = questions.map((question) => question.id);
 
-    if (questionIds.length > 0) {
-      await db.attempts.where("questionId").anyOf(questionIds).delete();
-      await db.reviews.where("questionId").anyOf(questionIds).delete();
-      await db.questions.bulkDelete(questionIds);
-    }
+      if (questionIds.length > 0) {
+        await db.attempts.where("questionId").anyOf(questionIds).delete();
+        await db.reviews.where("questionId").anyOf(questionIds).delete();
+        await db.questions.bulkDelete(questionIds);
+      }
 
-    await db.lessons.delete(id);
+      await db.lessons.delete(id);
     },
   );
 }

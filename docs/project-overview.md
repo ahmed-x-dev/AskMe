@@ -32,18 +32,18 @@ The product should remain useful without an account or application server. The l
 
 ## Code Structure
 
-| Location                                    | Responsibility                                                                                      |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `src/app/`                                  | Next.js routes and app-wide layout, manifest, service worker, and offline page.                     |
-| `src/components/`                           | Reusable screens and UI grouped by feature (topics, quiz, review, settings, backup, and layout).    |
+| Location                                    | Responsibility                                                                                       |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/app/`                                  | Next.js routes and app-wide layout, manifest, service worker, and offline page.                      |
+| `src/components/`                           | Reusable screens and UI grouped by feature (topics, quiz, review, settings, backup, and layout).     |
 | `src/features/ai/` and `src/features/quiz/` | Domain workflows shared by the UI and tests; AI wording is editable in `src/features/ai/prompts.ts`. |
-| `src/lib/data/`                             | Dexie database, queries, mutations, and backup persistence. Keep database access within this layer. |
-| `src/lib/`                                  | Shared validation, formatting, progress, scheduling, file, and backup helpers.                      |
-| `src/platform/`                             | Browser platform adapters, including secure-storage and backup-storage boundaries.                  |
-| `src/types/study.ts`                        | Shared study-domain types.                                                                          |
-| `tests/`                                    | Vitest coverage, organized around data, UI, platform, and feature behavior.                         |
-| `docs/learn/`                               | Step-by-step explanations of the stack and project patterns, including historical lessons.          |
-| `DESIGN.md`                                 | Authoritative visual tokens, component rules, and screen guidance.                                  |
+| `src/lib/data/`                             | Dexie database, queries, mutations, and backup persistence. Keep database access within this layer.  |
+| `src/lib/`                                  | Shared validation, formatting, progress, scheduling, file, and backup helpers.                       |
+| `src/platform/`                             | Browser platform adapters, including secure-storage and backup-storage boundaries.                   |
+| `src/types/study.ts`                        | Shared study-domain types.                                                                           |
+| `tests/`                                    | Vitest coverage, organized around data, UI, platform, and feature behavior.                          |
+| `docs/learn/`                               | Step-by-step explanations of the stack and project patterns, including historical lessons.           |
+| `DESIGN.md`                                 | Authoritative visual tokens, component rules, and screen guidance.                                   |
 
 ## Working From This Overview
 

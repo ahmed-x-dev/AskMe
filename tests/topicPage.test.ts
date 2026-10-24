@@ -84,16 +84,20 @@ describe("getTopicPage", () => {
     const topic = await createTopic({ roadmapId: roadmap.id, title: "Hooks" });
     const lesson = await addLesson(topic.id, "Effects");
     const topicQuestion = await addQuestion(topic.id, mcq);
-    const lessonQuestion = await addQuestion(topic.id, mcq, { lessonId: lesson.id });
+    const lessonQuestion = await addQuestion(topic.id, mcq, {
+      lessonId: lesson.id,
+    });
     await recordAttempt(lessonQuestion.id, false);
 
     await deleteLesson(lesson.id);
 
-    expect((await getTopicPage(topic.id))!.questions.map((question) => question.id)).toEqual([
-      topicQuestion.id,
-    ]);
+    expect(
+      (await getTopicPage(topic.id))!.questions.map((question) => question.id),
+    ).toEqual([topicQuestion.id]);
     expect(await db.questions.get(lessonQuestion.id)).toBeUndefined();
-    expect(await db.attempts.where("questionId").equals(lessonQuestion.id).count()).toBe(0);
+    expect(
+      await db.attempts.where("questionId").equals(lessonQuestion.id).count(),
+    ).toBe(0);
     expect(await db.reviews.get(lessonQuestion.id)).toBeUndefined();
   });
 });

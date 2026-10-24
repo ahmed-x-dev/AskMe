@@ -16,7 +16,12 @@ export type GeneratedQuestion = QuestionInput;
 
 /** The part of a stored question that the explain prompt needs. */
 export type ExplainableQuestion =
-  | { type: "mcq"; text: string; options: readonly string[]; answerIndex: number }
+  | {
+      type: "mcq";
+      text: string;
+      options: readonly string[];
+      answerIndex: number;
+    }
   | { type: "essay"; text: string; referenceAnswer?: string }
   | { type: "true-false"; text: string; answer: boolean }
   | { type: "fill-blank" | "flashcard"; text: string; answer: string };
@@ -57,7 +62,12 @@ function isJsonStringBoundary(text: string, position: number): boolean {
   while (/\s/.test(text[next] ?? "") && next < text.length) next += 1;
 
   const nextCharacter = text[next];
-  if (nextCharacter === undefined || nextCharacter === ":" || nextCharacter === "}" || nextCharacter === "]") {
+  if (
+    nextCharacter === undefined ||
+    nextCharacter === ":" ||
+    nextCharacter === "}" ||
+    nextCharacter === "]"
+  ) {
     return true;
   }
   if (nextCharacter !== ",") return false;
@@ -227,7 +237,9 @@ function validateGeneratedQuestion(
   fallbackDifficulty: QuestionDifficulty,
 ): GeneratedQuestion {
   if (!isRecord(rawQuestion)) {
-    throw new Error(`Generated question ${questionIndex + 1} is not an object.`);
+    throw new Error(
+      `Generated question ${questionIndex + 1} is not an object.`,
+    );
   }
 
   const difficulty = isDifficulty(rawQuestion.difficulty)
@@ -237,25 +249,35 @@ function validateGeneratedQuestion(
 
   if (type === "mcq") {
     const text = ensureValidText(rawQuestion.text, "question text");
-    const options = Array.isArray(rawQuestion.options) ? rawQuestion.options : [];
+    const options = Array.isArray(rawQuestion.options)
+      ? rawQuestion.options
+      : [];
     const answerIndex = Number(rawQuestion.answerIndex);
 
     if (options.length !== 4) {
-      throw new Error(`MCQ question ${questionIndex + 1} must include four options.`);
+      throw new Error(
+        `MCQ question ${questionIndex + 1} must include four options.`,
+      );
     }
 
     const cleanOptions = options.map((option) => String(option ?? "").trim());
 
     if (cleanOptions.some((option) => !option)) {
-      throw new Error(`MCQ question ${questionIndex + 1} contains an empty option.`);
+      throw new Error(
+        `MCQ question ${questionIndex + 1} contains an empty option.`,
+      );
     }
 
     if (new Set(cleanOptions).size !== 4) {
-      throw new Error(`MCQ question ${questionIndex + 1} has repeated options.`);
+      throw new Error(
+        `MCQ question ${questionIndex + 1} has repeated options.`,
+      );
     }
 
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex > 3) {
-      throw new Error(`MCQ question ${questionIndex + 1} has an invalid answerIndex.`);
+      throw new Error(
+        `MCQ question ${questionIndex + 1} has an invalid answerIndex.`,
+      );
     }
 
     return {
@@ -263,7 +285,12 @@ function validateGeneratedQuestion(
       text,
       difficulty,
       tags: [],
-      options: [cleanOptions[0], cleanOptions[1], cleanOptions[2], cleanOptions[3]],
+      options: [
+        cleanOptions[0],
+        cleanOptions[1],
+        cleanOptions[2],
+        cleanOptions[3],
+      ],
       answerIndex,
     };
   }
@@ -271,7 +298,9 @@ function validateGeneratedQuestion(
   if (type === "essay") {
     const text = ensureValidText(rawQuestion.text, "essay prompt");
     const referenceAnswer =
-      typeof rawQuestion.referenceAnswer === "string" ? rawQuestion.referenceAnswer.trim() : "";
+      typeof rawQuestion.referenceAnswer === "string"
+        ? rawQuestion.referenceAnswer.trim()
+        : "";
 
     return {
       type: "essay",
@@ -287,20 +316,44 @@ function validateGeneratedQuestion(
     const candidate = rawQuestion.answer;
 
     if (typeof candidate === "boolean") {
-      return { type: "true-false", text, difficulty, tags: [], answer: candidate };
+      return {
+        type: "true-false",
+        text,
+        difficulty,
+        tags: [],
+        answer: candidate,
+      };
     }
 
     if (typeof candidate === "string") {
       const normalized = candidate.trim().toLowerCase();
-      if (normalized === "true" || normalized === "yes" || normalized === "y" || normalized === "1") {
+      if (
+        normalized === "true" ||
+        normalized === "yes" ||
+        normalized === "y" ||
+        normalized === "1"
+      ) {
         return { type: "true-false", text, difficulty, tags: [], answer: true };
       }
-      if (normalized === "false" || normalized === "no" || normalized === "n" || normalized === "0") {
-        return { type: "true-false", text, difficulty, tags: [], answer: false };
+      if (
+        normalized === "false" ||
+        normalized === "no" ||
+        normalized === "n" ||
+        normalized === "0"
+      ) {
+        return {
+          type: "true-false",
+          text,
+          difficulty,
+          tags: [],
+          answer: false,
+        };
       }
     }
 
-    throw new Error(`Question ${questionIndex + 1} has an invalid true/false answer.`);
+    throw new Error(
+      `Question ${questionIndex + 1} has an invalid true/false answer.`,
+    );
   }
 
   if (type === "fill-blank" || type === "flashcard") {
@@ -351,14 +404,26 @@ export function validateGeneratedQuestions(
 
   source.forEach((rawQuestion, questionIndex) => {
     try {
-      questions.push(validateGeneratedQuestion(rawQuestion, questionIndex, fallbackDifficulty));
+      questions.push(
+        validateGeneratedQuestion(
+          rawQuestion,
+          questionIndex,
+          fallbackDifficulty,
+        ),
+      );
     } catch (error) {
-      firstError ??= error instanceof Error ? error : new Error("A generated question was invalid.");
+      firstError ??=
+        error instanceof Error
+          ? error
+          : new Error("A generated question was invalid.");
     }
   });
 
   if (questions.length === 0) {
-    throw firstError ?? new Error("The AI response did not include any usable questions.");
+    throw (
+      firstError ??
+      new Error("The AI response did not include any usable questions.")
+    );
   }
 
   return questions;
@@ -372,9 +437,13 @@ export function parseGeneratedQuestionsText(
   let payload: unknown;
 
   try {
-    payload = JSON.parse(normalizeSmartQuotedJson(normalizeJsonText(responseText)));
+    payload = JSON.parse(
+      normalizeSmartQuotedJson(normalizeJsonText(responseText)),
+    );
   } catch {
-    throw new Error("The chatbot response must be valid JSON. Ask it to return only the JSON object, then paste it again.");
+    throw new Error(
+      "The chatbot response must be valid JSON. Ask it to return only the JSON object, then paste it again.",
+    );
   }
 
   return validateGeneratedQuestions(payload, fallbackDifficulty);
@@ -588,11 +657,16 @@ function limitText(value: string, maxChars: number): string {
   return text.length > maxChars ? `${text.slice(0, maxChars)}…` : text;
 }
 
-function formatPrompt(template: string, values: Record<string, string> = {}): string {
+function formatPrompt(
+  template: string,
+  values: Record<string, string> = {},
+): string {
   return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
     const value = values[key];
     if (value === undefined) {
-      throw new Error(`Missing value for AI prompt placeholder: ${placeholder}`);
+      throw new Error(
+        `Missing value for AI prompt placeholder: ${placeholder}`,
+      );
     }
 
     return value;
@@ -613,9 +687,7 @@ function formatSourceMaterial(
       return [`${resourceTitle}\n${AI_PROMPTS.sourceMaterial.empty}`];
     }
     if (remaining <= 0) {
-      return [
-        `${resourceTitle}\n${AI_PROMPTS.sourceMaterial.limitReached}`,
-      ];
+      return [`${resourceTitle}\n${AI_PROMPTS.sourceMaterial.limitReached}`];
     }
 
     const included = limitText(safeContent, remaining);
@@ -647,31 +719,38 @@ function buildGenerationPromptFromOptions({
   const safeCount =
     count === undefined
       ? undefined
-      : Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1));
+      : Math.max(
+          1,
+          Math.min(20, Number.isFinite(count) ? Math.round(count) : 1),
+        );
   const typeLabel =
     type === "automatic"
       ? AI_PROMPTS.generation.typeLabels.automatic
       : type === "mcq"
-      ? AI_PROMPTS.generation.typeLabels.mcq
-      : type === "true-false"
-        ? AI_PROMPTS.generation.typeLabels.trueFalse
-        : type === "fill-blank"
-          ? AI_PROMPTS.generation.typeLabels.fillBlank
-          : type === "flashcard"
-            ? AI_PROMPTS.generation.typeLabels.flashcard
-            : AI_PROMPTS.generation.typeLabels.essay;
+        ? AI_PROMPTS.generation.typeLabels.mcq
+        : type === "true-false"
+          ? AI_PROMPTS.generation.typeLabels.trueFalse
+          : type === "fill-blank"
+            ? AI_PROMPTS.generation.typeLabels.fillBlank
+            : type === "flashcard"
+              ? AI_PROMPTS.generation.typeLabels.flashcard
+              : AI_PROMPTS.generation.typeLabels.essay;
   const context = [
     topicTitle?.trim()
       ? formatPrompt(AI_PROMPTS.generation.topic, { title: topicTitle.trim() })
       : "",
     lessonTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.generation.lesson, { title: lessonTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.generation.lesson, {
+          title: lessonTitle.trim(),
+        })
       : "",
     groupTitle?.trim()
       ? formatPrompt(AI_PROMPTS.generation.group, { title: groupTitle.trim() })
       : "",
     roadmapTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.generation.subject, { title: roadmapTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.generation.subject, {
+          title: roadmapTitle.trim(),
+        })
       : "",
   ].filter(Boolean);
   const safeNotes = notes?.trim() ? limitText(notes, MAX_NOTES_CHARS) : "";
@@ -690,14 +769,14 @@ function buildGenerationPromptFromOptions({
     type === "automatic"
       ? AI_PROMPTS.generation.examples.automatic
       : type === "mcq"
-      ? AI_PROMPTS.generation.examples.mcq
-      : type === "true-false"
-        ? AI_PROMPTS.generation.examples.trueFalse
-        : type === "fill-blank"
-          ? AI_PROMPTS.generation.examples.fillBlank
-          : type === "flashcard"
-            ? AI_PROMPTS.generation.examples.flashcard
-            : AI_PROMPTS.generation.examples.essay;
+        ? AI_PROMPTS.generation.examples.mcq
+        : type === "true-false"
+          ? AI_PROMPTS.generation.examples.trueFalse
+          : type === "fill-blank"
+            ? AI_PROMPTS.generation.examples.fillBlank
+            : type === "flashcard"
+              ? AI_PROMPTS.generation.examples.flashcard
+              : AI_PROMPTS.generation.examples.essay;
 
   return [
     AI_PROMPTS.generation.jsonOnly,
@@ -748,12 +827,12 @@ function buildGenerationPromptFromOptions({
     type === "automatic"
       ? AI_PROMPTS.generation.typeInstructions.automatic
       : type === "mcq"
-      ? AI_PROMPTS.generation.typeInstructions.mcq
-      : type === "true-false"
-        ? AI_PROMPTS.generation.typeInstructions.trueFalse
-        : type === "fill-blank" || type === "flashcard"
-          ? AI_PROMPTS.generation.typeInstructions.shortAnswer
-          : "",
+        ? AI_PROMPTS.generation.typeInstructions.mcq
+        : type === "true-false"
+          ? AI_PROMPTS.generation.typeInstructions.trueFalse
+          : type === "fill-blank" || type === "flashcard"
+            ? AI_PROMPTS.generation.typeInstructions.shortAnswer
+            : "",
     AI_PROMPTS.generation.concise,
     prompt?.trim()
       ? formatPrompt(AI_PROMPTS.generation.extraGuidance, {
@@ -767,7 +846,9 @@ function buildGenerationPromptFromOptions({
 }
 
 /** Builds the fixed-count generation prompt used by provider requests. */
-export function buildGenerationPrompt(options: GenerateQuestionsOptions): string {
+export function buildGenerationPrompt(
+  options: GenerateQuestionsOptions,
+): string {
   return buildGenerationPromptFromOptions(options);
 }
 
@@ -783,8 +864,10 @@ export async function generateQuestions(
 ): Promise<GeneratedQuestion[]> {
   const { provider = getAiProvider(), difficulty } = options;
 
-  return callAi<GeneratedQuestion[]>(provider, buildGenerationPrompt(options), (value) =>
-    validateGeneratedQuestions(value, difficulty ?? "medium"),
+  return callAi<GeneratedQuestion[]>(
+    provider,
+    buildGenerationPrompt(options),
+    (value) => validateGeneratedQuestions(value, difficulty ?? "medium"),
   );
 }
 
@@ -806,16 +889,24 @@ export async function planAutomaticCoverage(
   const sourceMaterial = formatSourceMaterial(options.sourceMaterial);
   const context = [
     options.topicTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.coveragePlanning.topic, { title: options.topicTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.topic, {
+          title: options.topicTitle.trim(),
+        })
       : "",
     options.lessonTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.coveragePlanning.lesson, { title: options.lessonTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.lesson, {
+          title: options.lessonTitle.trim(),
+        })
       : "",
     options.groupTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.coveragePlanning.group, { title: options.groupTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.group, {
+          title: options.groupTitle.trim(),
+        })
       : "",
     options.roadmapTitle?.trim()
-      ? formatPrompt(AI_PROMPTS.coveragePlanning.subject, { title: options.roadmapTitle.trim() })
+      ? formatPrompt(AI_PROMPTS.coveragePlanning.subject, {
+          title: options.roadmapTitle.trim(),
+        })
       : "",
   ].filter(Boolean);
   const known = (options.existingQuestions ?? [])
@@ -860,7 +951,9 @@ export async function planAutomaticCoverage(
 
   return callAi(options.provider ?? getAiProvider(), prompt, (value) => {
     if (!isRecord(value) || !Array.isArray(value.coveragePoints)) {
-      throw new Error("The AI coverage plan did not include a coveragePoints array.");
+      throw new Error(
+        "The AI coverage plan did not include a coveragePoints array.",
+      );
     }
 
     const points = value.coveragePoints.map((point) =>
@@ -870,7 +963,11 @@ export async function planAutomaticCoverage(
       throw new Error("The AI coverage plan contains an empty learning point.");
     }
 
-    const uniquePoints = [...new Map(points.map((point) => [point.toLocaleLowerCase(), point])).values()];
+    const uniquePoints = [
+      ...new Map(
+        points.map((point) => [point.toLocaleLowerCase(), point]),
+      ).values(),
+    ];
     if (uniquePoints.length === 0) {
       throw new Error("The AI could not find any study points to cover.");
     }
@@ -898,7 +995,9 @@ export async function gradeEssayAnswer({
     AI_PROMPTS.essayGrading.purpose,
     formatPrompt(AI_PROMPTS.essayGrading.question, { question: safeQuestion }),
     formatPrompt(AI_PROMPTS.essayGrading.referenceAnswer, {
-      answer: referenceAnswer?.trim() || AI_PROMPTS.answerExplanation.noReferenceAnswer,
+      answer:
+        referenceAnswer?.trim() ||
+        AI_PROMPTS.answerExplanation.noReferenceAnswer,
     }),
     formatPrompt(AI_PROMPTS.essayGrading.learnerAnswer, { answer: safeAnswer }),
     AI_PROMPTS.essayGrading.assess,
@@ -924,7 +1023,9 @@ export async function explainQuestionAnswer({
     question.type === "mcq"
       ? [
           formatPrompt(AI_PROMPTS.answerExplanation.options, {
-            options: question.options.map((option, index) => `${index + 1}. ${option}`).join(" | "),
+            options: question.options
+              .map((option, index) => `${index + 1}. ${option}`)
+              .join(" | "),
           }),
           formatPrompt(AI_PROMPTS.answerExplanation.correctAnswer, {
             answer: question.options[question.answerIndex],
@@ -932,7 +1033,8 @@ export async function explainQuestionAnswer({
           formatPrompt(AI_PROMPTS.answerExplanation.learnerSelected, {
             answer:
               typeof userAnswer === "number"
-                ? question.options[userAnswer] ?? AI_PROMPTS.answerExplanation.noAnswerSelected
+                ? (question.options[userAnswer] ??
+                  AI_PROMPTS.answerExplanation.noAnswerSelected)
                 : AI_PROMPTS.answerExplanation.noAnswerSelected,
           }),
         ]
@@ -963,7 +1065,10 @@ export async function explainQuestionAnswer({
               }),
             ]
           : (() => {
-              const essayQuestion = question as { type: "essay"; referenceAnswer?: string };
+              const essayQuestion = question as {
+                type: "essay";
+                referenceAnswer?: string;
+              };
 
               return [
                 formatPrompt(AI_PROMPTS.answerExplanation.referenceAnswer, {
@@ -986,7 +1091,9 @@ export async function explainQuestionAnswer({
     AI_PROMPTS.answerExplanation.mcq,
     AI_PROMPTS.answerExplanation.trueFalse,
     AI_PROMPTS.answerExplanation.shortAnswer,
-    formatPrompt(AI_PROMPTS.answerExplanation.question, { question: question.text }),
+    formatPrompt(AI_PROMPTS.answerExplanation.question, {
+      question: question.text,
+    }),
     ...questionDetails,
     AI_PROMPTS.answerExplanation.responseShape,
   ].join("\n");

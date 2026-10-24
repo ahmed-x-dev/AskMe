@@ -17,7 +17,9 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-[13px] font-medium leading-4.5 text-muted">{label}</legend>
+      <legend className="mb-2 text-[13px] font-medium leading-4.5 text-muted">
+        {label}
+      </legend>
       <div
         role="group"
         aria-label={label}
@@ -31,7 +33,9 @@ export function SegmentedControl<T extends string>({
             disabled={option.disabled}
             onClick={() => onChange(option.value)}
             className={`min-h-12 min-w-0 flex-1 rounded-[11px] px-2 text-[13px] font-medium leading-4.5 transition-colors duration-150 active:scale-98 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
-              onCard ? "focus-visible:ring-offset-bg" : "focus-visible:ring-offset-card"
+              onCard
+                ? "focus-visible:ring-offset-bg"
+                : "focus-visible:ring-offset-card"
             } ${
               value === option.value
                 ? "bg-accent text-on-accent"

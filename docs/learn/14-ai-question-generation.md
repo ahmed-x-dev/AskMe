@@ -23,14 +23,19 @@ export async function generateQuestions({
   setTitle,
   prompt,
 }: {
-  type: QuestionType
-  count: number
-  setTitle?: string
-  prompt?: string
+  type: QuestionType;
+  count: number;
+  setTitle?: string;
+  prompt?: string;
 }): Promise<GeneratedQuestion[]> {
-  const safeCount = Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1))
+  const safeCount = Math.max(
+    1,
+    Math.min(20, Number.isFinite(count) ? Math.round(count) : 1),
+  );
 
-  return callAi<GeneratedQuestion[]>(provider, basePrompt, (value) => validateGeneratedQuestions(value))
+  return callAi<GeneratedQuestion[]>(provider, basePrompt, (value) =>
+    validateGeneratedQuestions(value),
+  );
 }
 ```
 

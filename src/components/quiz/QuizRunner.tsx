@@ -7,7 +7,12 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { buttonGhost, buttonPrimary, buttonSecondary, iconButton } from "@/components/ui/styles";
+import {
+  buttonGhost,
+  buttonPrimary,
+  buttonSecondary,
+  iconButton,
+} from "@/components/ui/styles";
 import { formatElapsedTime } from "@/features/quiz";
 import { deleteQuestion, recordAttempt, type QuizAnswer } from "@/lib/data";
 import type { Question } from "@/types/study";
@@ -28,12 +33,19 @@ type QuizRunnerProps = {
 };
 
 /** Runs a quiz: shows one question at a time and saves an attempt for every answer. */
-export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onFinish }: QuizRunnerProps) {
+export function QuizRunner({
+  queue,
+  exitHref,
+  allowQuestionDeletion = false,
+  onFinish,
+}: QuizRunnerProps) {
   const [activeQueue, setActiveQueue] = useState(queue);
   const [index, setIndex] = useState(0);
   const [results, setResults] = useState<Record<string, boolean>>({});
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [historyErrors, setHistoryErrors] = useState<Record<string, string>>({});
+  const [historyErrors, setHistoryErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isSavingAnswer, setIsSavingAnswer] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -83,9 +95,12 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
         return next;
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not save this answer.";
+      const message =
+        error instanceof Error ? error.message : "Could not save this answer.";
       setHistoryErrors((current) => ({ ...current, [question.id]: message }));
-      setSaveError(`This answer could not be saved to your review history. ${message}`);
+      setSaveError(
+        `This answer could not be saved to your review history. ${message}`,
+      );
     } finally {
       isSavingAnswerRef.current = false;
       setIsSavingAnswer(false);
@@ -101,7 +116,8 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
   };
 
   const handleNext = async () => {
-    if (isSavingAnswerRef.current || isFinishingRef.current || !question) return;
+    if (isSavingAnswerRef.current || isFinishingRef.current || !question)
+      return;
 
     if (!isLast) {
       setSaveError(null);
@@ -114,13 +130,18 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
 
     try {
       await onFinish(
-        activeQueue.map((entry) => ({ questionId: entry.id, correct: results[entry.id] === true })),
+        activeQueue.map((entry) => ({
+          questionId: entry.id,
+          correct: results[entry.id] === true,
+        })),
         Math.floor((Date.now() - startedAt.current) / 1000),
         Object.values(historyErrors),
         activeQueue,
       );
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Could not finish the quiz.");
+      setSaveError(
+        error instanceof Error ? error.message : "Could not finish the quiz.",
+      );
       isFinishingRef.current = false;
       setIsFinishing(false);
     }
@@ -131,7 +152,9 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
 
     const deletedId = question.id;
     await deleteQuestion(deletedId);
-    const remainingQueue = activeQueue.filter((entry) => entry.id !== deletedId);
+    const remainingQueue = activeQueue.filter(
+      (entry) => entry.id !== deletedId,
+    );
     setActiveQueue(remainingQueue);
     setResults((current) => {
       const next = { ...current };
@@ -145,17 +168,23 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
     });
     answered.current.delete(deletedId);
     setSaveError(null);
-    setIndex((current) => Math.min(current, Math.max(remainingQueue.length - 1, 0)));
+    setIndex((current) =>
+      Math.min(current, Math.max(remainingQueue.length - 1, 0)),
+    );
   };
 
   if (!question) {
     return (
       <section className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 rounded-2xl bg-card p-6 text-center">
-        <h1 className="text-lg font-medium leading-6.5 text-fg">No questions left in this quiz</h1>
+        <h1 className="text-lg font-medium leading-6.5 text-fg">
+          No questions left in this quiz
+        </h1>
         <p className="text-base leading-6 text-muted">
           The remaining questions were deleted. No quiz result was recorded.
         </p>
-        <Link href={exitHref} className={buttonSecondary}>Return to questions</Link>
+        <Link href={exitHref} className={buttonSecondary}>
+          Return to questions
+        </Link>
       </section>
     );
   }
@@ -163,7 +192,10 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
   return (
     <section className="mx-auto flex w-full flex-col gap-6">
       <div className="mx-auto flex w-full max-w-[80ch] flex-wrap items-center justify-between gap-2">
-        <h1 aria-live="polite" className="text-base font-medium leading-6 text-fg tabular-nums">
+        <h1
+          aria-live="polite"
+          className="text-base font-medium leading-6 text-fg tabular-nums"
+        >
           Question {index + 1} of {activeQueue.length}
         </h1>
         <div className="flex items-center gap-2">
@@ -176,7 +208,11 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
               onClick={() => setIsDeleteConfirmOpen(true)}
               className={`${iconButton} text-bad-fg hover:bg-bad-bg`}
             >
-              <Trash2 aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+              <Trash2
+                aria-hidden="true"
+                className="h-5 w-5"
+                strokeWidth={1.5}
+              />
             </button>
           ) : null}
           <span
@@ -213,7 +249,9 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
           <ErrorMessage
             actionLabel={result === undefined ? undefined : "Retry saving"}
             actionDisabled={isSavingAnswer}
-            onAction={result === undefined ? undefined : () => void saveAnswer(result)}
+            onAction={
+              result === undefined ? undefined : () => void saveAnswer(result)
+            }
           >
             {saveError}
           </ErrorMessage>
@@ -222,7 +260,9 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
 
       {result === undefined ? (
         <p className="mx-auto w-full max-w-[80ch] text-[13px] leading-4.5 text-muted">
-          {question.type === "mcq" ? "Choose an option to continue." : "Reveal the reference, then mark your answer to continue."}
+          {question.type === "mcq"
+            ? "Choose an option to continue."
+            : "Reveal the reference, then mark your answer to continue."}
         </p>
       ) : null}
 
@@ -260,14 +300,21 @@ export function QuizRunner({ queue, exitHref, allowQuestionDeletion = false, onF
       </div>
 
       {isExitConfirmOpen ? (
-        <Modal titleId="exit-quiz-title" onClose={() => setIsExitConfirmOpen(false)}>
+        <Modal
+          titleId="exit-quiz-title"
+          onClose={() => setIsExitConfirmOpen(false)}
+        >
           <div className="flex flex-col gap-5 p-5 sm:p-6">
             <div>
-              <h2 id="exit-quiz-title" className="text-[22px] font-medium leading-7 text-fg">
+              <h2
+                id="exit-quiz-title"
+                className="text-[22px] font-medium leading-7 text-fg"
+              >
                 Exit this quiz?
               </h2>
               <p className="mt-2 text-base leading-6 text-muted">
-                Your quiz score will be lost. Answers already saved will remain in your review history.
+                Your quiz score will be lost. Answers already saved will remain
+                in your review history.
                 {Object.keys(historyErrors).length > 0
                   ? " Some answers could not be saved and will not appear there."
                   : ""}
