@@ -51,6 +51,12 @@ export default function Page() {
 
 Keep browser-only database reads inside client-side effects. Do not read `window.localStorage` while a component is rendering.
 
+## Route loading UI
+
+An `loading.tsx` file creates a Suspense fallback for its route segment and the pages below it. AskMe uses route-level skeletons for roadmap and topic details, quizzes, resources, and question editing so navigation can show the shape of the screen being opened.
+
+These do not replace components' `useLiveQuery` loading states. Those queries run in the browser after the page mounts, so each component still needs its own fallback. Keep route loading UI lightweight and shaped like the screen that follows.
+
 ## ❌ / ✅ examples
 
 ### ❌ Bad
