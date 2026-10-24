@@ -131,8 +131,9 @@ export function QuizPage({ scope }: { scope: QuizScope }) {
         key={phase.runId}
         queue={phase.queue}
         exitHref={source.backHref}
-        onFinish={(answers, elapsedSeconds, historyErrors) =>
-          handleFinish(phase.queue, answers, elapsedSeconds, historyErrors)
+        allowQuestionDeletion
+        onFinish={(answers, elapsedSeconds, historyErrors, remainingQueue) =>
+          handleFinish(remainingQueue, answers, elapsedSeconds, historyErrors)
         }
       />
     );

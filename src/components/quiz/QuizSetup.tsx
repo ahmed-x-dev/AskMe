@@ -18,9 +18,12 @@ type QuizSetupProps = {
 };
 
 const TYPE_OPTIONS: readonly { value: QuizQuestionType; label: string }[] = [
-  { value: "all", label: "MCQ + essay" },
+  { value: "all", label: "All types" },
   { value: "mcq", label: "MCQ" },
   { value: "essay", label: "Essay" },
+  { value: "true-false", label: "True/False" },
+  { value: "fill-blank", label: "Fill blank" },
+  { value: "flashcard", label: "Flashcard" },
 ];
 
 const DIFFICULTY_OPTIONS: readonly {

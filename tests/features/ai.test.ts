@@ -8,7 +8,9 @@ import {
   validateAnswerExplanation,
   validateEssayGradeResult,
   validateGeneratedQuestions,
+  parseGeneratedQuestionsText,
   buildGenerationPrompt,
+  buildAutomaticCoveragePrompt,
 } from '../../src/features/ai'
 import { saveAiApiKey, saveGeminiApiKey, setAiProvider } from '../../src/platform/secureStorage'
 
@@ -87,6 +89,44 @@ describe('AI schema validation', () => {
     expect(second.difficulty).toBe('easy')
   })
 
+  it('parses fenced chatbot JSON and validates the questions', () => {
+    const questions = parseGeneratedQuestionsText(
+      '```json\n{"questions":[{"type":"essay","text":"Explain state."}]}\n```',
+      'hard',
+    )
+
+    expect(questions).toHaveLength(1)
+    expect(questions[0].difficulty).toBe('hard')
+  })
+
+  it('normalizes curly JSON quotes while preserving quoted text', () => {
+    const questions = parseGeneratedQuestionsText(
+      '{“questions”:[{“type”:”essay”,“text”:”Explain “markup, HTML” and tags.”},{“type”:”fill-blank”,“text”:”Created in ____.”,“answer”:”1991"}]}'
+    )
+
+    expect(questions).toEqual([
+      {
+        type: 'essay',
+        text: 'Explain "markup, HTML" and tags.',
+        difficulty: 'medium',
+        tags: [],
+        referenceAnswer: undefined,
+      },
+      {
+        type: 'fill-blank',
+        text: 'Created in ____.',
+        difficulty: 'medium',
+        tags: [],
+        answer: '1991',
+      },
+    ])
+  })
+
+  it('rejects malformed or unusable chatbot responses', () => {
+    expect(() => parseGeneratedQuestionsText('Not JSON')).toThrow('must be valid JSON')
+    expect(() => parseGeneratedQuestionsText('{"questions":[]}')).toThrow('did not include any questions')
+  })
+
   it('rejects malformed essay grading payloads', () => {
     expect(() =>
       validateEssayGradeResult({
@@ -135,6 +175,36 @@ describe('generation prompt', () => {
     expect(prompt).not.toContain('Topic:')
     expect(prompt).not.toContain('already has these questions')
     expect(prompt.length).toBeLessThan(6000)
+  })
+
+  it('asks for full coverage without a fixed question count', () => {
+    const prompt = buildAutomaticCoveragePrompt({
+      topicTitle: 'useEffect',
+      notes: 'Effects synchronize with external systems.',
+      sourceMaterial: [{ title: 'Lifecycle', content: 'Cleanup runs before the effect reruns.' }],
+      existingQuestions: ['What is an effect?'],
+    })
+
+    expect(prompt).toContain('every important, distinct, testable point')
+    expect(prompt).toContain('Skip minor tangents, incidental trivia')
+    expect(prompt).toContain('Do not refer to the source material')
+    expect(prompt).toContain('standard ASCII double quotes')
+    expect(prompt).toContain('Do not use curly quotes as JSON delimiters')
+    expect(prompt).toContain('Return exactly one top-level JSON object with a "questions" array')
+    expect(prompt).toContain('{"type":"essay","text":"...","referenceAnswer":"..."}')
+    expect(prompt).toContain('{"type":"true-false","text":"...","answer":true}')
+    expect(prompt).toContain('{"type":"fill-blank","text":"...","answer":"..."}')
+    expect(prompt).toContain('{"type":"flashcard","text":"...","answer":"..."}')
+    expect(prompt).not.toContain('Create exactly')
+    expect(prompt).toContain('answerIndex (0-3)')
+    expect(prompt).toContain('true-false has text and a boolean answer')
+    expect(prompt).toContain('fill-blank and flashcard each have text and a string answer')
+    expect(prompt).toContain('Use essay for explanations, comparisons, lists, or multi-part conceptual questions')
+    expect(prompt).toContain('Use fill-blank for a short, precise term or fact')
+    expect(prompt).toContain('Reserve flashcards for vocabulary')
+    expect(prompt).toContain('Effects synchronize with external systems.')
+    expect(prompt).toContain('Cleanup runs before the effect reruns.')
+    expect(prompt).toContain('Do not repeat or rephrase any listed question')
   })
 })
 
@@ -296,7 +366,7 @@ describe('AI calls', () => {
       'Plan a concise but thorough revision question set from the supplied study material.',
     )
     expect(JSON.stringify(requestOptions.body)).toContain(
-      'Existing questions already cover these prompts. Do not plan duplicates:',
+      'Some existing questions from this topic are listed below. Do not plan points already covered by a listed question:',
     )
   })
 

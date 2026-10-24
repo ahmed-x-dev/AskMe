@@ -21,7 +21,7 @@ export function SegmentedControl<T extends string>({
       <div
         role="group"
         aria-label={label}
-        className={`flex gap-1 rounded-[14px] p-0.75 ${onCard ? "bg-bg" : "bg-card"}`}
+        className={`${options.length > 4 ? "grid grid-cols-3" : "flex"} gap-1 rounded-[14px] p-0.75 ${onCard ? "bg-bg" : "bg-card"}`}
       >
         {options.map((option) => (
           <button

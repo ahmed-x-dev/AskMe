@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { QuizResults } from '../src/components/quiz/QuizResults'
 import { QuizRunner } from '../src/components/quiz/QuizRunner'
 import { QuizSetup } from '../src/components/quiz/QuizSetup'
-import { addQuestion, allTables, createRoadmap, createTopic, db, getQuizSource, type QuizSource } from '../src/lib/data'
+import { addQuestion, allTables, createRoadmap, createTopic, db, getQuizSource, recordAttempt, type QuizSource } from '../src/lib/data'
 import type { Question } from '../src/types/study'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -112,6 +112,46 @@ describe('QuizRunner', () => {
     expect(attempts[0].correct).toBe(false)
   })
 
+  it('deletes a question from the active quiz after confirmation and finishes with the remaining queue', async () => {
+    const { questions } = await seed(2)
+    await recordAttempt(questions[0].id, false)
+    const onFinish = vi.fn().mockResolvedValue(undefined)
+    await act(async () => {
+      root.render(
+        <QuizRunner queue={questions} exitHref="/x" allowQuestionDeletion onFinish={onFinish} />,
+      )
+    })
+
+    await click(container.querySelector('button[aria-label="Delete this question"]') ?? undefined)
+    expect(container.textContent).toContain('removes its saved attempts and review schedule')
+    await click(button('Delete question'))
+
+    expect(await db.questions.get(questions[0].id)).toBeUndefined()
+    expect(await db.attempts.where('questionId').equals(questions[0].id).count()).toBe(0)
+    expect(await db.reviews.get(questions[0].id)).toBeUndefined()
+    expect(container.textContent).toContain('Question 1 of 1')
+    expect(container.textContent).toContain('Question 2')
+
+    await click(button('right'))
+    await click(button('Finish'))
+    expect(onFinish.mock.calls[0][0]).toEqual([{ questionId: questions[1].id, correct: true }])
+    expect(onFinish.mock.calls[0][3]).toEqual([questions[1]])
+  })
+
+  it('returns to the quiz source when the last remaining question is deleted', async () => {
+    const { questions } = await seed(1)
+    await act(async () => {
+      root.render(
+        <QuizRunner queue={questions} exitHref="/x" allowQuestionDeletion onFinish={async () => {}} />,
+      )
+    })
+
+    await click(container.querySelector('button[aria-label="Delete this question"]') ?? undefined)
+    await click(button('Delete question'))
+    expect(container.textContent).toContain('No questions left in this quiz')
+    expect(container.querySelector('a[href="/x"]')?.textContent).toBe('Return to questions')
+  })
+
   it('keeps the score path available and reports an attempt that could not be saved', async () => {
     const { questions } = await seed(1)
     await db.questions.delete(questions[0].id)
@@ -143,6 +183,27 @@ describe('QuizRunner', () => {
 })
 
 describe('QuizSetup', () => {
+    it('offers all supported question types and filters the quiz queue by type', async () => {
+      const { topic } = await seed(1)
+      await addQuestion(topic.id, { type: 'essay', text: 'Explain.' })
+      await addQuestion(topic.id, { type: 'true-false', text: 'True?', answer: true })
+      await addQuestion(topic.id, { type: 'fill-blank', text: 'Complete ____.', answer: 'it' })
+      const flashcard = await addQuestion(topic.id, { type: 'flashcard', text: 'Term?', answer: 'Definition' })
+      const source = (await getQuizSource({ kind: 'topic', topicId: topic.id }))!
+      const onStart = vi.fn()
+      await act(async () => { root.render(<QuizSetup source={source} onStart={onStart} />) })
+
+      for (const label of ['All types', 'MCQ', 'Essay', 'True/False', 'Fill blank', 'Flashcard']) {
+        expect(button(label)).toBeDefined()
+      }
+      expect(container.querySelector('[aria-label="Question type"]')?.className).toContain('grid-cols-3')
+
+      await click(button('Flashcard'))
+      expect(container.textContent).toContain('1 question selected for this quiz.')
+      await click(button('Start quiz · 1'))
+      expect(onStart.mock.calls[0][0]).toEqual([flashcard])
+    })
+
   it('offers a mistakes-only quiz and starts with the chosen questions', async () => {
     const { topic, questions } = await seed(3)
     await db.attempts.add({ id: 'a1', questionId: questions[1].id, topicId: topic.id, roadmapId: topic.roadmapId, correct: false, at: '2026-10-19T10:00:00.000Z' })

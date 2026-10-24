@@ -8,7 +8,7 @@ Quiz screens combine settings, a timed question, answer feedback, and navigation
 
 ## The concept, simply
 
-The setup screen selects a question queue. The runner shows one item at a time. Each answer records whether it was correct and updates the review schedule. Results summarize those same per-question correctness values.
+The setup screen selects a question queue by type, difficulty, mistakes, and count. The runner shows one item at a time. Each answer records whether it was correct and updates the review schedule. Results summarize those same per-question correctness values. During a quiz (not a daily Review session), the learner can delete a question after confirmation; its saved history is removed and it is omitted from the active queue and results.
 
 MCQs are checked immediately. Essay answers are self-assessed after the reference answer is revealed. AI grading and explanations remain optional helpers; they do not replace the learner's MCQ answer or essay self-assessment.
 
@@ -54,7 +54,7 @@ const result = results[question.id];
 
 - `buildQuizQueue` filters, shuffles, and limits the session queue.
 - `recordAttempt` saves an answer and updates spaced-repetition state.
-- `QuizRunner` associates each queue entry with its correctness value.
+- `QuizRunner` associates each remaining queue entry with its correctness value; quiz-only deletion also removes the question and its saved history.
 - `QuizResults` displays the derived score and missed questions.
 - `PASS_MARK` is 0.8; topic completion requires all topic questions and the threshold.
 - Due review sessions include up to `REVIEW_SESSION_SIZE` cards.

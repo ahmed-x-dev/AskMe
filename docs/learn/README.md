@@ -23,7 +23,7 @@ Some early guides describe previous implementations. For the current product sco
 
 - [12 — Browser storage and API keys](./12-secure-storage-and-api-keys.md): How provider API keys stay outside the database and why browser `localStorage` is not encrypted secure storage.
 - [13 — Gemini client and errors](./13-gemini-client-and-errors.md): How the app calls Gemini with safeguards for timeouts, malformed JSON, and readable failure messages.
-- [14 — AI question generation](./14-ai-question-generation.md): How generated MCQ and essay prompts are validated, previewed, and inserted into a set.
+- [14 — AI question generation](./14-ai-question-generation.md): How generated questions are validated and previewed, including a manual chatbot copy/paste fallback.
 - [15 — AI essay grading](./15-ai-essay-grading.md): How essay answers get scored with a structured result object and shown in the quiz flow.
 - [16 — Validating AI responses](./16-validating-ai-responses.md): How the app rejects malformed AI output before it reaches the app model or repository.
 - [17 — AI provider abstraction](./17-ai-provider-abstraction.md): How the app keeps provider-specific API keys separate and lets the same AI flow run against Gemini or OpenAI.

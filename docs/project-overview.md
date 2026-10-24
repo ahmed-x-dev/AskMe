@@ -18,7 +18,7 @@ The product should remain useful without an account or application server. The l
 - **Web application:** Next.js App Router, React, TypeScript, and Tailwind CSS.
 - **Local data:** Dexie stores study content and progress in browser IndexedDB. There is no remote database, user account, or automatic cross-device sync.
 - **Backups:** users can export and restore local study data. Backup files are distinct from AI provider settings.
-- **AI:** provider requests run from the browser. Provider keys are kept in browser `localStorage`; this is convenient but is not encrypted secure storage. Keys must not be written to study data, backups, or logs.
+- **AI:** provider requests run from the browser. Provider keys are kept in browser `localStorage`; this is convenient but is not encrypted secure storage. Keys must not be written to study data, backups, or logs. Question generation also supports a manual copy/paste handoff to chatbot websites without an API key; nothing is sent automatically, and learners should review prompts before sharing their notes or study material with a third party.
 - **PWA:** the app has a manifest and service worker for installability and offline support. Dynamic routes and resources have offline limitations.
 
 ## Current Feature Areas
@@ -27,7 +27,7 @@ The product should remain useful without an account or application server. The l
 - Topic lessons, Markdown notes, and local documents, with per-lesson questions pooled into the topic quiz; Markdown editing and supported video playback use an in-app resource page.
 - Question authoring, import/export, quiz setup and sessions, results, and saved attempts.
 - Due-question review and progress summaries.
-- Optional AI question generation and essay grading with validated provider responses, including automatic question coverage from selected topic or lesson resources.
+- Optional AI question generation and essay grading with validated provider responses, including automatic question coverage from selected topic or lesson resources. Question generation also supports a manually operated chatbot website, with automatic coverage prompts asking for one question per distinct study point.
 - Appearance and AI settings, data backup and restore, and PWA installation/offline behavior.
 
 ## Code Structure

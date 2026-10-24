@@ -36,6 +36,14 @@ export async function generateQuestions({
 
 The preview is inserted by `addQuestions`, which uses the same repository flow as manual edits. When generation starts from a lesson, `addQuestions` receives that lesson's ID so each accepted question remains grouped there while still belonging to the topic's question pool.
 
+## Using a chatbot website
+
+When no API key is available, the dialog can build the same fixed-type generation prompt without making an API call. Copy the prompt, open a chatbot website, paste it there, then paste the chatbot's JSON response back into AskMe. AskMe parses the text, runs `validateGeneratedQuestions`, and only then shows the normal selection preview. Nothing is saved until the learner confirms the selected questions.
+
+The website handoff is manual: AskMe does not control a signed-in chatbot session or submit data automatically. The prompt can contain topic notes, selected readable resources, and existing questions, so the learner should review it before sharing. In Automatic coverage mode, one prompt asks the chatbot to focus on important points central to the topic, phrase questions without referring back to the lesson, and return one question per point with no fixed count. Essay questions suit explanations and multi-part ideas, fill-in questions suit short facts, and flashcards are reserved for concise vocabulary. The API workflow still uses its separate planning and batched generation requests.
+
+The pasted response may be plain JSON, a JSON markdown fence, or use typographic curly quotes copied from a chat website. `parseGeneratedQuestionsText` removes a common fence, normalizes curly JSON quotes while preserving quoted words inside question text, parses the response, and delegates to the same validator used for provider responses. Invalid output stays out of IndexedDB and can be corrected by pasting a new response.
+
 ## ✅ / ❌ examples
 
 ✅ Good: MCQ output with four non-empty options and a valid answer index.
@@ -54,6 +62,8 @@ The preview is inserted by `addQuestions`, which uses the same repository flow a
 - Keep generation count between 1 and 20.
 - Assign IDs and timestamps before saving to Dexie.
 - Validate before writing to the repository.
+- Treat chatbot websites as external services; review copied material before sharing.
+- Parse and validate pasted text before showing it in the preview.
 
 ## Key Takeaways
 

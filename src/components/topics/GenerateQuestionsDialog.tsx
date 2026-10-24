@@ -2,13 +2,16 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Copy, ExternalLink, Sparkles } from "lucide-react";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { Modal } from "@/components/ui/Modal";
 import { buttonGhost, buttonPrimary, fieldClassName } from "@/components/ui/styles";
 import {
+  buildAutomaticCoveragePrompt,
+  buildGenerationPrompt,
   describeError,
   generateQuestions,
+  parseGeneratedQuestionsText,
   planAutomaticCoverage,
   type GeneratedQuestion,
 } from "@/features/ai";
@@ -249,6 +252,9 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isCheckingResources, setIsCheckingResources] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [externalPrompt, setExternalPrompt] = useState("");
+  const [externalResponse, setExternalResponse] = useState("");
+  const [clipboardStatus, setClipboardStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const isGeneratingRef = useRef(false);
   const isSavingRef = useRef(false);
@@ -321,6 +327,62 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           check.content ||
           "The resource content could not be read. Only its title and source are known; do not infer or invent its contents.",
       }));
+
+  const handlePrepareExternalPrompt = () => {
+    if (mode === "automatic" && isCheckingResources) {
+      setError("Wait for the resource checks to finish before preparing the coverage prompt.");
+      return;
+    }
+
+    const promptContext = {
+      topicTitle: context.topicTitle,
+      lessonTitle: context.lessonTitle,
+      roadmapTitle: context.roadmapTitle,
+      groupTitle: context.groupTitle,
+      notes: context.notes,
+      existingQuestions: context.existingQuestions,
+      difficulty: difficulty === "any" ? undefined : difficulty,
+      prompt: instructions,
+    };
+    const nextPrompt = mode === "automatic"
+      ? buildAutomaticCoveragePrompt({
+          ...promptContext,
+          sourceMaterial: selectedSourceMaterial(),
+        })
+      : buildGenerationPrompt({ ...promptContext, type, count });
+
+    setExternalPrompt(nextPrompt);
+    setExternalResponse("");
+    setClipboardStatus(null);
+    setError(null);
+  };
+
+  const handleCopyExternalPrompt = async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard access is unavailable.");
+      await navigator.clipboard.writeText(externalPrompt);
+      setClipboardStatus("Prompt copied. Paste it into the chatbot you choose.");
+    } catch {
+      setClipboardStatus("Could not access the clipboard. Select the prompt above and copy it manually.");
+    }
+  };
+
+  const handleUseExternalResponse = () => {
+    try {
+      const questions = parseGeneratedQuestionsText(
+        externalResponse,
+        difficulty === "any" ? "medium" : difficulty,
+      );
+      setGenerated(questions);
+      setSelected(new Set(questions.map((_, index) => index)));
+      setExternalPrompt("");
+      setExternalResponse("");
+      setError(null);
+      setStep("preview");
+    } catch (responseError) {
+      setError(describeError(responseError));
+    }
+  };
 
   const generateAutomaticPlan = async (points: string[]) => {
     setStep("generating");
@@ -492,19 +554,18 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </p>
         </div>
 
-        {!hasKey ? (
-          <div className="flex flex-col items-start gap-4">
-            <p className="text-base leading-6 text-muted">
-              Add an AI key in Settings first. It stays in this browser.
-            </p>
-            <Link
-              href="/settings"
-              className={buttonPrimary}
-            >
-              Open settings
+        {!hasKey && step !== "preview" ? (
+          <p className="text-[13px] leading-4.5 text-muted">
+            No API key is saved. You can prepare a prompt for a chatbot website without connecting an account. The prompt may include your topic notes, selected study material, and existing questions; review it before sharing.
+            {" "}
+            <Link href="/settings" className="text-accent-text underline underline-offset-2">
+              Set up an API key instead
             </Link>
-          </div>
-        ) : step === "preview" ? (
+            .
+          </p>
+        ) : null}
+
+        {step === "preview" ? (
           <>
             <p className="text-base leading-6 text-muted tabular-nums">
               {selected.size} of {plural(generated.length, "question")} selected
@@ -518,7 +579,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                       type="checkbox"
                       checked={selected.has(index)}
                       onChange={() => toggle(index)}
-                      className="mt-1 h-5 w-5 shrink-0 accent-(--accent)"
+                      className="mt-1 h-5 w-5 shrink-0 accent-accent"
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block wrap-break-word text-base font-medium leading-6 text-fg">
@@ -608,6 +669,11 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                 </button>
               ))}
             </div>
+            {!hasKey ? (
+              <p className="text-[13px] leading-4.5 text-muted">
+                Automatic coverage asks the chatbot for one question per distinct study point, with no fixed question count.
+              </p>
+            ) : null}
 
             {mode === "manual" ? (
               <div role="group" aria-label="Question type" className="flex flex-wrap gap-1 rounded-[14px] bg-card p-0.75">
@@ -634,7 +700,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                     {context.lessonTitle
                       ? "This lesson’s title and resources are used."
                       : "The topic title, notes, and resources from all its lessons are used."}{" "}
-                    Choose which resources to include. Readable contents and your topic notes are sent to your configured AI provider.
+                    Choose which resources to include. Readable contents and your topic notes are included in the prompt. If you paste it into a chatbot website, that material is shared with that provider.
                     Websites can block access; PDF and Word files are currently included by title only.
                     Up to 6,000 characters per resource and 24,000 total are sent; later content over the limit is omitted.
                   </p>
@@ -666,7 +732,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
                                 ),
                               )
                             }
-                            className="mt-1 h-5 w-5 shrink-0 accent-(--accent)"
+                            className="mt-1 h-5 w-5 shrink-0 accent-accent"
                           />
                           <span className="min-w-0 flex-1">
                             <span className="block wrap-break-word text-[13px] font-medium leading-4.5 text-fg">
@@ -755,7 +821,97 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           </>
         )}
 
+        {externalPrompt && step === "form" ? (
+          <section aria-label="Use an external chatbot" className="flex flex-col gap-3 rounded-2xl bg-card p-4">
+            <div>
+              <h3 className="text-base font-medium leading-6 text-fg">
+                {mode === "automatic" ? "Automatic coverage prompt" : "Use a chatbot website"}
+              </h3>
+              <p className="mt-1 text-[13px] leading-4.5 text-muted">
+                {mode === "automatic"
+                  ? "This prompt asks for one question per distinct study point across the selected material, without a fixed count. "
+                  : "Copy the prompt, open a chatbot, and paste it there. "}
+                Then paste its JSON response below. AskMe does not send anything automatically. Anything in the prompt that you share will be handled under that site’s privacy policy.
+              </p>
+            </div>
+            <label className="flex flex-col gap-2 text-[13px] font-medium leading-4.5 text-fg" htmlFor="external-ai-prompt">
+              Prompt
+              <textarea
+                id="external-ai-prompt"
+                readOnly
+                value={externalPrompt}
+                rows={6}
+                className={`resize-y py-3 ${inputClassName}`}
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => void handleCopyExternalPrompt()} className={buttonPrimary}>
+                <Copy aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+                Copy prompt
+              </button>
+              <a href="https://chatgpt.com/" target="_blank" rel="noreferrer" className={buttonGhost}>
+                ChatGPT <ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+              </a>
+              <a href="https://claude.ai/" target="_blank" rel="noreferrer" className={buttonGhost}>
+                Claude <ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+              </a>
+              <a href="https://gemini.google.com/" target="_blank" rel="noreferrer" className={buttonGhost}>
+                Gemini <ExternalLink aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
+              </a>
+            </div>
+            {clipboardStatus ? (
+              <p role="status" className="text-[13px] leading-4.5 text-muted">{clipboardStatus}</p>
+            ) : null}
+            <label className="flex flex-col gap-2 text-[13px] font-medium leading-4.5 text-fg" htmlFor="external-ai-response">
+              Chatbot response
+              <textarea
+                id="external-ai-response"
+                value={externalResponse}
+                onChange={(event) => {
+                  setExternalResponse(event.target.value);
+                  setError(null);
+                }}
+                rows={7}
+                placeholder='Paste JSON, for example: {"questions":[{"type":"essay","text":"..."}]}'
+                className={`resize-y py-3 ${inputClassName}`}
+              />
+            </label>
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setExternalPrompt("");
+                  setExternalResponse("");
+                  setClipboardStatus(null);
+                  setError(null);
+                }}
+                className={buttonGhost}
+              >
+                Close chatbot option
+              </button>
+              <button
+                type="button"
+                onClick={handleUseExternalResponse}
+                disabled={!externalResponse.trim()}
+                className={buttonPrimary}
+              >
+                Review questions
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         {error ? <ErrorMessage>{error}</ErrorMessage> : null}
+        {hasKey && !externalPrompt && step === "form" ? (
+          <button
+            type="button"
+            onClick={handlePrepareExternalPrompt}
+            disabled={mode === "automatic" && isCheckingResources}
+            className={`${buttonGhost} self-start`}
+          >
+            Use a chatbot website
+          </button>
+        ) : null}
 
         <div className="flex flex-wrap justify-end gap-3">
           <button
@@ -771,7 +927,7 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
             {step === "preview" ? "Back" : step === "confirm" ? "Adjust" : "Cancel"}
           </button>
 
-          {!hasKey ? null : step === "preview" ? (
+          {step === "preview" ? (
             <button
               type="button"
               onClick={() => void handleSave()}
@@ -793,21 +949,23 @@ export function GenerateQuestionsDialog({ context, onClose }: GenerateQuestionsD
           ) : (
             <button
               type="button"
-              onClick={() => void handleGenerate()}
+              onClick={() => hasKey ? void handleGenerate() : handlePrepareExternalPrompt()}
               disabled={isBusy || (mode === "automatic" && isCheckingResources)}
               aria-busy={step === "generating" || step === "planning"}
               className={buttonPrimary}
             >
-              <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-              {step === "planning"
-                ? "Planning…"
-                : step === "generating"
-                  ? mode === "automatic"
-                    ? `Generating ${generationProgress}/${coveragePoints.length}…`
-                    : "Generating…"
-                  : mode === "automatic"
-                    ? "Plan & generate"
-                    : "Generate"}
+              {hasKey ? <Sparkles aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} /> : null}
+              {!hasKey
+                ? "Prepare chatbot prompt"
+                : step === "planning"
+                  ? "Planning…"
+                  : step === "generating"
+                    ? mode === "automatic"
+                      ? `Generating ${generationProgress}/${coveragePoints.length}…`
+                      : "Generating…"
+                    : mode === "automatic"
+                      ? "Plan & generate"
+                      : "Generate"}
             </button>
           )}
         </div>

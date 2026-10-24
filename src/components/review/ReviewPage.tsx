@@ -41,8 +41,14 @@ export function ReviewPage() {
         key={phase.runId}
         queue={phase.queue}
         exitHref="/"
-        onFinish={async (answers, elapsedSeconds, historyErrors) =>
-          setPhase({ name: "results", queue: phase.queue, answers, elapsedSeconds, historyErrors })
+        onFinish={async (answers, elapsedSeconds, historyErrors, remainingQueue) =>
+          setPhase({
+            name: "results",
+            queue: remainingQueue,
+            answers,
+            elapsedSeconds,
+            historyErrors,
+          })
         }
       />
     );

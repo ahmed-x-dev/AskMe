@@ -14,10 +14,13 @@ const context = {
 afterEach(() => localStorage.clear())
 
 describe('GenerateQuestionsDialog', () => {
-  it('sends the learner to Settings when no AI key is saved', () => {
+  it('offers chatbot prompt generation when no AI key is saved', () => {
     const html = renderToStaticMarkup(<GenerateQuestionsDialog context={context} onClose={() => {}} />)
 
-    expect(html).toContain('Add an AI key in Settings')
+    expect(html).toContain('No API key is saved')
+    expect(html).toContain('Prepare chatbot prompt')
+    expect(html).toContain('Automatic coverage')
+    expect(html).toContain('one question per distinct study point')
     expect(html).toContain('href="/settings"')
     expect(html).not.toContain('>Generate<')
   })
@@ -29,6 +32,7 @@ describe('GenerateQuestionsDialog', () => {
     expect(html).toContain('useEffect')
     expect(html).toContain('How many')
     expect(html).toContain('Generate')
+    expect(html).toContain('Use a chatbot website')
     expect(html).not.toContain('Open settings')
   })
 })

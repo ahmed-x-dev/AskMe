@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  addQuestion,
   addLesson,
   addLessonResource,
+  addQuestion,
   allTables,
   createGroup,
   createRoadmap,
@@ -12,6 +12,7 @@ import {
   deleteLessonResource,
   getQuestionEditorData,
   getTopicPage,
+  recordAttempt,
   reorderLessons,
   setLessonDone,
   getTopicLessonResource,
@@ -76,6 +77,24 @@ describe("getTopicPage", () => {
     const t = await createTopic({ roadmapId: r.id, title: "T" });
     expect((await getTopicPage(t.id))!.group).toBeUndefined();
     expect(await getTopicPage("missing")).toBeNull();
+  });
+
+  it("deleting a lesson removes its questions and their review history only", async () => {
+    const roadmap = await createRoadmap({ title: "React" });
+    const topic = await createTopic({ roadmapId: roadmap.id, title: "Hooks" });
+    const lesson = await addLesson(topic.id, "Effects");
+    const topicQuestion = await addQuestion(topic.id, mcq);
+    const lessonQuestion = await addQuestion(topic.id, mcq, { lessonId: lesson.id });
+    await recordAttempt(lessonQuestion.id, false);
+
+    await deleteLesson(lesson.id);
+
+    expect((await getTopicPage(topic.id))!.questions.map((question) => question.id)).toEqual([
+      topicQuestion.id,
+    ]);
+    expect(await db.questions.get(lessonQuestion.id)).toBeUndefined();
+    expect(await db.attempts.where("questionId").equals(lessonQuestion.id).count()).toBe(0);
+    expect(await db.reviews.get(lessonQuestion.id)).toBeUndefined();
   });
 });
 

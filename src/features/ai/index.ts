@@ -52,6 +52,80 @@ function normalizeJsonText(rawText: string): string {
     .trim();
 }
 
+function isJsonStringBoundary(text: string, position: number): boolean {
+  let next = position;
+  while (/\s/.test(text[next] ?? "") && next < text.length) next += 1;
+
+  const nextCharacter = text[next];
+  if (nextCharacter === undefined || nextCharacter === ":" || nextCharacter === "}" || nextCharacter === "]") {
+    return true;
+  }
+  if (nextCharacter !== ",") return false;
+
+  next += 1;
+  while (/\s/.test(text[next] ?? "") && next < text.length) next += 1;
+  const valueStart = text[next];
+  return (
+    valueStart === '"' ||
+    valueStart === "“" ||
+    valueStart === "{" ||
+    valueStart === "[" ||
+    valueStart === "-" ||
+    /[0-9]/.test(valueStart ?? "") ||
+    /^(?:true|false|null)(?=\s*[,}\]])/.test(text.slice(next))
+  );
+}
+
+// Chat websites may replace JSON delimiters with curly quotes; keep balanced inner quotes as text.
+function normalizeSmartQuotedJson(text: string): string {
+  let normalized = "";
+  let insideString = false;
+  let nestedSmartQuotes = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+
+    if (insideString && character === "\\") {
+      normalized += character;
+      if (index + 1 < text.length) normalized += text[++index];
+      continue;
+    }
+
+    if (character !== '"' && character !== "“" && character !== "”") {
+      normalized += character;
+      continue;
+    }
+
+    if (!insideString) {
+      insideString = true;
+      normalized += '"';
+      continue;
+    }
+
+    if (character === "“") {
+      nestedSmartQuotes += 1;
+      normalized += '\\"';
+      continue;
+    }
+
+    if (character === "”" && nestedSmartQuotes > 0) {
+      nestedSmartQuotes -= 1;
+      normalized += '\\"';
+      continue;
+    }
+
+    if (isJsonStringBoundary(text, index + 1)) {
+      insideString = false;
+      normalized += '"';
+      continue;
+    }
+
+    normalized += '\\"';
+  }
+
+  return normalized;
+}
+
 function ensureValidText(value: unknown, fieldLabel: string): string {
   const text = typeof value === "string" ? value.trim() : "";
 
@@ -290,6 +364,22 @@ export function validateGeneratedQuestions(
   return questions;
 }
 
+/** Parses pasted chatbot text and validates its questions before they enter the preview. */
+export function parseGeneratedQuestionsText(
+  responseText: string,
+  fallbackDifficulty: QuestionDifficulty = "medium",
+): GeneratedQuestion[] {
+  let payload: unknown;
+
+  try {
+    payload = JSON.parse(normalizeSmartQuotedJson(normalizeJsonText(responseText)));
+  } catch {
+    throw new Error("The chatbot response must be valid JSON. Ask it to return only the JSON object, then paste it again.");
+  }
+
+  return validateGeneratedQuestions(payload, fallbackDifficulty);
+}
+
 export function validateEssayGradeResult(payload: unknown): EssayGradeResult {
   if (!isRecord(payload)) {
     throw new Error("The AI grader returned malformed JSON.");
@@ -488,6 +578,10 @@ export type GenerateQuestionsOptions = {
   provider?: AiProvider;
 };
 
+type GenerationPromptOptions = Omit<GenerateQuestionsOptions, "count"> & {
+  count?: number;
+};
+
 function limitText(value: string, maxChars: number): string {
   const text = value.trim();
 
@@ -536,8 +630,7 @@ function formatSourceMaterial(
   });
 }
 
-/** Builds the generation prompt. Exported so tests can check what the AI is told. */
-export function buildGenerationPrompt({
+function buildGenerationPromptFromOptions({
   type,
   count,
   topicTitle,
@@ -550,8 +643,11 @@ export function buildGenerationPrompt({
   existingQuestions = [],
   difficulty,
   prompt,
-}: GenerateQuestionsOptions): string {
-  const safeCount = Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1));
+}: GenerationPromptOptions): string {
+  const safeCount =
+    count === undefined
+      ? undefined
+      : Math.max(1, Math.min(20, Number.isFinite(count) ? Math.round(count) : 1));
   const typeLabel =
     type === "automatic"
       ? AI_PROMPTS.generation.typeLabels.automatic
@@ -605,10 +701,12 @@ export function buildGenerationPrompt({
 
   return [
     AI_PROMPTS.generation.jsonOnly,
-    formatPrompt(AI_PROMPTS.generation.questionCount, {
-      count: String(safeCount),
-      type: typeLabel,
-    }),
+    safeCount === undefined
+      ? AI_PROMPTS.generation.allCoverage
+      : formatPrompt(AI_PROMPTS.generation.questionCount, {
+          count: String(safeCount),
+          type: typeLabel,
+        }),
     context.length > 0
       ? lessonTitle?.trim()
         ? AI_PROMPTS.generation.lessonAudience
@@ -644,6 +742,7 @@ export function buildGenerationPrompt({
       ? formatPrompt(AI_PROMPTS.generation.difficulty, { difficulty })
       : "",
     AI_PROMPTS.generation.language,
+    type === "automatic" ? AI_PROMPTS.generation.standaloneQuestions : "",
     AI_PROMPTS.generation.questionShape,
     exampleShape,
     type === "automatic"
@@ -665,6 +764,18 @@ export function buildGenerationPrompt({
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+/** Builds the fixed-count generation prompt used by provider requests. */
+export function buildGenerationPrompt(options: GenerateQuestionsOptions): string {
+  return buildGenerationPromptFromOptions(options);
+}
+
+/** Builds a prompt asking for one question per distinct point, without a fixed question count. */
+export function buildAutomaticCoveragePrompt(
+  options: Omit<GenerateQuestionsOptions, "type" | "count" | "coveragePoints">,
+): string {
+  return buildGenerationPromptFromOptions({ ...options, type: "automatic" });
 }
 
 export async function generateQuestions(
