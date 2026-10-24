@@ -19,33 +19,35 @@ Next.js serves the app; it does not mean AskMe has a business backend. Quiz data
 The root layout owns document metadata and shared CSS:
 
 ```tsx
-import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
-import { AppShell } from '@/components/AppShell'
-import './globals.css'
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import { AppShell } from "@/components/AppShell";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'AskMe',
-}
+  title: "AskMe",
+};
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" data-theme="light">
       <body>
         <AppShell>{children}</AppShell>
       </body>
     </html>
-  )
+  );
 }
 ```
 
 The library route renders a client component because it reads and updates local data:
 
 ```tsx
-import { SetsPage } from '@/components/SetsPage'
+import { SetsPage } from "@/components/SetsPage";
 
 export default function Page() {
-  return <SetsPage />
+  return <SetsPage />;
 }
 ```
 
@@ -62,8 +64,8 @@ These do not replace components' `useLiveQuery` loading states. Those queries ru
 ### ❌ Bad
 
 ```tsx
-'use client'
-const [sets] = useState(() => window.localStorage.getItem('sets'))
+"use client";
+const [sets] = useState(() => window.localStorage.getItem("sets"));
 ```
 
 Next.js can render the client component on the server, where `window` does not exist.
@@ -72,10 +74,14 @@ Next.js can render the client component on the server, where `window` does not e
 
 ```tsx
 useEffect(() => {
-  void listSets().then(setSets).catch((error: unknown) => {
-    setLoadError(error instanceof Error ? error.message : 'Could not load sets.')
-  })
-}, [])
+  void listSets()
+    .then(setSets)
+    .catch((error: unknown) => {
+      setLoadError(
+        error instanceof Error ? error.message : "Could not load sets.",
+      );
+    });
+}, []);
 ```
 
 The browser reads IndexedDB after mounting, and a failure is shown rather than hidden.
